@@ -2,7 +2,7 @@ body {
 }
 
 .fretboard-container {
-    overflow-x: auto;
+    overflow-x: auto; /* Allows horizontal scrolling for the fretboard */
     padding-bottom: 10px;
 }
 
@@ -32,7 +32,7 @@ body {
 }
 
 .fret:first-child {
-    border-right: 4px solid #666;
+    border-right: 4px solid #666; /* The "nut" of the guitar */
 }
 
 .note-name {
@@ -40,21 +40,25 @@ body {
     font-weight: bold;
 }
 
+/* --- Note Highlighting Styles --- */
+
+/* Default style for a note in the scale */
 .fret.in-scale {
-    background-color: #bbdefb;
+    background-color: #bbdefb; /* Light Blue */
     color: #1e88e5;
 }
 
+/* Style for a note that is part of the selected chord */
 .fret.in-chord {
-    background-color: #ffcdd2;
+    background-color: #ffcdd2; /* Light Red */
     color: #c62828;
     border: 1px solid #c62828;
 }
 
+/* Style for the root note of the scale/chord */
 .fret.root-note {
-    background-color: #ffd54f;
-    color: #6f4f00;
-    border-radius: 50%;
+    /* The background color is now inherited from .in-scale or .in-chord */
+    color: #000000; /* Black text for the root note */
     font-weight: bold;
-    border: 1px solid #ff8f00;
+    /* The border-radius and extra border have been removed */
 }
