@@ -13,6 +13,15 @@ export type FretboardAPIResponse = {
     [stringNum: string]: FretboardNote[];
 };
 
+// NEW: Type for a single fingering/voicing
+export type Voicing = number[][];
+
+// NEW: Type for the chord visualization response
+export interface ChordVisualizationResponse {
+    fretboard: FretboardAPIResponse;
+    voicings: Voicing[];
+}
+
 /**
  * Fetches the list of all available scale names from the backend.
  * @returns {Promise<string[]>} A promise that resolves to an array of scale names.
@@ -116,14 +125,14 @@ export async function getVisualizedScale(tuning: string, root: string, scale: st
  * Fetches a visualized fretboard for a given chord.
  * @param tuning The name of the tuning.
  * @param chordFullName The full name of the chord (e.g., "C Major").
- * @returns {Promise<FretboardAPIResponse | null>} A promise that resolves to the fretboard data.
+ * @returns {Promise<ChordVisualizationResponse | null>} A promise that resolves the fretboard data and available voicings.
  */
 export async function getVisualizedChord(
     tuning: string, 
     chordFullName: string, 
-    scaleRoot: string, // New parameter
-    scaleName: string  // New parameter
-): Promise<FretboardAPIResponse | null> {
+    scaleRoot: string,
+    scaleName: string
+): Promise<ChordVisualizationResponse | null> {
     if (!tuning || !chordFullName || !scaleRoot || !scaleName) return null;
 
     const [root_note, ...chord_name_parts] = chordFullName.split(' ');
@@ -133,8 +142,8 @@ export async function getVisualizedChord(
         tuning_name: tuning,
         root_note: root_note,
         chord_name: chord_name,
-        scale_root_note: scaleRoot, // Add scale root
-        scale_name: scaleName,       // Add scale name
+        scale_root_note: scaleRoot,
+        scale_name: scaleName,
     });
 
     try {

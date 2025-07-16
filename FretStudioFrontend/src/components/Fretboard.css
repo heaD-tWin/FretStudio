@@ -48,17 +48,116 @@ body {
     color: #1e88e5;
 }
 
-/* Style for a note that is part of the selected chord */
-.fret.in-chord {
-    background-color: #ffcdd2; /* Light Red */
-    color: #c62828;
-    border: 1px solid #c62828;
+/* NEW: Darker blue background for the SCALE's root note */
+.fret.scale-root {
+    background-color: #90caf9; /* Darker Blue */
 }
 
-/* Style for the root note of the scale/chord */
-.fret.root-note {
-    /* The background color is now inherited from .in-scale or .in-chord */
-    color: #000000; /* Black text for the root note */
+/* The green circle for chord notes */
+.chord-note-marker {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: #4caf50; /* Green */
+    border: 1px solid #2e7d32; /* Darker Green Border */
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* Darker green circle for the chord's root note */
+.chord-root-marker {
+    background-color: #2e7d32; /* Darker Green */
+    border-color: #1b5e20; /* Even Darker Border */
+}
+
+/* The note name should sit on top of the green circle */
+.fret .note-name {
+    position: relative;
+    z-index: 2;
+    color: #333; /* Default text color for notes with markers */
+}
+
+/* Style for the SCALE's root note - this is the highest priority text color */
+.fret.scale-root .note-name {
+    color: #000000 !important; /* Black text for the scale root, !important to override other rules */
     font-weight: bold;
-    /* The border-radius and extra border have been removed */
+}
+
+.finger-number {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+}
+
+.voicing-controls {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .controls-grid {
+        grid-template-columns: 1fr;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
 }
