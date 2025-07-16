@@ -118,8 +118,13 @@ export async function getVisualizedScale(tuning: string, root: string, scale: st
  * @param chordFullName The full name of the chord (e.g., "C Major").
  * @returns {Promise<FretboardAPIResponse | null>} A promise that resolves to the fretboard data.
  */
-export async function getVisualizedChord(tuning: string, chordFullName: string): Promise<FretboardAPIResponse | null> {
-    if (!tuning || !chordFullName) return null;
+export async function getVisualizedChord(
+    tuning: string, 
+    chordFullName: string, 
+    scaleRoot: string, // New parameter
+    scaleName: string  // New parameter
+): Promise<FretboardAPIResponse | null> {
+    if (!tuning || !chordFullName || !scaleRoot || !scaleName) return null;
 
     const [root_note, ...chord_name_parts] = chordFullName.split(' ');
     const chord_name = chord_name_parts.join(' ');
@@ -128,6 +133,8 @@ export async function getVisualizedChord(tuning: string, chordFullName: string):
         tuning_name: tuning,
         root_note: root_note,
         chord_name: chord_name,
+        scale_root_note: scaleRoot, // Add scale root
+        scale_name: scaleName,       // Add scale name
     });
 
     try {

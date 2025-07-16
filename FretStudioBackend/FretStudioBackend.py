@@ -851,3 +851,49 @@ async def get_visualized_fretboard_for_chord(tuning_name: str, chord_name: str, 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("FretStudioBackend:app", host="127.0.0.1", port=8000, reload=True)
+@app.get("/fretboard/visualize-chord", tags=["Fretboard"], response_model=Dict[int, List[FretboardNote]])
+async def get_visualized_fretboard_for_chord(
+    tuning_name: str, 
+    chord_name: str, 
+    root_note: str, 
+    scale_root_note: str,  # New parameter
+    scale_name: str,       # New parameter
+    num_frets: int = 12
+):
+    """Generates a fretboard with a specific chord fingering highlighted, within the context of a parent scale."""
+    chord_key = chord_name.lower().replace(" ", "_")
+    if chord_key not in db_chords:
+        raise HTTPException(status_code=404, detail=f"Chord '{chord_name}' not found.")
+    chord = db_chords[chord_key]
+    
+    # Use the provided scale information to get the parent scale notes
+    parent_scale_notes = await get_scale_notes(scale_root_note, scale_name)
+    chord_notes = await get_chord_notes(root_note, chord_name)
+
+    tuning_key = tuning_name.lower().replace(" ", "_")
+    if tuning_key not in db_tunings:
+        raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+    tuning = db_tunings[tuning_key]
+    
+    fretboard: Dict[int, List[FretboardNote]] = {}
+    fingering_map = {(f[0], f[1]): f[2] for f in chord.fingerings} if chord.fingerings else {}
+
+    for string_num, open_note in enumerate(tuning.notes):
+        string_notes: List[FretboardNote] = []
+        start_index = NOTES.index(open_note.upper())
+        for fret in range(num_frets + 1):
+            note_index = (start_index + fret) % len(NOTES)
+            current_note = NOTES[note_index]
+            string_id = len(tuning.notes) - string_num
+            finger = fingering_map.get((string_id, fret))
+            fret_note = FretboardNote(
+                note=current_note,
+                is_in_scale=(current_note in parent_scale_notes),
+                is_root=(current_note == root_note.upper()), # Root of the chord
+                is_in_chord=(current_note in chord_notes),
+                finger=finger if finger is not None else None
+            )
+            string_notes.append(fret_note)
+        fretboard[string_num + 1] = string_notes
+        
+    return fretboard

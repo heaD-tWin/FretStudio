@@ -55,9 +55,9 @@ function App() {
   // Fetch fretboard data based on user selection
   useEffect(() => {
     async function fetchFretboard() {
-      // If a chord is selected, visualize the chord. Otherwise, visualize the scale.
-      if (selectedChord && selectedTuning) {
-        const data = await getVisualizedChord(selectedTuning, selectedChord);
+      // If a chord is selected, visualize the chord within the context of the selected scale.
+      if (selectedChord && selectedTuning && selectedRoot && selectedScale) {
+        const data = await getVisualizedChord(selectedTuning, selectedChord, selectedRoot, selectedScale);
         setFretboardData(data);
       } else if (selectedTuning && selectedRoot && selectedScale) {
         const data = await getVisualizedScale(selectedTuning, selectedRoot, selectedScale);
