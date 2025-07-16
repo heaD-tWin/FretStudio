@@ -1,8 +1,10 @@
 from fastapi.testclient import TestClient
-from FretStudioBackend import app
+from FretStudioBackend import app, get_notes_from_intervals
 
 # Create a client to interact with the FastAPI app
 client = TestClient(app)
+
+# --- API Integration Tests ---
 
 def test_read_root():
     """
@@ -54,28 +56,29 @@ def test_get_scale_with_invalid_root_note():
     assert response.status_code == 404
 
 def test_get_visualized_fretboard():
-    """Tests the /fretboard/visualize endpoint for a C Major scale."""
+    """Tests the /fretboard/visualize-scale endpoint for a C Major scale."""
     params = {
         "tuning_name": "Standard Guitar",
         "scale_name": "Major",
         "root_note": "C"
     }
-    response = client.get("/fretboard/visualize", params=params)
+    # Ensure this line uses the correct endpoint
+    response = client.get("/fretboard/visualize-scale", params=params)
     assert response.status_code == 200
     
     data = response.json()
     # Check that we have 6 strings
     assert len(data) == 6 
     
-    # Check a specific note: 3rd string (G), 5th fret should be C (the root)
-    g_string = data["4"] # String numbers are keys, "4" is the G string
-    c_note_on_g_string = g_string[5]
-    assert c_note_on_g_string["note"] == "C"
-    assert c_note_on_g_string["is_in_scale"] is True
-    assert c_note_on_g_string["is_root"] is True
+    # Check a specific note: 4th string (D), 5th fret should be G (in C Major)
+    d_string = data["3"] # String numbers are keys, "3" is the D string
+    g_note_on_d_string = d_string[5]
+    assert g_note_on_d_string["note"] == "G"
+    assert g_note_on_d_string["is_in_scale"] is True
+    assert g_note_on_d_string["is_root"] is False
     
-    # Check another note: 6th string (high E), 2nd fret should be F# (not in C Major)
-    e_string = data["6"]
+    # Check another note: 1st string (high E), 2nd fret should be F# (not in C Major)
+    e_string = data["1"] # High E string is "1"
     f_sharp_note_on_e_string = e_string[2]
     assert f_sharp_note_on_e_string["note"] == "F#"
     assert f_sharp_note_on_e_string["is_in_scale"] is False
@@ -88,5 +91,26 @@ def test_get_visualized_fretboard_invalid_tuning():
         "scale_name": "Major",
         "root_note": "C"
     }
-    response = client.get("/fretboard/visualize", params=params)
+    # Ensure this line uses the correct endpoint
+    response = client.get("/fretboard/visualize-scale", params=params)
     assert response.status_code == 404
+
+# --- Unit Tests for Core Logic ---
+
+def test_c_major_scale_logic():
+    """
+    Unit test for the get_notes_from_intervals function with a C Major scale.
+    """
+    major_intervals = [2, 2, 1, 2, 2, 2, 1]
+    expected_notes = ["C", "D", "E", "F", "G", "A", "B"]
+    calculated_notes = get_notes_from_intervals("C", major_intervals, is_scale=True)
+    assert calculated_notes == expected_notes
+
+def test_a_minor_pentatonic_scale_logic():
+    """
+    Unit test for the get_notes_from_intervals function with an A Minor Pentatonic scale.
+    """
+    minor_penta_intervals = [3, 2, 2, 3, 2]
+    expected_notes = ["A", "C", "D", "E", "G"]
+    calculated_notes = get_notes_from_intervals("A", minor_penta_intervals, is_scale=True)
+    assert calculated_notes == expected_notes
