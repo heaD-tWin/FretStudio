@@ -1,19 +1,29 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { getScales, getTunings, getVisualizedScale, type FretboardAPIResponse } from './apiService';
+import { 
+  getScales, 
+  getTunings, 
+  getVisualizedScale, 
+  getChordsInScale, 
+  getVisualizedChord,
+  type FretboardAPIResponse 
+} from './apiService';
 import Selector from './components/Selector';
-import Fretboard from './components/Fretboard'; // Import the new Fretboard component
+import Fretboard from './components/Fretboard';
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FULL_SCALE_OPTION = 'Show Full Scale';
 
 function App() {
   const [scales, setScales] = useState<string[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
-  const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null); // State for the fretboard data
+  const [chords, setChords] = useState<string[]>([]);
+  const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedScale, setSelectedScale] = useState<string>('');
   const [selectedTuning, setSelectedTuning] = useState<string>('');
+  const [selectedChord, setSelectedChord] = useState<string>('');
 
   // Fetch initial data for dropdowns
   useEffect(() => {
@@ -30,30 +40,32 @@ function App() {
     fetchInitialData();
   }, []);
 
-  // Fetch fretboard data whenever a selection changes
+  // Fetch available chords whenever the root or scale changes
+  useEffect(() => {
+    async function fetchChords() {
+      if (selectedRoot && selectedScale) {
+        const chordNames = await getChordsInScale(selectedRoot, selectedScale);
+        setChords(chordNames);
+        setSelectedChord(''); // Reset chord selection when scale changes
+      }
+    }
+    fetchChords();
+  }, [selectedRoot, selectedScale]);
+
+  // Fetch fretboard data based on user selection
   useEffect(() => {
     async function fetchFretboard() {
-      if (selectedTuning && selectedRoot && selectedScale) {
+      // If a chord is selected, visualize the chord. Otherwise, visualize the scale.
+      if (selectedChord && selectedTuning) {
+        const data = await getVisualizedChord(selectedTuning, selectedChord);
+        setFretboardData(data);
+      } else if (selectedTuning && selectedRoot && selectedScale) {
         const data = await getVisualizedScale(selectedTuning, selectedRoot, selectedScale);
-        console.log('Fretboard Data:', data); // Add this line
         setFretboardData(data);
       }
     }
     fetchFretboard();
-  }, [selectedRoot, selectedScale, selectedTuning]); // Dependency array
-
-  // Transform fretboardData to highlightedFrets format
-  const highlightedFrets = fretboardData
-    ? Object.entries(fretboardData)
-        .flatMap(([stringNum, frets]) =>
-          (Array.isArray(frets) ? frets : []).map((fretNote, fretNum) =>
-            fretNote.is_in_scale // Use the 'is_in_scale' property to check for highlighting
-              ? { string: Number(stringNum) - 1, fret: fretNum }
-              : null
-          )
-        )
-        .filter((v): v is { string: number; fret: number } => v !== null)
-    : [];
+  }, [selectedRoot, selectedScale, selectedTuning, selectedChord]);
 
   return (
     <>
@@ -80,12 +92,24 @@ function App() {
             options={tunings}
             onChange={setSelectedTuning}
           />
+          <Selector
+            label="Chord"
+            value={selectedChord || FULL_SCALE_OPTION}
+            options={[FULL_SCALE_OPTION, ...chords]}
+            onChange={(value) => {
+              if (value === FULL_SCALE_OPTION) {
+                setSelectedChord('');
+              } else {
+                setSelectedChord(value);
+              }
+            }}
+          />
         </div>
       </div>
 
       <div className="card">
         <h2>Fretboard Visualization</h2>
-        <Fretboard highlightedFrets={highlightedFrets} />
+        <Fretboard fretboardData={fretboardData} />
       </div>
     </>
   )

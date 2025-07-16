@@ -1,57 +1,60 @@
 body {
 }
 
-.fretboard {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  border: 2px solid #555;
-  background-color: #deb887; /* Wood color */
-  padding: 10px;
-  border-radius: 5px;
-  overflow-x: auto; /* Allow horizontal scrolling for many frets */
+.fretboard-container {
+    overflow-x: auto;
+    padding-bottom: 10px;
 }
 
-.string {
-  display: flex;
-  flex-direction: row;
+.fretboard {
+    display: inline-block;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+}
+
+.string-row {
+    display: flex;
+    flex-direction: row;
 }
 
 .fret {
-  box-sizing: border-box;
-  width: 80px;
-  height: 40px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  border-top: 1px solid #999; /* Fret wire */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+    box-sizing: border-box;
+    width: 60px;
+    height: 30px;
+    border-right: 2px solid #aaa;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: #aaa;
 }
 
 .fret:first-child {
-  border-left: 5px solid #333; /* The nut */
+    border-right: 4px solid #666;
 }
 
 .note-name {
-  display: none; /* Hide note names by default */
-  font-weight: bold;
-  color: white;
+    font-size: 0.9em;
+    font-weight: bold;
 }
 
-.fret.in-scale .note-name {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: #3a7bd5;
-  color: white;
-  z-index: 1;
+.fret.in-scale {
+    background-color: #bbdefb;
+    color: #1e88e5;
 }
 
-.fret.root-note .note-name {
-  background-color: #e53935; /* Red for the root note */
+.fret.in-chord {
+    background-color: #ffcdd2;
+    color: #c62828;
+    border: 1px solid #c62828;
+}
+
+.fret.root-note {
+    background-color: #ffd54f;
+    color: #6f4f00;
+    border-radius: 50%;
+    font-weight: bold;
+    border: 1px solid #ff8f00;
 }
