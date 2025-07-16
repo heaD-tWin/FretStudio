@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "FretStudioBackend\\FretStudioBackend.pyproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FretStudioFrontend\\fretstudiofrontend.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

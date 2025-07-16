@@ -1,0 +1,1 @@
+C:\Users\danwh\Documents\PythonProjects\FretStudio\FretStudioFrontend\obj\Debug\fretstudiofrontend.esproj.CoreCompileInputs.cache

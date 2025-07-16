@@ -1,0 +1,90 @@
+# =============================================================================
+# Visual Studio
+# =============================================================================
+.vs/
+
+# =============================================================================
+# Python / FastAPI Backend
+# =============================================================================
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE-specific files
+.idea/
+*.swp
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# =============================================================================
+# Node.js / React Frontend
+# =============================================================================
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node dependencies
+node_modules
+jspm_packages
+
+# Build output
+dist
+dist-ssr
+
+# Vite-specific
+.vite/
+.tmp
+
+# Other
+.DS_Store
+*.pem
+
+# =============================================================================
+# Optional: Add if you use these tools
+# =============================================================================
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# VS Code settings
+.vscode/
