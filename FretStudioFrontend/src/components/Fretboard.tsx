@@ -9,12 +9,16 @@ interface FretboardProps {
 }
 
 const DEFAULT_STRINGS = 6;
-const DEFAULT_FRETS = 24; // Changed from 12 to 24
+const DEFAULT_FRETS = 24;
 
 const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote }: FretboardProps) => {
-  // Create a map of the selected voicing for easy lookup: "string-fret" -> finger
   const voicingMap = selectedVoicing 
-    ? new Map(selectedVoicing.map(([string, fret, finger]) => [`${string}-${fret}`, finger]))
+    ? new Map(selectedVoicing.fingering.map(([string, fret, finger]) => [`${string}-${fret}`, finger]))
+    : null;
+  
+  // CORRECTED: Access the .fingering property to create the map
+  const stringStatusMap = selectedVoicing
+    ? new Map(selectedVoicing.fingering.map(([string, fret]) => [string, fret]))
     : null;
 
   const renderFrets = (stringIndex: number) => {
@@ -61,7 +65,24 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
   const renderStrings = () => {
     const stringsArray = [];
     for (let i = 0; i < DEFAULT_STRINGS; i++) {
-      stringsArray.push(<div key={`string-${i}`} className="string-row">{renderFrets(i)}</div>);
+      const stringId = DEFAULT_STRINGS - i;
+      const fret = stringStatusMap ? stringStatusMap.get(stringId) : undefined;
+      let indicator = null;
+
+      if (fret !== undefined) {
+        if (fret >= 0) {
+          indicator = 'o';
+        } else if (fret === -1) {
+          indicator = 'x';
+        }
+      }
+
+      stringsArray.push(
+        <div key={`string-row-${i}`} className="string-row">
+          <div className="strum-indicator">{indicator}</div>
+          {renderFrets(i)}
+        </div>
+      );
     }
     return stringsArray;
   };

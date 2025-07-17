@@ -148,6 +148,19 @@ h2 {
     padding-bottom: 0.5rem;
 }
 
+/* Add this new style for the strumming indicators */
+.strum-indicator {
+    width: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #555;
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
 @media (max-width: 768px) {
     .controls-grid {
         grid-template-columns: 1fr;

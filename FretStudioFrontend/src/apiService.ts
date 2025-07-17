@@ -13,10 +13,14 @@ export type FretboardAPIResponse = {
     [stringNum: string]: FretboardNote[];
 };
 
-// NEW: Type for a single fingering/voicing
-export type Voicing = number[][];
+// UPDATED: Type for a single fingering/voicing object
+export interface Voicing {
+    name?: string;
+    difficulty?: string;
+    fingering: number[][];
+}
 
-// NEW: Type for the chord visualization response
+// UPDATED: Type for the chord visualization response
 export interface ChordVisualizationResponse {
     fretboard: FretboardAPIResponse;
     voicings: Voicing[];
