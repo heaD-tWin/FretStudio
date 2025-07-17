@@ -9,9 +9,10 @@ interface FretboardProps {
 }
 
 const DEFAULT_STRINGS = 6;
-const DEFAULT_FRETS = 12;
+const DEFAULT_FRETS = 24; // Changed from 12 to 24
 
 const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote }: FretboardProps) => {
+  // Create a map of the selected voicing for easy lookup: "string-fret" -> finger
   const voicingMap = selectedVoicing 
     ? new Map(selectedVoicing.map(([string, fret, finger]) => [`${string}-${fret}`, finger]))
     : null;

@@ -148,19 +148,26 @@ async def get_all_tuning_names():
     return [tuning.name for tuning in db_tunings.values()]
 
 @app.get("/fretboard/visualize-scale", tags=["Fretboard"], response_model=Dict[int, List[FretboardNote]])
-async def get_visualized_fretboard_for_scale(tuning_name: str, scale_name: str, root_note: str, num_frets: int = 12):
+async def get_visualized_fretboard_for_scale(tuning_name: str, scale_name: str, root_note: str, num_frets: int = 24):
+    """Generates a fretboard with notes highlighted based on a selected scale."""
+    # Get the notes in the selected scale
     scale_notes = await get_scale_notes(root_note, scale_name)
+    
+    # Get the base fretboard layout
     tuning_key = tuning_name.lower().replace(" ", "_")
     if tuning_key not in db_tunings:
         raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+    
     tuning = db_tunings[tuning_key]
     fretboard: Dict[int, List[FretboardNote]] = {}
+
     for string_num, open_note in enumerate(tuning.notes):
         string_notes: List[FretboardNote] = []
         start_index = NOTES.index(open_note.upper())
         for fret in range(num_frets + 1):
             note_index = (start_index + fret) % len(NOTES)
             current_note = NOTES[note_index]
+            
             fret_note = FretboardNote(
                 note=current_note,
                 is_in_scale=(current_note in scale_notes),
@@ -168,6 +175,7 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, scale_name: str, 
             )
             string_notes.append(fret_note)
         fretboard[string_num + 1] = string_notes
+        
     return fretboard
 
 @app.get("/fretboard/visualize-chord", tags=["Fretboard"], response_model=ChordVisualizationResponse)
@@ -177,7 +185,7 @@ async def get_visualized_fretboard_for_chord(
     root_note: str, 
     scale_root_note: str,
     scale_name: str,
-    num_frets: int = 12
+    num_frets: int = 24
 ):
     """
     Generates a fretboard with all chord tones highlighted, and returns a list
@@ -207,10 +215,9 @@ async def get_visualized_fretboard_for_chord(
             fret_note = FretboardNote(
                 note=current_note,
                 is_in_scale=(current_note in parent_scale_notes),
-                # CORRECTED: This now correctly uses the scale's root note.
                 is_root=(current_note == scale_root_note.upper()),
                 is_in_chord=(current_note in chord_notes),
-                finger=None
+                finger=None # Finger is now handled by the frontend
             )
             string_notes.append(fret_note)
         fretboard[string_num + 1] = string_notes
