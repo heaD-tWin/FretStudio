@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="chord_voicings.json" />
+    <Content Include="chord_library.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

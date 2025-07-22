@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import { 
   getScales, 
@@ -11,11 +12,13 @@ import {
 } from './apiService';
 import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
+import ChordEditor from './pages/ChordEditor'; // Import the new page
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
-function App() {
+// Create a component for the main page content
+const MainPage = () => {
   const [scales, setScales] = useState<string[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
   const [chords, setChords] = useState<string[]>([]);
@@ -29,7 +32,6 @@ function App() {
   const [selectedTuning, setSelectedTuning] = useState<string>('');
   const [selectedChord, setSelectedChord] = useState<string>('');
 
-  // Determine the chord's root note from the full chord name
   const chordRootNote = selectedChord ? selectedChord.split(' ')[0] : null;
 
   useEffect(() => {
@@ -77,9 +79,10 @@ function App() {
   const handleNextVoicing = () => setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
   const handlePrevVoicing = () => setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
 
+  const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
+
   return (
     <>
-      <h1>FretStudio</h1>
       <div className="card">
         <h2>Fretboard Controls</h2>
         <div className="controls-grid">
@@ -99,7 +102,8 @@ function App() {
             <button onClick={handlePrevVoicing}>Prev Voicing</button>
             <button onClick={handleNextVoicing}>Next Voicing</button>
             <span>
-              {selectedVoicingIndex === -1 ? 'All Tones' : `Voicing ${selectedVoicingIndex + 1} of ${voicings.length}`}
+              {currentVoicing?.name || (selectedVoicingIndex === -1 ? 'All Tones' : `Voicing ${selectedVoicingIndex + 1}`)}
+              {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
             </span>
           </div>
         )}
@@ -108,11 +112,27 @@ function App() {
         <h2>Fretboard Visualization</h2>
         <Fretboard 
           fretboardData={fretboardData} 
-          selectedVoicing={selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null}
+          selectedVoicing={currentVoicing}
           scaleRootNote={selectedRoot}
           chordRootNote={chordRootNote}
         />
       </div>
+    </>
+  );
+};
+
+function App() {
+  return (
+    <>
+      <nav className="main-nav">
+        <Link to="/">Visualizer</Link>
+        <Link to="/editor">Chord Editor</Link>
+      </nav>
+      <h1>FretStudio</h1>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/editor" element={<ChordEditor />} />
+      </Routes>
     </>
   )
 }

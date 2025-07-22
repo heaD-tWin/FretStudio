@@ -6,17 +6,17 @@ interface FretboardProps {
   selectedVoicing: Voicing | null;
   scaleRootNote: string;
   chordRootNote: string | null;
+  onFretClick?: (string: number, fret: number) => void;
 }
 
 const DEFAULT_STRINGS = 6;
 const DEFAULT_FRETS = 24;
 
-const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote }: FretboardProps) => {
+const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote, onFretClick }: FretboardProps) => {
   const voicingMap = selectedVoicing 
     ? new Map(selectedVoicing.fingering.map(([string, fret, finger]) => [`${string}-${fret}`, finger]))
     : null;
   
-  // CORRECTED: Access the .fingering property to create the map
   const stringStatusMap = selectedVoicing
     ? new Map(selectedVoicing.fingering.map(([string, fret]) => [string, fret]))
     : null;
@@ -32,12 +32,16 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       const finger = voicingMap ? voicingMap.get(`${stringId}-${fretIndex}`) : undefined;
 
       const fretClasses = ['fret'];
+      if (onFretClick) fretClasses.push('interactive');
       let isChordNote = false;
       let isChordRoot = false;
 
       if (note) {
-        if (note.is_in_scale) fretClasses.push('in-scale');
-        if (note.note === scaleRootNote) fretClasses.push('scale-root');
+        // Only apply scale styles if a scale root is provided
+        if (scaleRootNote) {
+          if (note.is_in_scale) fretClasses.push('in-scale');
+          if (note.note === scaleRootNote) fretClasses.push('scale-root');
+        }
 
         if (selectedVoicing) {
           if (finger !== undefined && finger >= 0) isChordNote = true;
@@ -51,7 +55,11 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       }
 
       fretsArray.push(
-        <div key={`fret-${stringIndex}-${fretIndex}`} className={fretClasses.join(' ')}>
+        <div 
+          key={`fret-${stringIndex}-${fretIndex}`} 
+          className={fretClasses.join(' ')}
+          onClick={() => onFretClick && onFretClick(stringId, fretIndex)}
+        >
           <div className="note-name">{note ? note.note : ''}</div>
           {isChordRoot && <div className="chord-note-marker chord-root-marker"></div>}
           {isChordNote && !isChordRoot && <div className="chord-note-marker"></div>}
@@ -70,11 +78,8 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       let indicator = null;
 
       if (fret !== undefined) {
-        if (fret >= 0) {
-          indicator = 'o';
-        } else if (fret === -1) {
-          indicator = 'x';
-        }
+        if (fret >= 0) indicator = 'o';
+        else if (fret === -1) indicator = 'x';
       }
 
       stringsArray.push(

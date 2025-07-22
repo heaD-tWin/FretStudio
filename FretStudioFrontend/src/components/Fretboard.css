@@ -161,6 +161,11 @@ h2 {
     margin-right: 5px;
 }
 
+.fret.interactive:hover {
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
+
 @media (max-width: 768px) {
     .controls-grid {
         grid-template-columns: 1fr;
