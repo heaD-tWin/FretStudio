@@ -80,13 +80,15 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       let indicatorClass = 'strum-indicator';
 
       if (fret !== undefined) {
-        if (fret === 0) indicator = 'o';
-        else if (fret === -1) {
+        // CORRECTED: Only show an indicator if the string is open or muted.
+        // If a fret is being held down (fret > 0), hide the indicator.
+        if (fret === 0) {
+          indicator = 'o';
+        } else if (fret === -1) {
           indicator = 'x';
           indicatorClass += ' muted';
-        } else if (fret > 0) {
-          indicator = '?'; // Use a dot for fretted strings
         }
+        // If fret > 0, indicator remains null, so nothing is displayed.
       }
       
       if (onStrumToggle) indicatorClass += ' interactive';

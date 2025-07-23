@@ -97,10 +97,8 @@ const ChordEditor = () => {
   const setFingeringAndModified = (fin: FrettedNote[]) => { setFingering(fin); setIsModified(true); };
 
   const handleFretClick = (string: number, fret: number) => {
-    const note = fretboardData?.[string.toString()]?.[fret]?.note;
-    if (note && validNotes.includes(note)) {
-      setActiveFret(activeFret && activeFret[0] === string && activeFret[1] === fret ? null : [string, fret]);
-    }
+    // CORRECTED: Removed the check against validNotes to allow any fret to be selected.
+    setActiveFret(activeFret && activeFret[0] === string && activeFret[1] === fret ? null : [string, fret]);
   };
 
   const handleFingerSelect = (finger: number) => {
@@ -108,6 +106,8 @@ const ChordEditor = () => {
     const [string, fret] = activeFret;
     const newFingering = [...fingering];
     const stringIndex = newFingering.findIndex(f => f[0] === string);
+    if (stringIndex === -1) return;
+
     if (finger > 0) {
       newFingering[stringIndex] = [string, fret, finger];
     } else {
@@ -120,6 +120,8 @@ const ChordEditor = () => {
   const handleStrumToggle = (stringId: number) => {
     const newFingering = [...fingering];
     const stringIndex = newFingering.findIndex(f => f[0] === stringId);
+    if (stringIndex === -1) return;
+    
     const currentFret = newFingering[stringIndex][1];
     newFingering[stringIndex][1] = currentFret === -1 ? 0 : -1;
     newFingering[stringIndex][2] = 0;
