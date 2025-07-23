@@ -6,7 +6,7 @@ import json
 import os
 
 # --- FastAPI App Setup ---
-app = FastAPI(title="FretStudio API", version="1.1.0")
+app = FastAPI(title="FretStudio API", version="1.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # --- Data Models ---
@@ -43,15 +43,27 @@ def get_notes_from_intervals(root_note: str, intervals: List[int]):
 async def get_all_scale_names(): return [s.name for s in db_scales.values()]
 @app.get("/tunings", response_model=List[str])
 async def get_all_tuning_names(): return [t.name for t in db_tunings.values()]
-@app.get("/chord-types", response_model=List[str])
-async def get_all_chord_types(): return [ct.name for ct in db_chord_types.values()]
+
+# --- Chord Type Endpoints ---
+@app.get("/chord-types", response_model=List[ChordType])
+async def get_all_chord_types(): return list(db_chord_types.values())
 
 @app.post("/chord-types", status_code=201)
-async def add_chord_type(chord_type: ChordType):
+async def add_or_update_chord_type(chord_type: ChordType):
     db_chord_types[chord_type.name.lower()] = chord_type
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    return {"message": f"Chord type '{chord_type.name}' added."}
+    return {"message": f"Chord type '{chord_type.name}' saved."}
 
+@app.delete("/chord-types/{type_name}", status_code=200)
+async def delete_chord_type(type_name: str):
+    type_name_lower = type_name.lower()
+    if type_name_lower not in db_chord_types:
+        raise HTTPException(status_code=404, detail="Chord type not found.")
+    del db_chord_types[type_name_lower]
+    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    return {"message": f"Chord type '{type_name}' deleted."}
+
+# --- Voicing and Fretboard Endpoints ---
 @app.get("/notes/{root_note}/{chord_type_name}", response_model=List[str])
 async def get_chord_notes_for_editor(root_note: str, chord_type_name: str):
     chord_type = db_chord_types.get(chord_type_name.lower())
