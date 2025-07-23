@@ -166,7 +166,23 @@ h2 {
   cursor: pointer;
 }
 
-/* Add these styles to the end of your Fretboard.css file */
+/* Add these styles to your Fretboard.css file */
+
+.strum-indicator.interactive {
+  cursor: pointer;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.strum-indicator.interactive:hover {
+  background-color: #e0e0e0;
+}
+
+.strum-indicator.muted {
+  color: #f44336;
+}
 
 .finger-selector {
   position: absolute;

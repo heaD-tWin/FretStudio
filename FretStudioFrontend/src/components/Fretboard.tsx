@@ -10,14 +10,13 @@ interface FretboardProps {
   onFretClick?: (string: number, fret: number) => void;
   activeFret?: [number, number] | null;
   onFingerSelect?: (finger: number) => void;
-  mutedStrings?: Set<number>; // NEW: Prop for muted strings set
-  onMuteToggle?: (stringId: number) => void; // NEW: Prop for mute toggle handler
+  onStrumToggle?: (stringId: number) => void; // New prop for toggling
 }
 
 const DEFAULT_STRINGS = 6;
 const DEFAULT_FRETS = 24;
 
-const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote, validNotes, onFretClick, activeFret, onFingerSelect, mutedStrings, onMuteToggle }: FretboardProps) => {
+const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote, validNotes, onFretClick, activeFret, onFingerSelect, onStrumToggle }: FretboardProps) => {
   const voicingMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f, fin]) => [`${s}-${f}`, fin])) : null;
   const stringStatusMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f]) => [s, f])) : null;
 
@@ -37,7 +36,7 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       let isChordRoot = false;
 
       if (note) {
-        if (scaleRootNote) {
+        if (scaleRootNote) { // Visualizer Mode
           if (note.is_in_scale) fretClasses.push('in-scale');
           if (note.note === scaleRootNote) fretClasses.push('scale-root');
           if (selectedVoicing) {
@@ -46,9 +45,9 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
             if (note.is_in_chord) isChordNote = true;
           }
           if (isChordNote && note.note === chordRootNote) isChordRoot = true;
-        } else if (validNotes) {
+        } else if (validNotes) { // Editor Mode
           if (validNotes.includes(note.note)) fretClasses.push('valid-note');
-          if (finger !== undefined) isChordNote = true;
+          if (finger !== undefined && finger >= 0) isChordNote = true;
         }
       }
       
@@ -78,26 +77,26 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       const stringId = DEFAULT_STRINGS - i;
       const fret = stringStatusMap ? stringStatusMap.get(stringId) : undefined;
       let indicator = null;
+      let indicatorClass = 'strum-indicator';
+
       if (fret !== undefined) {
-        if (fret >= 0) indicator = 'o';
-        else if (fret === -1) indicator = 'x';
+        if (fret === 0) indicator = 'o';
+        else if (fret === -1) {
+          indicator = 'x';
+          indicatorClass += ' muted';
+        } else if (fret > 0) {
+          indicator = '?'; // Use a dot for fretted strings
+        }
       }
+      
+      if (onStrumToggle) indicatorClass += ' interactive';
+
       stringsArray.push(
         <div key={`string-row-${i}`} className="string-row">
-          <div className="strum-indicator">{indicator}</div>
+          <div className={indicatorClass} onClick={() => onStrumToggle && onStrumToggle(stringId)}>
+            {indicator}
+          </div>
           {renderFrets(i)}
-          {/* NEW: Mute toggle button for editor mode */}
-          {onMuteToggle && (
-            <div className="mute-toggle-container">
-              <button 
-                className={`mute-toggle ${mutedStrings?.has(stringId) ? 'muted' : ''}`}
-                onClick={() => onMuteToggle(stringId)}
-                title={mutedStrings?.has(stringId) ? "Unmute String" : "Mute String"}
-              >
-                X
-              </button>
-            </div>
-          )}
         </div>
       );
     }

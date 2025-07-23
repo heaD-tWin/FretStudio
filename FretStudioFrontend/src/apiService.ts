@@ -99,3 +99,27 @@ export async function getChordsInScale(root: string, scale: string): Promise<str
         return [];
     }
 }
+
+export async function getVoicingsForChord(fullChordName: string): Promise<Voicing[]> {
+    if (!fullChordName) return [];
+    try {
+        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}`);
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to fetch voicings for chord:", error);
+        return [];
+    }
+}
+
+export async function deleteVoicing(fullChordName: string, voicingName: string): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}/${voicingName}`, {
+            method: 'DELETE',
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Failed to delete voicing:", error);
+        return false;
+    }
+}
