@@ -1,0 +1,14 @@
+{
+  "major": {
+    "name": "Major",
+    "intervals": [0, 4, 7]
+  },
+  "minor": {
+    "name": "Minor",
+    "intervals": [0, 3, 7]
+  },
+  "diminished": {
+    "name": "Diminished",
+    "intervals": [0, 3, 6]
+  }
+}

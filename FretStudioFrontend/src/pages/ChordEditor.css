@@ -67,6 +67,16 @@
     background-color: #0056b3;
 }
 
+/* New styles for the remove button */
+.editor-actions .remove-button {
+    background-color: #dc3545;
+    margin-left: 0.5rem;
+}
+
+.editor-actions .remove-button:hover {
+    background-color: #c82333;
+}
+
 /* Controls grid for form layout */
 .controls-grid {
     display: grid;

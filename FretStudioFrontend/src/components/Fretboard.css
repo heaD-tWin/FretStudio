@@ -166,6 +166,79 @@ h2 {
   cursor: pointer;
 }
 
+/* Add these styles to the end of your Fretboard.css file */
+
+.finger-selector {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 10;
+  display: flex;
+  padding: 4px;
+}
+
+.finger-selector button {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  margin: 2px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 0.9em;
+  line-height: 24px;
+  cursor: pointer;
+}
+
+.finger-selector button:hover {
+  background: #e0e0e0;
+}
+
+.finger-selector button.remove {
+  background: #f44336;
+  color: white;
+  border-color: #d32f2f;
+}
+
+.mute-toggle-container {
+  width: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+}
+
+.mute-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  background-color: #f0f0f0;
+  color: #ccc;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mute-toggle:hover {
+  border-color: #888;
+  color: #888;
+}
+
+.mute-toggle.muted {
+  background-color: #f44336;
+  border-color: #d32f2f;
+  color: white;
+}
+
 @media (max-width: 768px) {
     .controls-grid {
         grid-template-columns: 1fr;

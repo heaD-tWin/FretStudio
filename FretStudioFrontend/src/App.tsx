@@ -5,14 +5,14 @@ import {
   getScales, 
   getTunings, 
   getVisualizedScale, 
-  getChordsInScale, 
+  getAllChordNames, // Use this instead of getChordsInScale
   getVisualizedChord,
   type FretboardAPIResponse,
   type Voicing
 } from './apiService';
 import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
-import ChordEditor from './pages/ChordEditor'; // Import the new page
+import ChordEditor from './pages/ChordEditor';
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
@@ -34,33 +34,33 @@ const MainPage = () => {
 
   const chordRootNote = selectedChord ? selectedChord.split(' ')[0] : null;
 
+  // Fetch initial data for all dropdowns
   useEffect(() => {
     async function fetchInitialData() {
       const scaleNames = await getScales();
       const tuningNames = await getTunings();
+      const chordNames = await getAllChordNames(); // Fetch all available chords
+      
       setScales(scaleNames);
       setTunings(tuningNames);
+      setChords(chordNames);
+
       if (scaleNames.length > 0) setSelectedScale(scaleNames[0]);
       if (tuningNames.length > 0) setSelectedTuning(tuningNames[0]);
     }
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    async function fetchChords() {
-      if (selectedRoot && selectedScale) {
-        const chordNames = await getChordsInScale(selectedRoot, selectedScale);
-        setChords(chordNames);
-        setSelectedChord('');
-      }
-    }
-    fetchChords();
-  }, [selectedRoot, selectedScale]);
+  // This useEffect is no longer needed as we fetch all chords at the start
+  // useEffect(() => { ... }, [selectedRoot, selectedScale]);
 
+  // Fetch fretboard data based on user selection
   useEffect(() => {
     async function fetchFretboard() {
       if (selectedChord && selectedTuning && selectedRoot && selectedScale) {
-        const data = await getVisualizedChord(selectedTuning, selectedChord, selectedRoot, selectedScale);
+        // Note: The API call for getVisualizedChord might need adjustment
+        // if it depends on the scale/root for filtering, which it no longer does.
+        const data = await getVisualizedChord(selectedChord, selectedRoot, selectedScale);
         if (data) {
           setFretboardData(data.fretboard);
           setVoicings(data.voicings);

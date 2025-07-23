@@ -1,0 +1,35 @@
+{
+  "C Major": {
+    "voicings": [
+      {
+        "name": "Open C Shape",
+        "difficulty": "Beginner",
+        "fingering": [
+          [6, -1, 0], [5, 3, 3], [4, 2, 2], [3, 0, 0], [2, 1, 1], [1, 0, 0]
+        ]
+      }
+    ]
+  },
+  "G Major": {
+    "voicings": [
+      {
+        "name": "Open G Shape",
+        "difficulty": "Beginner",
+        "fingering": [
+          [6, 3, 2], [5, 2, 1], [4, 0, 0], [3, 0, 0], [2, 0, 0], [1, 3, 3]
+        ]
+      }
+    ]
+  },
+  "A Minor": {
+    "voicings": [
+      {
+        "name": "Open A-Minor Shape",
+        "difficulty": "Beginner",
+        "fingering": [
+          [6, -1, 0], [5, 0, 0], [4, 2, 2], [3, 2, 3], [2, 1, 1], [1, 0, 0]
+        ]
+      }
+    ]
+  }
+}
