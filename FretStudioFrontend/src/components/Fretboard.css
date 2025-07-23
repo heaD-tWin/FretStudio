@@ -1,4 +1,4 @@
-body {
+sbody {
 }
 
 .fretboard-container {
@@ -47,6 +47,13 @@ body {
     background-color: #bbdefb; /* Light Blue */
     color: #1e88e5;
 }
+
+/* This class is no longer needed, as we now use .in-scale for the editor */
+/*
+.fret.valid-note {
+    background-color: #e8f5e9; 
+}
+*/
 
 /* NEW: Darker blue background for the SCALE's root note */
 .fret.scale-root {

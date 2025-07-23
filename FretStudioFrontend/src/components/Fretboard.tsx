@@ -10,7 +10,7 @@ interface FretboardProps {
   onFretClick?: (string: number, fret: number) => void;
   activeFret?: [number, number] | null;
   onFingerSelect?: (finger: number) => void;
-  onStrumToggle?: (stringId: number) => void; // New prop for toggling
+  onStrumToggle?: (stringId: number) => void;
 }
 
 const DEFAULT_STRINGS = 6;
@@ -46,7 +46,12 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
           }
           if (isChordNote && note.note === chordRootNote) isChordRoot = true;
         } else if (validNotes) { // Editor Mode
-          if (validNotes.includes(note.note)) fretClasses.push('valid-note');
+          if (validNotes.includes(note.note)) {
+            fretClasses.push('in-scale'); // Use light blue for valid notes
+          }
+          if (note.note === chordRootNote) {
+            fretClasses.push('scale-root'); // Use darker blue for the root
+          }
           if (finger !== undefined && finger >= 0) isChordNote = true;
         }
       }
@@ -80,15 +85,12 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       let indicatorClass = 'strum-indicator';
 
       if (fret !== undefined) {
-        // CORRECTED: Only show an indicator if the string is open or muted.
-        // If a fret is being held down (fret > 0), hide the indicator.
         if (fret === 0) {
           indicator = 'o';
         } else if (fret === -1) {
           indicator = 'x';
           indicatorClass += ' muted';
         }
-        // If fret > 0, indicator remains null, so nothing is displayed.
       }
       
       if (onStrumToggle) indicatorClass += ' interactive';

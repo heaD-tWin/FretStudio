@@ -97,7 +97,6 @@ const ChordEditor = () => {
   const setFingeringAndModified = (fin: FrettedNote[]) => { setFingering(fin); setIsModified(true); };
 
   const handleFretClick = (string: number, fret: number) => {
-    // CORRECTED: Removed the check against validNotes to allow any fret to be selected.
     setActiveFret(activeFret && activeFret[0] === string && activeFret[1] === fret ? null : [string, fret]);
   };
 
@@ -201,6 +200,7 @@ const ChordEditor = () => {
           fretboardData={fretboardData}
           selectedVoicing={{ name: '', difficulty: '', fingering }}
           validNotes={validNotes}
+          chordRootNote={selectedRootNote}
           onFretClick={handleFretClick}
           activeFret={activeFret}
           onFingerSelect={handleFingerSelect}
