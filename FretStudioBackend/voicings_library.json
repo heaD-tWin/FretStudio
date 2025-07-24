@@ -558,5 +558,41 @@
         ]
       }
     ]
+  },
+  "C Diminished": {
+    "voicings": []
+  },
+  "C# Diminished": {
+    "voicings": []
+  },
+  "D Diminished": {
+    "voicings": []
+  },
+  "D# Diminished": {
+    "voicings": []
+  },
+  "E Diminished": {
+    "voicings": []
+  },
+  "F Diminished": {
+    "voicings": []
+  },
+  "F# Diminished": {
+    "voicings": []
+  },
+  "G Diminished": {
+    "voicings": []
+  },
+  "G# Diminished": {
+    "voicings": []
+  },
+  "A Diminished": {
+    "voicings": []
+  },
+  "A# Diminished": {
+    "voicings": []
+  },
+  "B Diminished": {
+    "voicings": []
   }
 }

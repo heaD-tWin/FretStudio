@@ -1,7 +1,15 @@
 {
   "Major": {
     "name": "Major",
-    "intervals": [0, 2, 4, 5, 7, 9, 11],
+    "intervals": [
+      0,
+      2,
+      4,
+      5,
+      7,
+      9,
+      11
+    ],
     "allowed_chord_types": [
       "Major",
       "Minor",
@@ -10,7 +18,15 @@
   },
   "Minor": {
     "name": "Minor",
-    "intervals": [0, 2, 3, 5, 7, 8, 10],
+    "intervals": [
+      0,
+      2,
+      3,
+      5,
+      7,
+      8,
+      10
+    ],
     "allowed_chord_types": [
       "Minor",
       "Major",
@@ -19,9 +35,32 @@
   },
   "Pentatonic Major": {
     "name": "Pentatonic Major",
-    "intervals": [0, 2, 4, 7, 9],
+    "intervals": [
+      0,
+      2,
+      4,
+      7,
+      9
+    ],
     "allowed_chord_types": [
       "Major"
+    ]
+  },
+  "Dorian": {
+    "name": "Dorian",
+    "intervals": [
+      0,
+      3,
+      4,
+      6,
+      8,
+      10,
+      11
+    ],
+    "allowed_chord_types": [
+      "Major",
+      "Minor",
+      "Diminished"
     ]
   }
 }
