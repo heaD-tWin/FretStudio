@@ -6,7 +6,7 @@ import json
 import os
 
 # --- FastAPI App Setup ---
-app = FastAPI(title="FretStudio API", version="1.3.0")
+app = FastAPI(title="FretStudio API", version="1.4.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # --- Data Models ---
@@ -63,13 +63,32 @@ async def delete_scale(scale_name: str):
 async def get_chords_in_scale(root_note: str, scale_name: str):
     if scale_name not in db_scales: return []
     scale = db_scales[scale_name]
-    scale_notes = get_notes_from_intervals(root_note, scale.intervals)
+    scale_notes = set(get_notes_from_intervals(root_note, scale.intervals))
     
     allowed_chords = []
-    for chord_name, chord_def in db_voicings_library.items():
-        chord_root, chord_type = chord_name.split(" ", 1)
-        if chord_root in scale_notes and chord_type in scale.allowed_chord_types:
-            allowed_chords.append(chord_name)
+    for full_chord_name in db_voicings_library.keys():
+        try:
+            chord_root, chord_type_name = full_chord_name.split(" ", 1)
+            
+            # Find the chord type definition
+            chord_type = db_chord_types.get(chord_type_name.lower())
+            if not chord_type: continue
+
+            # Check if the chord type is allowed by the scale's rules
+            if chord_type.name not in scale.allowed_chord_types:
+                continue
+
+            # Calculate all notes in the chord
+            chord_notes = set(get_notes_from_intervals(chord_root, chord_type.intervals))
+
+            # Check if all chord notes are present in the scale notes
+            if chord_notes.issubset(scale_notes):
+                allowed_chords.append(full_chord_name)
+
+        except ValueError:
+            # Skip any chord names that don't fit the "Root Type" format
+            continue
+            
     return allowed_chords
 
 # --- Chord Type Endpoints ---
@@ -128,7 +147,9 @@ async def get_visualized_chord(full_chord_name: str, scale_root_note: str, scale
     chord_def = db_voicings_library[full_chord_name]
     root_note, chord_type_name = full_chord_name.split(" ", 1)
     chord_notes = get_notes_from_intervals(root_note, db_chord_types[chord_type_name.lower()].intervals)
-    scale_notes = get_notes_from_intervals(scale_root_note, db_scales[scale_name].intervals)
+    scale = db_scales.get(scale_name)
+    if not scale: raise HTTPException(status_code=404, detail="Scale not found")
+    scale_notes = get_notes_from_intervals(scale_root_note, scale.intervals)
     tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
