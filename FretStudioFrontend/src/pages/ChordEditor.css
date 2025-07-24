@@ -99,3 +99,21 @@
 .note:hover {
     transform: scale(1.1);
 }
+
+/* Add these styles to the end of the file */
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-item input {
+  margin-right: 0.5rem;
+}

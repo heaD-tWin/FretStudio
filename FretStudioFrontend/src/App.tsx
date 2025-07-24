@@ -5,21 +5,22 @@ import {
   getScales, 
   getTunings, 
   getVisualizedScale, 
-  getAllChordNames, // Use this instead of getChordsInScale
+  getChordsInScale,
   getVisualizedChord,
   type FretboardAPIResponse,
-  type Voicing
+  type Voicing,
+  type Scale
 } from './apiService';
 import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
 import ChordEditor from './pages/ChordEditor';
+import ScaleEditor from './pages/ScaleEditor'; // Import the new editor
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
-// Create a component for the main page content
 const MainPage = () => {
-  const [scales, setScales] = useState<string[]>([]);
+  const [scales, setScales] = useState<Scale[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
   const [chords, setChords] = useState<string[]>([]);
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
@@ -37,29 +38,37 @@ const MainPage = () => {
   // Fetch initial data for all dropdowns
   useEffect(() => {
     async function fetchInitialData() {
-      const scaleNames = await getScales();
+      const scaleData = await getScales();
       const tuningNames = await getTunings();
-      const chordNames = await getAllChordNames(); // Fetch all available chords
       
-      setScales(scaleNames);
+      setScales(scaleData);
       setTunings(tuningNames);
-      setChords(chordNames);
 
-      if (scaleNames.length > 0) setSelectedScale(scaleNames[0]);
+      if (scaleData.length > 0) setSelectedScale(scaleData[0].name);
       if (tuningNames.length > 0) setSelectedTuning(tuningNames[0]);
     }
     fetchInitialData();
   }, []);
 
-  // This useEffect is no longer needed as we fetch all chords at the start
-  // useEffect(() => { ... }, [selectedRoot, selectedScale]);
+  // Fetch diatonic chords whenever the root or scale changes
+  useEffect(() => {
+    async function fetchDiatonicChords() {
+      if (selectedRoot && selectedScale) {
+        const diatonicChords = await getChordsInScale(selectedRoot, selectedScale);
+        setChords(diatonicChords);
+        // If the currently selected chord is not in the new list, reset it
+        if (selectedChord && !diatonicChords.includes(selectedChord)) {
+          setSelectedChord('');
+        }
+      }
+    }
+    fetchDiatonicChords();
+  }, [selectedRoot, selectedScale]);
 
   // Fetch fretboard data based on user selection
   useEffect(() => {
     async function fetchFretboard() {
       if (selectedChord && selectedTuning && selectedRoot && selectedScale) {
-        // Note: The API call for getVisualizedChord might need adjustment
-        // if it depends on the scale/root for filtering, which it no longer does.
         const data = await getVisualizedChord(selectedChord, selectedRoot, selectedScale);
         if (data) {
           setFretboardData(data.fretboard);
@@ -87,7 +96,7 @@ const MainPage = () => {
         <h2>Fretboard Controls</h2>
         <div className="controls-grid">
           <Selector label="Root Note" value={selectedRoot} options={NOTES} onChange={setSelectedRoot} />
-          <Selector label="Scale" value={selectedScale} options={scales} onChange={setSelectedScale} />
+          <Selector label="Scale" value={selectedScale} options={scales.map(s => s.name)} onChange={setSelectedScale} />
           <Selector label="Tuning" value={selectedTuning} options={tunings} onChange={setSelectedTuning} />
           <Selector
             label="Chord"
@@ -126,15 +135,17 @@ function App() {
     <>
       <nav className="main-nav">
         <Link to="/">Visualizer</Link>
-        <Link to="/editor">Chord Editor</Link>
+        <Link to="/editor/chords">Chord Editor</Link>
+        <Link to="/editor/scales">Scale Editor</Link>
       </nav>
       <h1>FretStudio</h1>
       <Routes>
         <Route path="/" element={<MainPage />} />
-        <Route path="/editor" element={<ChordEditor />} />
+        <Route path="/editor/chords" element={<ChordEditor />} />
+        <Route path="/editor/scales" element={<ScaleEditor />} />
       </Routes>
     </>
   )
 }
 
-export default App
+export default App;

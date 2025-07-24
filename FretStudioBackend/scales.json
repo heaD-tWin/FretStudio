@@ -1,0 +1,27 @@
+{
+  "Major": {
+    "name": "Major",
+    "intervals": [0, 2, 4, 5, 7, 9, 11],
+    "allowed_chord_types": [
+      "Major",
+      "Minor",
+      "Diminished"
+    ]
+  },
+  "Minor": {
+    "name": "Minor",
+    "intervals": [0, 2, 3, 5, 7, 8, 10],
+    "allowed_chord_types": [
+      "Minor",
+      "Major",
+      "Diminished"
+    ]
+  },
+  "Pentatonic Major": {
+    "name": "Pentatonic Major",
+    "intervals": [0, 2, 4, 7, 9],
+    "allowed_chord_types": [
+      "Major"
+    ]
+  }
+}
