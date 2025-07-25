@@ -3,18 +3,15 @@ import Selector from '../components/Selector';
 import './ChordEditor.css';
 import { getChordTypes, getScales, addScale, deleteScale } from '../apiService';
 import type { ChordType, Scale } from '../apiService';
+import { useAccidentalType } from '../contexts/AccidentalTypeContext';
+import { getNoteNames, getScaleNotes, formatNote } from '../utils/noteUtils'; // Use centralized functions
 
-const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const NEW_SCALE_OPTION = "Create New Scale...";
 
-// Helper function to calculate notes from intervals
-const getNotesFromIntervals = (rootNote: string, intervals: number[]): string[] => {
-  const rootIndex = NOTES.indexOf(rootNote);
-  if (rootIndex === -1) return [];
-  return intervals.map(interval => NOTES[(rootIndex + interval) % 12]);
-};
-
 const ScaleEditor = () => {
+  const { accidentalType } = useAccidentalType();
+  const noteOptions = getNoteNames(accidentalType);
+
   const [allScales, setAllScales] = useState<Scale[]>([]);
   const [allChordTypes, setAllChordTypes] = useState<ChordType[]>([]);
   
@@ -24,7 +21,6 @@ const ScaleEditor = () => {
   const [allowedChordTypes, setAllowedChordTypes] = useState<string[]>([]);
   const [isModified, setIsModified] = useState(false);
 
-  // New state for the preview feature
   const [previewRoot, setPreviewRoot] = useState<string>('C');
   const [previewNotes, setPreviewNotes] = useState<string[]>([]);
 
@@ -36,11 +32,11 @@ const ScaleEditor = () => {
     initialize();
   }, []);
 
-  // Effect to update the preview notes whenever intervals or the preview root change
   useEffect(() => {
     const intervals = scaleIntervals.split(',').map((n: string) => parseInt(n.trim())).filter((n: number) => !isNaN(n));
-    setPreviewNotes(getNotesFromIntervals(previewRoot, intervals));
-  }, [scaleIntervals, previewRoot]);
+    const calculatedNotes = getScaleNotes(previewRoot, intervals);
+    setPreviewNotes(calculatedNotes.map(note => formatNote(note, accidentalType)));
+  }, [scaleIntervals, previewRoot, accidentalType]);
 
   const resetAndCreateNew = () => {
     setSelectedScaleName(NEW_SCALE_OPTION);
@@ -127,7 +123,7 @@ const ScaleEditor = () => {
       <div className="card">
         <h2>Scale Preview</h2>
         <div className="controls-grid">
-          <Selector label="Preview Root" value={previewRoot} options={NOTES} onChange={setPreviewRoot} />
+          <Selector label="Preview Root" value={previewRoot} options={noteOptions} onChange={setPreviewRoot} />
           <div className="form-group">
             <label>Notes in Scale</label>
             <div className="note-display">{previewNotes.join(' - ')}</div>

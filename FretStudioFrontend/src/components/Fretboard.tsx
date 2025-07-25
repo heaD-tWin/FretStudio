@@ -1,6 +1,7 @@
 import './Fretboard.css';
 import type { FretboardAPIResponse, Voicing } from '../apiService';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
+import { formatNote } from '../utils/noteUtils'; // Import the utility
 
 interface FretboardProps {
   fretboardData: FretboardAPIResponse | null;
@@ -15,17 +16,6 @@ interface FretboardProps {
   isLeftHanded?: boolean;
   accidentalType?: AccidentalType;
 }
-
-const SHARP_TO_FLAT: { [key: string]: string } = {
-  'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb',
-};
-
-const formatNote = (note: string, accidentalType: AccidentalType = 'sharps'): string => {
-  if (accidentalType === 'flats' && SHARP_TO_FLAT[note]) {
-    return SHARP_TO_FLAT[note];
-  }
-  return note;
-};
 
 const DEFAULT_STRINGS = 6;
 const DEFAULT_FRETS = 24;

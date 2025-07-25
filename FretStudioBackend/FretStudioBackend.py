@@ -6,7 +6,7 @@ import json
 import os
 
 # --- FastAPI App Setup ---
-app = FastAPI(title="FretStudio API", version="1.5.0")
+app = FastAPI(title="FretStudio API", version="1.6.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # --- Data Models ---
@@ -81,16 +81,12 @@ async def get_all_chord_types(): return list(db_chord_types.values())
 
 @app.post("/chord-types", status_code=201)
 async def add_or_update_chord_type(chord_type: ChordType):
-    # Save the chord type itself
     db_chord_types[chord_type.name.lower()] = chord_type
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-
-    # CORRECTED: Automatically create placeholder entries in the voicing library
     for note in NOTES:
         full_chord_name = f"{note} {chord_type.name}"
         if full_chord_name not in db_voicings_library:
             db_voicings_library[full_chord_name] = ChordDefinition(voicings=[])
-    
     write_json_data("voicings_library.json", {k: v.dict() for k, v in db_voicings_library.items()})
     return {"message": f"Chord type '{chord_type.name}' saved and library updated."}
 
@@ -99,8 +95,6 @@ async def delete_chord_type(type_name: str):
     if type_name.lower() not in db_chord_types: raise HTTPException(status_code=404, detail="Chord type not found.")
     del db_chord_types[type_name.lower()]
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    # Note: This does not automatically remove the related chords from the voicing library.
-    # This is a design choice to prevent accidental data loss. They can be deleted manually.
     return {"message": f"Chord type '{type_name}' deleted."}
 
 # --- Voicing and Fretboard Endpoints ---
@@ -155,6 +149,25 @@ async def get_visualized_chord(full_chord_name: str, scale_root_note: str, scale
         for fret in range(num_frets + 1):
             current_note = NOTES[(start_index + fret) % 12]
             string_notes.append(FretboardNote(note=current_note, is_in_scale=(current_note in scale_notes), is_root=(current_note == scale_root_note.upper()), is_in_chord=(current_note in chord_notes)))
+        fretboard[len(tuning.notes) - i] = string_notes
+    return ChordVisualizationResponse(fretboard=fretboard, voicings=chord_def.voicings)
+
+@app.get("/visualize-chord-simple/{full_chord_name}", response_model=ChordVisualizationResponse)
+async def get_visualized_chord_simple(full_chord_name: str, tuning_name: str = "Standard Guitar", num_frets: int = 24):
+    if full_chord_name not in db_voicings_library: raise HTTPException(status_code=404, detail=f"Chord '{full_chord_name}' not found in library.")
+    chord_def = db_voicings_library[full_chord_name]
+    root_note, chord_type_name = full_chord_name.split(" ", 1)
+    chord_type = db_chord_types.get(chord_type_name.lower())
+    if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
+    chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
+    tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
+    fretboard: Dict[int, List[FretboardNote]] = {}
+    for i, open_note in enumerate(tuning.notes):
+        string_notes: List[FretboardNote] = []
+        start_index = NOTES.index(open_note.upper())
+        for fret in range(num_frets + 1):
+            current_note = NOTES[(start_index + fret) % 12]
+            string_notes.append(FretboardNote(note=current_note, is_in_scale=False, is_root=(current_note == root_note.upper()), is_in_chord=(current_note in chord_notes)))
         fretboard[len(tuning.notes) - i] = string_notes
     return ChordVisualizationResponse(fretboard=fretboard, voicings=chord_def.voicings)
 

@@ -15,8 +15,9 @@ import {
 } from '../apiService';
 import type { FretboardAPIResponse, Voicing, ChordType } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
+import { useAccidentalType } from '../contexts/AccidentalTypeContext';
+import { getNoteNames } from '../utils/noteUtils';
 
-const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"];
 const NEW_VOICING_OPTION = "Create New Voicing...";
 const NEW_CHORD_TYPE_OPTION = "Create New Type...";
@@ -26,12 +27,13 @@ const createDefaultFingering = (): FrettedNote[] => [[6,-1,0], [5,-1,0], [4,-1,0
 
 const ChordEditor = () => {
   const { handedness } = useHandedness();
-  console.log(`[ChordEditor] Rendering with handedness: ${handedness}`);
+  const { accidentalType } = useAccidentalType();
+  const noteOptions = getNoteNames(accidentalType);
 
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
   
-  // ... (rest of the component state)
-  const [selectedRootNote, setSelectedRootNote] = useState<string>(NOTES[0]);
+  // Voicing Editor State
+  const [selectedRootNote, setSelectedRootNote] = useState<string>('C');
   const [selectedChordType, setSelectedChordType] = useState<string>('');
   const [voicingName, setVoicingName] = useState('');
   const [difficulty, setDifficulty] = useState<string>(DIFFICULTIES[0]);
@@ -41,13 +43,15 @@ const ChordEditor = () => {
   const [selectedVoicingName, setSelectedVoicingName] = useState<string>(NEW_VOICING_OPTION);
   const [isVoicingModified, setIsVoicingModified] = useState(false);
   const [validNotes, setValidNotes] = useState<string[]>([]);
+
+  // Chord Type Editor State
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
   const [selectedChordTypeName, setSelectedChordTypeName] = useState<string>(NEW_CHORD_TYPE_OPTION);
   const [typeName, setTypeName] = useState('');
   const [typeIntervals, setTypeIntervals] = useState('');
   const [isTypeModified, setIsTypeModified] = useState(false);
 
-  // ... (rest of the component effects and handlers)
+  // --- Effects ---
   useEffect(() => {
     async function initializeEditor() {
       const tunings = await getTunings();
@@ -71,6 +75,7 @@ const ChordEditor = () => {
     fetchChordData();
   }, [selectedRootNote, selectedChordType]);
 
+  // --- Voicing Handlers ---
   const resetAndCreateNewVoicing = () => {
     setSelectedVoicingName(NEW_VOICING_OPTION);
     setVoicingName('');
@@ -120,6 +125,7 @@ const ChordEditor = () => {
     } else alert("Failed to delete voicing.");
   };
 
+  // --- Chord Type Handlers ---
   const resetAndCreateNewType = () => {
     setSelectedChordTypeName(NEW_CHORD_TYPE_OPTION);
     setTypeName('');
@@ -164,6 +170,7 @@ const ChordEditor = () => {
     } else alert("Failed to delete chord type.");
   };
 
+  // --- Fretboard Interaction ---
   const handleFretClick = (s: number, f: number) => setActiveFret(activeFret && activeFret[0] === s && activeFret[1] === f ? null : [s, f]);
   const handleFingerSelect = (finger: number) => {
     if (!activeFret) return;
@@ -186,6 +193,7 @@ const ChordEditor = () => {
     setIsVoicingModified(true);
   };
 
+  // --- Render Logic ---
   const showDeleteVoicingBtn = selectedVoicingName !== NEW_VOICING_OPTION && !isVoicingModified;
   const showDeleteTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isTypeModified;
 
@@ -195,7 +203,7 @@ const ChordEditor = () => {
       <div className="card">
         <h2>Create or Edit Voicing</h2>
         <div className="controls-grid">
-          <Selector label="Root Note" value={selectedRootNote} options={NOTES} onChange={setSelectedRootNote} />
+          <Selector label="Root Note" value={selectedRootNote} options={noteOptions} onChange={setSelectedRootNote} />
           <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
           <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...existingVoicings.map(v => v.name)]} onChange={handleSelectExistingVoicing} />
         </div>
@@ -223,6 +231,7 @@ const ChordEditor = () => {
           onFingerSelect={handleFingerSelect} 
           onStrumToggle={handleStrumToggle}
           isLeftHanded={handedness === 'left'}
+          accidentalType={accidentalType}
         />
       </div>
       

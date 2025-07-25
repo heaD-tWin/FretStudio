@@ -15,15 +15,18 @@ import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
+import ChordVisualizer from './pages/ChordVisualizer'; // Import the new page
 import { useHandedness } from './contexts/HandednessContext';
-import { useAccidentalType } from './contexts/AccidentalTypeContext'; // Import the new hook
+import { useAccidentalType } from './contexts/AccidentalTypeContext';
+import { getNoteNames } from './utils/noteUtils';
 
-const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
 const MainPage = () => {
   const { handedness } = useHandedness();
-  const { accidentalType } = useAccidentalType(); // Use the new hook
+  const { accidentalType } = useAccidentalType();
+  const noteOptions = getNoteNames(accidentalType);
+
   const [scales, setScales] = useState<Scale[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
   const [chords, setChords] = useState<string[]>([]);
@@ -44,10 +47,8 @@ const MainPage = () => {
     async function fetchInitialData() {
       const scaleData = await getScales();
       const tuningNames = await getTunings();
-      
       setScales(scaleData);
       setTunings(tuningNames);
-
       if (scaleData.length > 0) setSelectedScale(scaleData[0].name);
       if (tuningNames.length > 0) setSelectedTuning(tuningNames[0]);
     }
@@ -99,15 +100,10 @@ const MainPage = () => {
       <div className="card">
         <h2>Fretboard Controls</h2>
         <div className="controls-grid">
-          <Selector label="Root Note" value={selectedRoot} options={NOTES} onChange={setSelectedRoot} />
+          <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
           <Selector label="Scale" value={selectedScale} options={scales.map(s => s.name)} onChange={setSelectedScale} />
           <Selector label="Tuning" value={selectedTuning} options={tunings} onChange={setSelectedTuning} />
-          <Selector
-            label="Chord"
-            value={selectedChord || FULL_SCALE_OPTION}
-            options={[FULL_SCALE_OPTION, ...chords]}
-            onChange={(value) => setSelectedChord(value === FULL_SCALE_OPTION ? '' : value)}
-          />
+          <Selector label="Chord" value={selectedChord || FULL_SCALE_OPTION} options={[FULL_SCALE_OPTION, ...chords]} onChange={(value) => setSelectedChord(value === FULL_SCALE_OPTION ? '' : value)} />
         </div>
         {selectedChord && voicings.length > 0 && (
           <div className="voicing-controls">
@@ -138,12 +134,13 @@ const MainPage = () => {
 
 function App() {
   const { handedness, toggleHandedness } = useHandedness();
-  const { accidentalType, toggleAccidentalType } = useAccidentalType(); // Use the new hook
+  const { accidentalType, toggleAccidentalType } = useAccidentalType();
 
   return (
     <>
       <nav className="main-nav">
-        <Link to="/">Visualizer</Link>
+        <Link to="/">Scale Visualizer</Link>
+        <Link to="/visualizer/chords">Chord Visualizer</Link>
         <Link to="/editor/chords">Chord Editor</Link>
         <Link to="/editor/scales">Scale Editor</Link>
         <div className="nav-actions">
@@ -158,6 +155,7 @@ function App() {
       <h1>FretStudio</h1>
       <Routes>
         <Route path="/" element={<MainPage />} />
+        <Route path="/visualizer/chords" element={<ChordVisualizer />} />
         <Route path="/editor/chords" element={<ChordEditor />} />
         <Route path="/editor/scales" element={<ScaleEditor />} />
       </Routes>

@@ -162,5 +162,17 @@ export async function getVisualizedChord(fullChordName: string, scaleRoot: strin
     }
 }
 
+export async function getVisualizedChordSimple(fullChordName: string): Promise<ChordVisualizationResponse | null> {
+    if (!fullChordName) return null;
+    try {
+        const response = await fetch(`${API_BASE_URL}/visualize-chord-simple/${fullChordName}`);
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to fetch simple visualized chord:", error);
+        return null;
+    }
+}
+
 export async function getTunings(): Promise<string[]> { try { const r = await fetch(`${API_BASE_URL}/tunings`); return r.ok ? await r.json() : []; } catch (_e) { console.error("Failed to fetch tunings:", _e); return []; } }
 export async function getVisualizedScale(tuning: string, root: string, scale: string): Promise<FretboardAPIResponse | null> { if (!tuning || !root || !scale) return null; const p = new URLSearchParams({ tuning_name: tuning, root_note: root, scale_name: scale }); try { const r = await fetch(`${API_BASE_URL}/fretboard/visualize-scale?${p}`); return r.ok ? await r.json() : null; } catch (_e) { console.error("Failed to fetch visualized scale:", _e); return null; } }
