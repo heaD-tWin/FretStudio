@@ -1,5 +1,6 @@
 import './Fretboard.css';
 import type { FretboardAPIResponse, Voicing } from '../apiService';
+import type { AccidentalType } from '../contexts/AccidentalTypeContext';
 
 interface FretboardProps {
   fretboardData: FretboardAPIResponse | null;
@@ -12,7 +13,19 @@ interface FretboardProps {
   onFingerSelect?: (finger: number) => void;
   onStrumToggle?: (stringId: number) => void;
   isLeftHanded?: boolean;
+  accidentalType?: AccidentalType;
 }
+
+const SHARP_TO_FLAT: { [key: string]: string } = {
+  'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb',
+};
+
+const formatNote = (note: string, accidentalType: AccidentalType = 'sharps'): string => {
+  if (accidentalType === 'flats' && SHARP_TO_FLAT[note]) {
+    return SHARP_TO_FLAT[note];
+  }
+  return note;
+};
 
 const DEFAULT_STRINGS = 6;
 const DEFAULT_FRETS = 24;
@@ -27,9 +40,9 @@ const Fretboard = ({
   activeFret, 
   onFingerSelect, 
   onStrumToggle,
-  isLeftHanded
+  isLeftHanded,
+  accidentalType
 }: FretboardProps) => {
-  console.log(`[Fretboard] Rendering with isLeftHanded: ${isLeftHanded}`);
 
   const voicingMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f, fin]) => [`${s}-${f}`, fin])) : null;
   const stringStatusMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f]) => [s, f])) : null;
@@ -70,7 +83,7 @@ const Fretboard = ({
 
       fretsArray.push(
         <div key={`fret-${stringIndex}-${fretIndex}`} className={fretClasses.join(' ')} onClick={() => onFretClick && onFretClick(stringId, fretIndex)}>
-          <div className="note-name">{note ? note.note : ''}</div>
+          <div className="note-name">{note ? formatNote(note.note, accidentalType) : ''}</div>
           {isChordRoot && <div className="chord-note-marker chord-root-marker"></div>}
           {isChordNote && !isChordRoot && <div className="chord-note-marker"></div>}
           {finger !== undefined && finger > 0 && <div className="finger-number">{finger}</div>}

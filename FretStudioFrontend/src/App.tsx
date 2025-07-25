@@ -16,14 +16,14 @@ import Fretboard from './components/Fretboard';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
 import { useHandedness } from './contexts/HandednessContext';
+import { useAccidentalType } from './contexts/AccidentalTypeContext'; // Import the new hook
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
 const MainPage = () => {
   const { handedness } = useHandedness();
-  console.log(`[MainPage] Rendering with handedness: ${handedness}`);
-
+  const { accidentalType } = useAccidentalType(); // Use the new hook
   const [scales, setScales] = useState<Scale[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
   const [chords, setChords] = useState<string[]>([]);
@@ -129,6 +129,7 @@ const MainPage = () => {
           scaleRootNote={selectedRoot}
           chordRootNote={chordRootNote}
           isLeftHanded={handedness === 'left'}
+          accidentalType={accidentalType}
         />
       </div>
     </>
@@ -137,7 +138,7 @@ const MainPage = () => {
 
 function App() {
   const { handedness, toggleHandedness } = useHandedness();
-  console.log(`[App] Rendering with handedness: ${handedness}`);
+  const { accidentalType, toggleAccidentalType } = useAccidentalType(); // Use the new hook
 
   return (
     <>
@@ -145,9 +146,14 @@ function App() {
         <Link to="/">Visualizer</Link>
         <Link to="/editor/chords">Chord Editor</Link>
         <Link to="/editor/scales">Scale Editor</Link>
-        <button onClick={toggleHandedness} className="nav-button">
-          {handedness === 'left' ? 'Left-Handed' : 'Right-Handed'} View
-        </button>
+        <div className="nav-actions">
+          <button onClick={toggleAccidentalType} className="nav-button">
+            Use {accidentalType === 'sharps' ? 'Flats (b)' : 'Sharps (#)'}
+          </button>
+          <button onClick={toggleHandedness} className="nav-button">
+            {handedness === 'left' ? 'Left-Handed' : 'Right-Handed'} View
+          </button>
+        </div>
       </nav>
       <h1>FretStudio</h1>
       <Routes>
