@@ -14,12 +14,16 @@ import {
 import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
 import ChordEditor from './pages/ChordEditor';
-import ScaleEditor from './pages/ScaleEditor'; // Import the new editor
+import ScaleEditor from './pages/ScaleEditor';
+import { useHandedness } from './contexts/HandednessContext';
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
 const MainPage = () => {
+  const { handedness } = useHandedness();
+  console.log(`[MainPage] Rendering with handedness: ${handedness}`);
+
   const [scales, setScales] = useState<Scale[]>([]);
   const [tunings, setTunings] = useState<string[]>([]);
   const [chords, setChords] = useState<string[]>([]);
@@ -124,6 +128,7 @@ const MainPage = () => {
           selectedVoicing={currentVoicing}
           scaleRootNote={selectedRoot}
           chordRootNote={chordRootNote}
+          isLeftHanded={handedness === 'left'}
         />
       </div>
     </>
@@ -131,12 +136,18 @@ const MainPage = () => {
 };
 
 function App() {
+  const { handedness, toggleHandedness } = useHandedness();
+  console.log(`[App] Rendering with handedness: ${handedness}`);
+
   return (
     <>
       <nav className="main-nav">
         <Link to="/">Visualizer</Link>
         <Link to="/editor/chords">Chord Editor</Link>
         <Link to="/editor/scales">Scale Editor</Link>
+        <button onClick={toggleHandedness} className="nav-button">
+          {handedness === 'left' ? 'Left-Handed' : 'Right-Handed'} View
+        </button>
       </nav>
       <h1>FretStudio</h1>
       <Routes>

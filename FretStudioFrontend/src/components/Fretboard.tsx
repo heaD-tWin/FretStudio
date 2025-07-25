@@ -11,12 +11,26 @@ interface FretboardProps {
   activeFret?: [number, number] | null;
   onFingerSelect?: (finger: number) => void;
   onStrumToggle?: (stringId: number) => void;
+  isLeftHanded?: boolean;
 }
 
 const DEFAULT_STRINGS = 6;
 const DEFAULT_FRETS = 24;
 
-const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNote, validNotes, onFretClick, activeFret, onFingerSelect, onStrumToggle }: FretboardProps) => {
+const Fretboard = ({ 
+  fretboardData, 
+  selectedVoicing, 
+  scaleRootNote, 
+  chordRootNote, 
+  validNotes, 
+  onFretClick, 
+  activeFret, 
+  onFingerSelect, 
+  onStrumToggle,
+  isLeftHanded
+}: FretboardProps) => {
+  console.log(`[Fretboard] Rendering with isLeftHanded: ${isLeftHanded}`);
+
   const voicingMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f, fin]) => [`${s}-${f}`, fin])) : null;
   const stringStatusMap = selectedVoicing ? new Map(selectedVoicing.fingering.map(([s, f]) => [s, f])) : null;
 
@@ -46,12 +60,8 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
           }
           if (isChordNote && note.note === chordRootNote) isChordRoot = true;
         } else if (validNotes) { // Editor Mode
-          if (validNotes.includes(note.note)) {
-            fretClasses.push('in-scale'); // Use light blue for valid notes
-          }
-          if (note.note === chordRootNote) {
-            fretClasses.push('scale-root'); // Use darker blue for the root
-          }
+          if (validNotes.includes(note.note)) fretClasses.push('in-scale');
+          if (note.note === chordRootNote) fretClasses.push('scale-root');
           if (finger !== undefined && finger >= 0) isChordNote = true;
         }
       }
@@ -85,9 +95,8 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
       let indicatorClass = 'strum-indicator';
 
       if (fret !== undefined) {
-        if (fret === 0) {
-          indicator = 'o';
-        } else if (fret === -1) {
+        if (fret === 0) indicator = 'o';
+        else if (fret === -1) {
           indicator = 'x';
           indicatorClass += ' muted';
         }
@@ -107,8 +116,12 @@ const Fretboard = ({ fretboardData, selectedVoicing, scaleRootNote, chordRootNot
     return stringsArray;
   };
 
+  const fretboardClassName = `fretboard ${isLeftHanded ? 'left-handed' : ''}`;
+
   return (
-    <div className="fretboard-container"><div className="fretboard">{renderStrings()}</div></div>
+    <div className="fretboard-container">
+      <div className={fretboardClassName}>{renderStrings()}</div>
+    </div>
   );
 };
 

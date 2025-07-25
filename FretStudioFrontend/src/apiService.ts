@@ -114,7 +114,7 @@ export async function getChordNotesForEditor(rootNote: string, chordTypeName: st
 export async function getVoicingsForChord(fullChordName: string): Promise<Voicing[]> {
     if (!fullChordName) return [];
     try {
-        const response = await fetch(`${API_BAsE_URL}/voicings/${fullChordName}`);
+        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}`);
         if (!response.ok) return [];
         return await response.json();
     } catch (error) {

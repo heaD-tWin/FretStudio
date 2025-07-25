@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Selector from '../components/Selector';
 import './ChordEditor.css';
 import { getChordTypes, getScales, addScale, deleteScale } from '../apiService';
@@ -38,7 +38,7 @@ const ScaleEditor = () => {
 
   // Effect to update the preview notes whenever intervals or the preview root change
   useEffect(() => {
-    const intervals = scaleIntervals.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    const intervals = scaleIntervals.split(',').map((n: string) => parseInt(n.trim())).filter((n: number) => !isNaN(n));
     setPreviewNotes(getNotesFromIntervals(previewRoot, intervals));
   }, [scaleIntervals, previewRoot]);
 
@@ -56,7 +56,7 @@ const ScaleEditor = () => {
       resetAndCreateNew();
       return;
     }
-    const scale = allScales.find(s => s.name === name);
+    const scale = allScales.find((s: Scale) => s.name === name);
     if (scale) {
       setScaleName(scale.name);
       setScaleIntervals(scale.intervals.join(', '));
@@ -67,7 +67,7 @@ const ScaleEditor = () => {
 
   const handleToggleChordType = (typeName: string) => {
     const newAllowedTypes = allowedChordTypes.includes(typeName)
-      ? allowedChordTypes.filter(t => t !== typeName)
+      ? allowedChordTypes.filter((t: string) => t !== typeName)
       : [...allowedChordTypes, typeName];
     setAllowedChordTypes(newAllowedTypes);
     setIsModified(true);
@@ -75,7 +75,7 @@ const ScaleEditor = () => {
 
   const handleSave = async () => {
     if (!scaleName || !scaleIntervals) return alert("Please provide a name and intervals.");
-    const intervals = scaleIntervals.split(',').map(n => parseInt(n.trim()));
+    const intervals = scaleIntervals.split(',').map((n: string) => parseInt(n.trim()));
     if (intervals.some(isNaN)) return alert("Intervals must be comma-separated numbers.");
 
     const newScale: Scale = { name: scaleName, intervals, allowed_chord_types: allowedChordTypes };
@@ -109,7 +109,7 @@ const ScaleEditor = () => {
       <div className="card">
         <h2>Create or Edit Scale</h2>
         <div className="controls-grid">
-          <Selector label="Edit Scale" value={selectedScaleName} options={[NEW_SCALE_OPTION, ...allScales.map(s => s.name)]} onChange={handleSelectScale} />
+          <Selector label="Edit Scale" value={selectedScaleName} options={[NEW_SCALE_OPTION, ...allScales.map((s: Scale) => s.name)]} onChange={handleSelectScale} />
           <div className="form-group">
             <label>Scale Name</label>
             <input type="text" value={scaleName} onChange={e => { setScaleName(e.target.value); setIsModified(true); }} />
@@ -138,7 +138,7 @@ const ScaleEditor = () => {
       <div className="card">
         <h2>Allowed Chord Types for this Scale</h2>
         <div className="checkbox-grid">
-          {allChordTypes.map(type => (
+          {allChordTypes.map((type: ChordType) => (
             <div key={type.name} className="checkbox-item">
               <input
                 type="checkbox"

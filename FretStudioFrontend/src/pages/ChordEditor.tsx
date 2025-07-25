@@ -11,9 +11,10 @@ import {
   addVoicingToChord, 
   getVoicingsForChord, 
   deleteVoicing,
-  deleteChordType // CORRECTED: Added the missing import
+  deleteChordType
 } from '../apiService';
 import type { FretboardAPIResponse, Voicing, ChordType } from '../apiService';
+import { useHandedness } from '../contexts/HandednessContext';
 
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"];
@@ -24,9 +25,12 @@ type FrettedNote = [number, number, number];
 const createDefaultFingering = (): FrettedNote[] => [[6,-1,0], [5,-1,0], [4,-1,0], [3,-1,0], [2,-1,0], [1,-1,0]];
 
 const ChordEditor = () => {
+  const { handedness } = useHandedness();
+  console.log(`[ChordEditor] Rendering with handedness: ${handedness}`);
+
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
   
-  // Voicing Editor State
+  // ... (rest of the component state)
   const [selectedRootNote, setSelectedRootNote] = useState<string>(NOTES[0]);
   const [selectedChordType, setSelectedChordType] = useState<string>('');
   const [voicingName, setVoicingName] = useState('');
@@ -37,15 +41,13 @@ const ChordEditor = () => {
   const [selectedVoicingName, setSelectedVoicingName] = useState<string>(NEW_VOICING_OPTION);
   const [isVoicingModified, setIsVoicingModified] = useState(false);
   const [validNotes, setValidNotes] = useState<string[]>([]);
-
-  // Chord Type Editor State
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
   const [selectedChordTypeName, setSelectedChordTypeName] = useState<string>(NEW_CHORD_TYPE_OPTION);
   const [typeName, setTypeName] = useState('');
   const [typeIntervals, setTypeIntervals] = useState('');
   const [isTypeModified, setIsTypeModified] = useState(false);
 
-  // --- Effects ---
+  // ... (rest of the component effects and handlers)
   useEffect(() => {
     async function initializeEditor() {
       const tunings = await getTunings();
@@ -69,7 +71,6 @@ const ChordEditor = () => {
     fetchChordData();
   }, [selectedRootNote, selectedChordType]);
 
-  // --- Voicing Handlers ---
   const resetAndCreateNewVoicing = () => {
     setSelectedVoicingName(NEW_VOICING_OPTION);
     setVoicingName('');
@@ -119,7 +120,6 @@ const ChordEditor = () => {
     } else alert("Failed to delete voicing.");
   };
 
-  // --- Chord Type Handlers ---
   const resetAndCreateNewType = () => {
     setSelectedChordTypeName(NEW_CHORD_TYPE_OPTION);
     setTypeName('');
@@ -164,7 +164,6 @@ const ChordEditor = () => {
     } else alert("Failed to delete chord type.");
   };
 
-  // --- Fretboard Interaction ---
   const handleFretClick = (s: number, f: number) => setActiveFret(activeFret && activeFret[0] === s && activeFret[1] === f ? null : [s, f]);
   const handleFingerSelect = (finger: number) => {
     if (!activeFret) return;
@@ -187,7 +186,6 @@ const ChordEditor = () => {
     setIsVoicingModified(true);
   };
 
-  // --- Render Logic ---
   const showDeleteVoicingBtn = selectedVoicingName !== NEW_VOICING_OPTION && !isVoicingModified;
   const showDeleteTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isTypeModified;
 
@@ -223,7 +221,8 @@ const ChordEditor = () => {
           onFretClick={handleFretClick} 
           activeFret={activeFret} 
           onFingerSelect={handleFingerSelect} 
-          onStrumToggle={handleStrumToggle} 
+          onStrumToggle={handleStrumToggle}
+          isLeftHanded={handedness === 'left'}
         />
       </div>
       
