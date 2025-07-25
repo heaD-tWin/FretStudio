@@ -4,6 +4,7 @@ import Selector from '../components/Selector';
 import { 
   getChordTypes, 
   getVisualizedChordSimple,
+  getChordNotesForEditor, // Import the function
   type FretboardAPIResponse,
   type Voicing,
   type ChordType
@@ -22,6 +23,7 @@ const ChordVisualizer = () => {
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingIndex, setSelectedVoicingIndex] = useState<number>(-1);
+  const [validNotes, setValidNotes] = useState<string[]>([]); // State for valid notes
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedChordType, setSelectedChordType] = useState<string>('');
@@ -41,8 +43,15 @@ const ChordVisualizer = () => {
     async function fetchFretboard() {
       if (selectedRoot && selectedChordType) {
         const rootForAPI = unformatNote(selectedRoot);
-        const data = await getVisualizedChordSimple(rootForAPI, selectedChordType);
         
+        // Fetch both visualization and the list of valid notes
+        const [data, notes] = await Promise.all([
+          getVisualizedChordSimple(rootForAPI, selectedChordType),
+          getChordNotesForEditor(rootForAPI, selectedChordType)
+        ]);
+        
+        setValidNotes(notes);
+
         if (data) {
           setFretboardData(data.fretboard);
           setVoicings(data.voicings);
@@ -101,6 +110,7 @@ const ChordVisualizer = () => {
         <Fretboard 
           fretboardData={fretboardData} 
           selectedVoicing={currentVoicing}
+          validNotes={validNotes} // Pass the valid notes for highlighting
           chordRootNote={unformatNote(selectedRoot)}
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
