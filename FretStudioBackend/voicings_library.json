@@ -594,5 +594,35 @@
   },
   "B Diminished": {
     "voicings": []
+  },
+  "C# Major": {
+    "voicings": []
+  },
+  "D# Major": {
+    "voicings": []
+  },
+  "F# Major": {
+    "voicings": []
+  },
+  "G# Major": {
+    "voicings": []
+  },
+  "A# Major": {
+    "voicings": []
+  },
+  "C# Minor": {
+    "voicings": []
+  },
+  "D# Minor": {
+    "voicings": []
+  },
+  "F# Minor": {
+    "voicings": []
+  },
+  "G# Minor": {
+    "voicings": []
+  },
+  "A# Minor": {
+    "voicings": []
   }
 }

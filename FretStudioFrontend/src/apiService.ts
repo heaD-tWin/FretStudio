@@ -38,7 +38,7 @@ export async function addScale(scale: Scale): Promise<boolean> {
 
 export async function deleteScale(scaleName: string): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/scales/${scaleName}`, {
+        const response = await fetch(`${API_BASE_URL}/scales/${encodeURIComponent(scaleName)}`, {
             method: 'DELETE',
         });
         return response.ok;
@@ -51,7 +51,7 @@ export async function deleteScale(scaleName: string): Promise<boolean> {
 export async function getChordsInScale(root: string, scale: string): Promise<string[]> {
     if (!root || !scale) return [];
     try {
-        const response = await fetch(`${API_BASE_URL}/scales/${root}/${scale}/chords`);
+        const response = await fetch(`${API_BASE_URL}/scales/${encodeURIComponent(root)}/${encodeURIComponent(scale)}/chords`);
         if (!response.ok) return [];
         return await response.json();
     } catch (error) {
@@ -88,7 +88,7 @@ export async function addChordType(chordType: ChordType): Promise<boolean> {
 
 export async function deleteChordType(typeName: string): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/chord-types/${typeName}`, {
+        const response = await fetch(`${API_BASE_URL}/chord-types/${encodeURIComponent(typeName)}`, {
             method: 'DELETE',
         });
         return response.ok;
@@ -102,7 +102,7 @@ export async function deleteChordType(typeName: string): Promise<boolean> {
 export async function getChordNotesForEditor(rootNote: string, chordTypeName: string): Promise<string[]> {
     if (!rootNote || !chordTypeName) return [];
     try {
-        const response = await fetch(`${API_BASE_URL}/notes/${rootNote}/${chordTypeName}`);
+        const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
         if (!response.ok) return [];
         return await response.json();
     } catch (error) {
@@ -114,7 +114,7 @@ export async function getChordNotesForEditor(rootNote: string, chordTypeName: st
 export async function getVoicingsForChord(fullChordName: string): Promise<Voicing[]> {
     if (!fullChordName) return [];
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}`);
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}`);
         if (!response.ok) return [];
         return await response.json();
     } catch (error) {
@@ -125,7 +125,7 @@ export async function getVoicingsForChord(fullChordName: string): Promise<Voicin
 
 export async function addVoicingToChord(fullChordName: string, voicing: Voicing): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}`, {
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(voicing),
@@ -139,7 +139,7 @@ export async function addVoicingToChord(fullChordName: string, voicing: Voicing)
 
 export async function deleteVoicing(fullChordName: string, voicingName: string): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${fullChordName}/${voicingName}`, {
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}/${encodeURIComponent(voicingName)}`, {
             method: 'DELETE',
         });
         return response.ok;
@@ -151,9 +151,8 @@ export async function deleteVoicing(fullChordName: string, voicingName: string):
 
 export async function getVisualizedChord(fullChordName: string, scaleRoot: string, scaleName: string): Promise<ChordVisualizationResponse | null> {
     if (!fullChordName || !scaleRoot || !scaleName) return null;
-    const params = new URLSearchParams({ scale_root_note: scaleRoot, scale_name: scaleName });
     try {
-        const response = await fetch(`${API_BASE_URL}/visualize-chord/${fullChordName}?${params}`);
+        const response = await fetch(`${API_BASE_URL}/visualize-chord/${encodeURIComponent(fullChordName)}?scale_root_note=${scaleRoot}&scale_name=${scaleName}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         return await response.json();
     } catch (error) {
@@ -162,10 +161,10 @@ export async function getVisualizedChord(fullChordName: string, scaleRoot: strin
     }
 }
 
-export async function getVisualizedChordSimple(fullChordName: string): Promise<ChordVisualizationResponse | null> {
-    if (!fullChordName) return null;
+export async function getVisualizedChordSimple(rootNote: string, chordTypeName: string): Promise<ChordVisualizationResponse | null> {
+    if (!rootNote || !chordTypeName) return null;
     try {
-        const response = await fetch(`${API_BASE_URL}/visualize-chord-simple/${fullChordName}`);
+        const response = await fetch(`${API_BASE_URL}/visualize-chord-simple/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {

@@ -10,7 +10,7 @@ import {
 } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
-import { getNoteNames } from '../utils/noteUtils';
+import { getNoteNames, unformatNote } from '../utils/noteUtils';
 import './ChordVisualizer.css';
 
 const ChordVisualizer = () => {
@@ -40,8 +40,9 @@ const ChordVisualizer = () => {
   useEffect(() => {
     async function fetchFretboard() {
       if (selectedRoot && selectedChordType) {
-        const fullChordName = `${selectedRoot} ${selectedChordType}`;
-        const data = await getVisualizedChordSimple(fullChordName);
+        const rootForAPI = unformatNote(selectedRoot);
+        const data = await getVisualizedChordSimple(rootForAPI, selectedChordType);
+        
         if (data) {
           setFretboardData(data.fretboard);
           setVoicings(data.voicings);
@@ -100,7 +101,7 @@ const ChordVisualizer = () => {
         <Fretboard 
           fretboardData={fretboardData} 
           selectedVoicing={currentVoicing}
-          chordRootNote={selectedRoot}
+          chordRootNote={unformatNote(selectedRoot)}
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
         />

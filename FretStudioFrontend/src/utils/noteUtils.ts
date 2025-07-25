@@ -6,15 +6,16 @@ const FLAT_NOTES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", 
 const SHARP_TO_FLAT: { [key: string]: string } = {
   'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb',
 };
+const FLAT_TO_SHARP: { [key: string]: string } = {
+  'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#',
+};
 
 // --- Existing Exports (Preserved) ---
 export const NOTES = SHARP_NOTES;
 
 export function getNoteIndex(note: string): number {
-  // Note: This will always use the sharp-based index for internal calculations.
-  const flatToSharp: { [key: string]: string } = { 'DB': 'C#', 'EB': 'D#', 'GB': 'F#', 'AB': 'G#', 'BB': 'A#' };
   const upperNote = note.toUpperCase();
-  const sharpNote = flatToSharp[upperNote] || upperNote;
+  const sharpNote = (FLAT_TO_SHARP[note as keyof typeof FLAT_TO_SHARP] || note).toUpperCase();
   return NOTES.indexOf(sharpNote);
 }
 
@@ -31,7 +32,17 @@ export function getScaleNotes(root: string, intervals: number[]): string[] {
   return intervals.map(i => NOTES[(rootIdx + i) % NOTES.length]);
 }
 
-// --- New Exports ---
+// --- New and Updated Exports ---
+
+/**
+ * Converts a user-facing note name (which could be a flat) to its sharp-based equivalent for backend calls.
+ * @param note The note to un-format (e.g., "Db").
+ * @returns The sharp-based note string (e.g., "C#").
+ */
+export const unformatNote = (note: string): string => {
+  return FLAT_TO_SHARP[note] || note;
+};
+
 /**
  * Formats a single note based on the selected accidental type.
  * @param note The note to format (e.g., "C#").

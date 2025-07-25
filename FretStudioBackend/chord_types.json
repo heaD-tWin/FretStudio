@@ -22,5 +22,13 @@
       3,
       6
     ]
+  },
+  "augmented": {
+    "name": "Augmented",
+    "intervals": [
+      0,
+      4,
+      8
+    ]
   }
 }
