@@ -3,7 +3,9 @@ import Fretboard from '../components/Fretboard';
 import Selector from '../components/Selector';
 import { 
   getChordTypes, 
-  getVisualizedChordSimple,
+  getVoicingsForChord,
+  getVisualizedScale,
+  getTunings,
   getChordNotesForEditor,
   type FretboardAPIResponse,
   type Voicing,
@@ -24,48 +26,60 @@ const ChordVisualizer = () => {
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingIndex, setSelectedVoicingIndex] = useState<number>(-1);
   const [validNotes, setValidNotes] = useState<string[]>([]);
+  const [tuning, setTuning] = useState<string>('');
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedChordType, setSelectedChordType] = useState<string>('');
 
   useEffect(() => {
     async function fetchInitialData() {
-      const types = await getChordTypes();
+      const [types, tunings] = await Promise.all([getChordTypes(), getTunings()]);
+      
       setChordTypes(types);
       if (types.length > 0) {
         setSelectedChordType(types[0].name);
+      }
+
+      if (tunings.length > 0) {
+        setTuning(tunings[0]);
       }
     }
     fetchInitialData();
   }, []);
 
   useEffect(() => {
-    async function fetchFretboard() {
-      if (selectedRoot && selectedChordType) {
+    async function fetchChordDetails() {
+      if (selectedRoot && selectedChordType && tuning) {
         const rootForAPI = unformatNote(selectedRoot);
         
-        const [data, notes] = await Promise.all([
-          getVisualizedChordSimple(selectedChordType, rootForAPI),
-          getChordNotesForEditor(rootForAPI, selectedChordType)
+        const [fetchedVoicings, notes, fretboard] = await Promise.all([
+          getVoicingsForChord(selectedChordType, rootForAPI),
+          getChordNotesForEditor(rootForAPI, selectedChordType),
+          getVisualizedScale(tuning, rootForAPI, 'Major') // Use a base scale for the fretboard notes
         ]);
         
+        setVoicings(fetchedVoicings);
         setValidNotes(notes);
-
-        if (data) {
-          setFretboardData(data.fretboard);
-          setVoicings(data.voicings);
-          setSelectedVoicingIndex(-1);
-        } else {
-          setFretboardData(null);
-          setVoicings([]);
-        }
+        setFretboardData(fretboard);
+        setSelectedVoicingIndex(-1); // Reset to "All Tones"
       }
     }
-    fetchFretboard();
-  }, [selectedRoot, selectedChordType]);
+    fetchChordDetails();
+  }, [selectedRoot, selectedChordType, tuning]);
 
-  const handleNextVoicing = () => setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
-  const handlePrevVoicing = () => setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
+  const handleNextVoicing = () => {
+    setSelectedVoicingIndex(prev => {
+      const nextIndex = prev + 1;
+      return nextIndex >= voicings.length ? 0 : nextIndex;
+    });
+  };
+
+  const handlePrevVoicing = () => {
+    setSelectedVoicingIndex(prev => {
+      const prevIndex = prev - 1;
+      return prevIndex < 0 ? voicings.length - 1 : prevIndex;
+    });
+  };
 
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
 
@@ -95,8 +109,8 @@ const ChordVisualizer = () => {
         {voicings.length > 0 && (
           <div className="voicing-controls">
             <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
-            <button onClick={handlePrevVoicing} disabled={voicings.length < 2}>Prev Voicing</button>
-            <button onClick={handleNextVoicing} disabled={voicings.length < 2}>Next Voicing</button>
+            <button onClick={handlePrevVoicing} disabled={voicings.length === 0}>Prev Voicing</button>
+            <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
             <span>
               {currentVoicing?.name || 'All Tones'}
               {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}

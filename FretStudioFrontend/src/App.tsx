@@ -156,7 +156,6 @@ function App() {
           </button>
         </div>
       </nav>
-      <h1>FretStudio</h1>
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/visualizer/chords" element={<ChordVisualizer />} />
