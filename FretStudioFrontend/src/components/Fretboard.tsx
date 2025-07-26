@@ -69,7 +69,6 @@ const Fretboard = ({
             fretClasses.push('in-scale');
           }
           
-          // Add the darker background for the chord's root note.
           if (note.note === chordRootNote) {
             fretClasses.push('scale-root');
           }

@@ -199,9 +199,6 @@ const ChordEditor = () => {
   const showDeleteVoicingBtn = selectedVoicingName !== NEW_VOICING_OPTION && !isVoicingModified;
   const showDeleteTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isTypeModified;
 
-  // Debug: See what validNotes is
-  console.log("validNotes for Fretboard", validNotes);
-
   return (
     <div className="chord-editor-page">
       <h1>Chord Editor</h1>
@@ -226,8 +223,6 @@ const ChordEditor = () => {
 
       <div className="card">
         <h2>Interactive Fretboard</h2>
-        {/* Debug: See what validNotes is */}
-        {console.log("validNotes for Fretboard", validNotes)}
         <Fretboard 
           fretboardData={fretboardData} 
           selectedVoicing={{ name: '', difficulty: '', fingering }} 
