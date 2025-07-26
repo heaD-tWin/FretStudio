@@ -16,7 +16,7 @@ import {
 import type { FretboardAPIResponse, Voicing, ChordType } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
-import { getNoteNames } from '../utils/noteUtils';
+import { getNoteNames, unformatNote } from '../utils/noteUtils';
 
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"];
 const NEW_VOICING_OPTION = "Create New Voicing...";
@@ -63,16 +63,20 @@ const ChordEditor = () => {
     initializeEditor();
   }, []);
 
+  // Fetch validNotes and voicings when root or type changes
   useEffect(() => {
     async function fetchChordData() {
       if (selectedRootNote && selectedChordType) {
-        const fullChordName = `${selectedRootNote} ${selectedChordType}`;
-        setValidNotes(await getChordNotesForEditor(selectedRootNote, selectedChordType));
-        setExistingVoicings(await getVoicingsForChord(fullChordName));
+        // Always use unformatted root for backend
+        const root = unformatNote(selectedRootNote);
+        const notes = await getChordNotesForEditor(root, selectedChordType);
+        setValidNotes(notes);
+        setExistingVoicings(await getVoicingsForChord(selectedChordType, root));
         resetAndCreateNewVoicing();
       }
     }
     fetchChordData();
+    // eslint-disable-next-line
   }, [selectedRootNote, selectedChordType]);
 
   // --- Voicing Handlers ---
@@ -105,22 +109,20 @@ const ChordEditor = () => {
   };
 
   const handleSaveVoicing = async () => {
-    const fullChordName = `${selectedRootNote} ${selectedChordType}`;
     if (!voicingName) return alert("Please provide a voicing name.");
     const newVoicing: Voicing = { name: voicingName, difficulty, fingering };
-    if (await addVoicingToChord(fullChordName, newVoicing)) {
+    if (await addVoicingToChord(selectedChordType, unformatNote(selectedRootNote), newVoicing)) {
       alert("Voicing saved!");
-      setExistingVoicings(await getVoicingsForChord(fullChordName));
+      setExistingVoicings(await getVoicingsForChord(selectedChordType, unformatNote(selectedRootNote)));
       setIsVoicingModified(false);
     } else alert("Failed to save voicing.");
   };
 
   const handleDeleteVoicing = async () => {
     if (selectedVoicingName === NEW_VOICING_OPTION) return;
-    const fullChordName = `${selectedRootNote} ${selectedChordType}`;
-    if (await deleteVoicing(fullChordName, selectedVoicingName)) {
+    if (await deleteVoicing(selectedChordType, unformatNote(selectedRootNote), selectedVoicingName)) {
       alert("Voicing deleted!");
-      setExistingVoicings(await getVoicingsForChord(fullChordName));
+      setExistingVoicings(await getVoicingsForChord(selectedChordType, unformatNote(selectedRootNote)));
       resetAndCreateNewVoicing();
     } else alert("Failed to delete voicing.");
   };
@@ -197,6 +199,9 @@ const ChordEditor = () => {
   const showDeleteVoicingBtn = selectedVoicingName !== NEW_VOICING_OPTION && !isVoicingModified;
   const showDeleteTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isTypeModified;
 
+  // Debug: See what validNotes is
+  console.log("validNotes for Fretboard", validNotes);
+
   return (
     <div className="chord-editor-page">
       <h1>Chord Editor</h1>
@@ -221,11 +226,13 @@ const ChordEditor = () => {
 
       <div className="card">
         <h2>Interactive Fretboard</h2>
+        {/* Debug: See what validNotes is */}
+        {console.log("validNotes for Fretboard", validNotes)}
         <Fretboard 
           fretboardData={fretboardData} 
           selectedVoicing={{ name: '', difficulty: '', fingering }} 
           validNotes={validNotes}
-          chordRootNote={selectedRootNote}
+          chordRootNote={unformatNote(selectedRootNote)}
           onFretClick={handleFretClick} 
           activeFret={activeFret} 
           onFingerSelect={handleFingerSelect} 

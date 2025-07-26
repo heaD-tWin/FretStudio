@@ -6,13 +6,13 @@ import json
 import os
 
 # --- FastAPI App Setup ---
-app = FastAPI(title="FretStudio API", version="1.6.7")
+app = FastAPI(title="FretStudio API", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 # --- Data Models ---
-class ChordType(BaseModel): name: str; intervals: List[int]
 class Voicing(BaseModel): name: str; difficulty: str; fingering: List[List[int]]
-class ChordDefinition(BaseModel): voicings: List[Voicing]
+class ChordVoicings(BaseModel): name: str; voicings: List[Voicing]
+class ChordType(BaseModel): name: str; intervals: List[int]
 class Scale(BaseModel): name: str; intervals: List[int]; allowed_chord_types: List[str]
 class Tuning(BaseModel): name: str; notes: List[str]
 class FretboardNote(BaseModel): note: str; is_in_scale: bool; is_root: bool; is_in_chord: bool
@@ -29,10 +29,15 @@ def write_json_data(file_path: str, data):
 
 # Standardize on the capitalized name as the key
 db_chord_types = {v['name']: ChordType(**v) for v in load_json_data("chord_types.json").values()}
-db_voicings_library = {k: ChordDefinition(**v) for k, v in load_json_data("voicings_library.json").items()}
 db_scales = {v['name']: Scale(**v) for v in load_json_data("scales.json").values()}
 db_tunings = {"standard_guitar": Tuning(name="Standard Guitar", notes=["E", "A", "D", "G", "B", "E"])}
 NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
+# Load the new hierarchical voicings library
+db_voicings_library: Dict[str, Dict[str, ChordVoicings]] = {}
+raw_voicings_data = load_json_data("voicings_library.json")
+for type_name, notes_dict in raw_voicings_data.items():
+    db_voicings_library[type_name] = {note: ChordVoicings(**voicings_data) for note, voicings_data in notes_dict.items()}
 
 # --- Music Theory Helpers ---
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
@@ -78,7 +83,7 @@ async def get_chords_in_scale(root_note: str, scale_name: str):
                 chord_notes = set(get_notes_from_intervals(note_in_scale, chord_type.intervals))
                 if chord_notes.issubset(scale_notes_set):
                     full_chord_name = f"{note_in_scale} {chord_type.name}"
-                    if full_chord_name in db_voicings_library:
+                    if db_voicings_library.get(chord_type.name, {}).get(note_in_scale):
                         diatonic_chords.append(full_chord_name)
             except (ValueError, IndexError):
                 continue
@@ -91,24 +96,34 @@ async def get_all_chord_types(): return list(db_chord_types.values())
 
 @app.post("/chord-types", status_code=201)
 async def add_or_update_chord_type(chord_type: ChordType):
-    # Ensure the name is capitalized for consistency
     chord_type.name = chord_type.name.capitalize()
     db_chord_types[chord_type.name] = chord_type
-    # Write back using the name as the key
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
     
-    for note in NOTES:
-        full_chord_name = f"{note} {chord_type.name}"
-        if full_chord_name not in db_voicings_library:
-            db_voicings_library[full_chord_name] = ChordDefinition(voicings=[])
-    write_json_data("voicings_library.json", {k: v.dict() for k, v in db_voicings_library.items()})
-    return {"message": f"Chord type '{chord_type.name}' saved and library updated."}
+    # Add new type to voicings library
+    if chord_type.name not in db_voicings_library:
+        db_voicings_library[chord_type.name] = {}
+        for note in NOTES:
+            db_voicings_library[chord_type.name][note] = ChordVoicings(
+                name=f"{note} {chord_type.name}", voicings=[]
+            )
+    write_json_data("voicings_library.json", {
+        type_name: {note: voicings.dict() for note, voicings in notes_dict.items()}
+        for type_name, notes_dict in db_voicings_library.items()
+    })
+    return {"message": f"Chord type '{chord_type.name}' saved."}
 
 @app.delete("/chord-types/{type_name}", status_code=200)
 async def delete_chord_type(type_name: str):
     if type_name not in db_chord_types: raise HTTPException(status_code=404, detail="Chord type not found.")
     del db_chord_types[type_name]
+    if type_name in db_voicings_library: del db_voicings_library[type_name]
+    
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("voicings_library.json", {
+        type_name: {note: voicings.dict() for note, voicings in notes_dict.items()}
+        for type_name, notes_dict in db_voicings_library.items()
+    })
     return {"message": f"Chord type '{type_name}' deleted."}
 
 # --- Voicing and Fretboard Endpoints ---
@@ -118,44 +133,61 @@ async def get_chord_notes_for_editor(root_note: str, chord_type_name: str):
     if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
     return get_notes_from_intervals(root_note, chord_type.intervals)
 
-@app.get("/voicings/{full_chord_name:path}", response_model=List[Voicing])
-async def get_voicings_for_chord(full_chord_name: str):
-    return db_voicings_library.get(full_chord_name, ChordDefinition(voicings=[])).voicings
+@app.get("/voicings/{chord_type_name}/{root_note}", response_model=List[Voicing])
+async def get_voicings_for_chord(chord_type_name: str, root_note: str):
+    voicings_def = db_voicings_library.get(chord_type_name, {}).get(root_note)
+    return voicings_def.voicings if voicings_def else []
 
-@app.post("/voicings/{full_chord_name:path}", status_code=201)
-async def add_or_update_voicing(full_chord_name: str, voicing: Voicing):
-    if full_chord_name in db_voicings_library:
-        voicings = db_voicings_library[full_chord_name].voicings
-        for i, v in enumerate(voicings):
-            if v.name == voicing.name: voicings[i] = voicing; break
-        else: voicings.append(voicing)
-    else: db_voicings_library[full_chord_name] = ChordDefinition(voicings=[voicing])
-    write_json_data("voicings_library.json", {k: v.dict() for k, v in db_voicings_library.items()})
-    return {"message": f"Voicing for '{full_chord_name}' saved."}
+@app.post("/voicings/{chord_type_name}/{root_note}", status_code=201)
+async def add_or_update_voicing(chord_type_name: str, root_note: str, voicing: Voicing):
+    if chord_type_name not in db_voicings_library or root_note not in db_voicings_library[chord_type_name]:
+        raise HTTPException(status_code=404, detail="Chord definition not found.")
+    
+    voicings_list = db_voicings_library[chord_type_name][root_note].voicings
+    for i, v in enumerate(voicings_list):
+        if v.name == voicing.name:
+            voicings_list[i] = voicing
+            break
+    else:
+        voicings_list.append(voicing)
+        
+    write_json_data("voicings_library.json", {
+        t_name: {n: vs.dict() for n, vs in ns_dict.items()}
+        for t_name, ns_dict in db_voicings_library.items()
+    })
+    return {"message": f"Voicing for '{root_note} {chord_type_name}' saved."}
 
-@app.delete("/voicings/{full_chord_name:path}/{voicing_name:path}", status_code=200)
-async def delete_voicing(full_chord_name: str, voicing_name: str):
-    if full_chord_name not in db_voicings_library: raise HTTPException(status_code=404, detail="Chord not found.")
-    voicings = db_voicings_library[full_chord_name].voicings
-    original_count = len(voicings)
-    db_voicings_library[full_chord_name].voicings = [v for v in voicings if v.name != voicing_name]
-    if len(db_voicings_library[full_chord_name].voicings) == original_count: raise HTTPException(status_code=404, detail="Voicing not found.")
-    if not db_voicings_library[full_chord_name].voicings: del db_voicings_library[full_chord_name]
-    write_json_data("voicings_library.json", {k: v.dict() for k, v in db_voicings_library.items()})
+@app.delete("/voicings/{chord_type_name}/{root_note}/{voicing_name:path}", status_code=200)
+async def delete_voicing(chord_type_name: str, root_note: str, voicing_name: str):
+    if chord_type_name not in db_voicings_library or root_note not in db_voicings_library[chord_type_name]:
+        raise HTTPException(status_code=404, detail="Chord definition not found.")
+        
+    voicings_list = db_voicings_library[chord_type_name][root_note].voicings
+    original_count = len(voicings_list)
+    db_voicings_library[chord_type_name][root_note].voicings = [v for v in voicings_list if v.name != voicing_name]
+    
+    if len(db_voicings_library[chord_type_name][root_note].voicings) == original_count:
+        raise HTTPException(status_code=404, detail="Voicing not found.")
+        
+    write_json_data("voicings_library.json", {
+        t_name: {n: vs.dict() for n, vs in ns_dict.items()}
+        for t_name, ns_dict in db_voicings_library.items()
+    })
     return {"message": "Voicing deleted."}
 
-@app.get("/visualize-chord/{full_chord_name:path}", response_model=ChordVisualizationResponse)
-async def get_visualized_chord(full_chord_name: str, scale_root_note: str, scale_name: str, tuning_name: str = "Standard Guitar", num_frets: int = 24):
-    chord_def = db_voicings_library.get(full_chord_name)
-    if not chord_def: raise HTTPException(status_code=404, detail=f"Chord '{full_chord_name}' not found in library.")
+@app.get("/visualize-chord/{chord_type_name}/{root_note}", response_model=ChordVisualizationResponse)
+async def get_visualized_chord(chord_type_name: str, root_note: str, scale_root_note: str, scale_name: str, tuning_name: str = "Standard Guitar", num_frets: int = 24):
+    chord_def = db_voicings_library.get(chord_type_name, {}).get(root_note)
+    if not chord_def: raise HTTPException(status_code=404, detail=f"Chord '{root_note} {chord_type_name}' not found.")
     
-    root_note, chord_type_name = full_chord_name.split(" ", 1)
     chord_type = db_chord_types.get(chord_type_name)
     if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
     chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
+    
     scale = db_scales.get(scale_name)
     if not scale: raise HTTPException(status_code=404, detail="Scale not found")
     scale_notes = get_notes_from_intervals(scale_root_note, scale.intervals)
+    
     tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
@@ -167,17 +199,15 @@ async def get_visualized_chord(full_chord_name: str, scale_root_note: str, scale
         fretboard[len(tuning.notes) - i] = string_notes
     return ChordVisualizationResponse(fretboard=fretboard, voicings=chord_def.voicings)
 
-@app.get("/visualize-chord-simple/{root_note}/{chord_type_name:path}", response_model=ChordVisualizationResponse)
-async def get_visualized_chord_simple(root_note: str, chord_type_name: str, tuning_name: str = "Standard Guitar", num_frets: int = 24):
-    full_chord_name = f"{root_note} {chord_type_name}"
-    chord_def = db_voicings_library.get(full_chord_name)
-    if not chord_def: raise HTTPException(status_code=404, detail=f"Chord '{full_chord_name}' not found in library.")
+@app.get("/visualize-chord-simple/{chord_type_name}/{root_note:path}", response_model=ChordVisualizationResponse)
+async def get_visualized_chord_simple(chord_type_name: str, root_note: str, tuning_name: str = "Standard Guitar", num_frets: int = 24):
+    chord_def = db_voicings_library.get(chord_type_name, {}).get(root_note)
+    if not chord_def: raise HTTPException(status_code=404, detail=f"Chord '{root_note} {chord_type_name}' not found.")
 
-    actual_root_note, actual_chord_type_name = full_chord_name.split(" ", 1)
-    chord_type = db_chord_types.get(actual_chord_type_name)
+    chord_type = db_chord_types.get(chord_type_name)
     if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
     
-    chord_notes = get_notes_from_intervals(actual_root_note, chord_type.intervals)
+    chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
     tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
@@ -185,7 +215,7 @@ async def get_visualized_chord_simple(root_note: str, chord_type_name: str, tuni
         start_index = NOTES.index(open_note.upper())
         for fret in range(num_frets + 1):
             current_note = NOTES[(start_index + fret) % 12]
-            string_notes.append(FretboardNote(note=current_note, is_in_scale=False, is_root=(current_note == actual_root_note.upper()), is_in_chord=(current_note in chord_notes)))
+            string_notes.append(FretboardNote(note=current_note, is_in_scale=False, is_root=(current_note == root_note.upper()), is_in_chord=(current_note in chord_notes)))
         fretboard[len(tuning.notes) - i] = string_notes
     return ChordVisualizationResponse(fretboard=fretboard, voicings=chord_def.voicings)
 

@@ -1,628 +1,633 @@
 {
-  "C Major": {
-    "voicings": [
-      {
-        "name": "Open C",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            3,
-            3
-          ],
-          [
-            4,
-            2,
-            2
-          ],
-          [
-            3,
-            0,
-            0
-          ],
-          [
-            2,
-            1,
-            1
-          ],
-          [
-            1,
-            0,
-            0
+  "Minor": {
+    "C": {
+      "name": "C Minor",
+      "voicings": [
+        {
+          "name": "Am-Shape Barre at 3rd",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              3,
+              1
+            ],
+            [
+              4,
+              5,
+              3
+            ],
+            [
+              3,
+              5,
+              4
+            ],
+            [
+              2,
+              4,
+              2
+            ],
+            [
+              1,
+              3,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "D Major": {
-    "voicings": [
-      {
-        "name": "Open D",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            -1,
-            0
-          ],
-          [
-            4,
-            0,
-            0
-          ],
-          [
-            3,
-            2,
-            1
-          ],
-          [
-            2,
-            3,
-            2
-          ],
-          [
-            1,
-            2,
-            3
+        }
+      ]
+    },
+    "C#": {
+      "name": "C# Minor",
+      "voicings": [
+        {
+          "name": "Am-Shape Barre at 4th",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              4,
+              1
+            ],
+            [
+              4,
+              6,
+              3
+            ],
+            [
+              3,
+              6,
+              4
+            ],
+            [
+              2,
+              5,
+              2
+            ],
+            [
+              1,
+              4,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "E Major": {
-    "voicings": [
-      {
-        "name": "Open E",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            0,
-            0
-          ],
-          [
-            5,
-            2,
-            2
-          ],
-          [
-            4,
-            2,
-            3
-          ],
-          [
-            3,
-            1,
-            1
-          ],
-          [
-            2,
-            0,
-            0
-          ],
-          [
-            1,
-            0,
-            0
+        }
+      ]
+    },
+    "D": {
+      "name": "D Minor",
+      "voicings": [
+        {
+          "name": "Open Dm",
+          "difficulty": "Beginner",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              -1,
+              0
+            ],
+            [
+              4,
+              0,
+              0
+            ],
+            [
+              3,
+              2,
+              2
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              1,
+              1,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "F Major": {
-    "voicings": [
-      {
-        "name": "Barre F",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            1,
-            1
-          ],
-          [
-            5,
-            3,
-            3
-          ],
-          [
-            4,
-            3,
-            4
-          ],
-          [
-            3,
-            2,
-            2
-          ],
-          [
-            2,
-            1,
-            1
-          ],
-          [
-            1,
-            1,
-            1
+        }
+      ]
+    },
+    "D#": {
+      "name": "D# Minor",
+      "voicings": [
+        {
+          "name": "Am-Shape Barre at 6th",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              6,
+              1
+            ],
+            [
+              4,
+              8,
+              3
+            ],
+            [
+              3,
+              8,
+              4
+            ],
+            [
+              2,
+              7,
+              2
+            ],
+            [
+              1,
+              6,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "G Major": {
-    "voicings": [
-      {
-        "name": "Open G",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            3,
-            2
-          ],
-          [
-            5,
-            2,
-            1
-          ],
-          [
-            4,
-            0,
-            0
-          ],
-          [
-            3,
-            0,
-            0
-          ],
-          [
-            2,
-            0,
-            0
-          ],
-          [
-            1,
-            3,
-            3
+        }
+      ]
+    },
+    "E": {
+      "name": "E Minor",
+      "voicings": [
+        {
+          "name": "Open Em",
+          "difficulty": "Beginner",
+          "fingering": [
+            [
+              6,
+              0,
+              0
+            ],
+            [
+              5,
+              2,
+              2
+            ],
+            [
+              4,
+              2,
+              3
+            ],
+            [
+              3,
+              0,
+              0
+            ],
+            [
+              2,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "A Major": {
-    "voicings": [
-      {
-        "name": "Open A",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            0,
-            0
-          ],
-          [
-            4,
-            2,
-            1
-          ],
-          [
-            3,
-            2,
-            2
-          ],
-          [
-            2,
-            2,
-            3
-          ],
-          [
-            1,
-            0,
-            0
+        }
+      ]
+    },
+    "F": {
+      "name": "F Minor",
+      "voicings": [
+        {
+          "name": "Em-Shape Barre at 1st",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              1,
+              1
+            ],
+            [
+              5,
+              3,
+              3
+            ],
+            [
+              4,
+              3,
+              4
+            ],
+            [
+              3,
+              1,
+              1
+            ],
+            [
+              2,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "B Major": {
-    "voicings": [
-      {
-        "name": "A-Shape Barre at 2nd",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            2,
-            1
-          ],
-          [
-            4,
-            4,
-            2
-          ],
-          [
-            3,
-            4,
-            3
-          ],
-          [
-            2,
-            4,
-            4
-          ],
-          [
-            1,
-            2,
-            1
+        }
+      ]
+    },
+    "F#": {
+      "name": "F# Minor",
+      "voicings": [
+        {
+          "name": "Em-Shape Barre at 2nd",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              2,
+              1
+            ],
+            [
+              5,
+              4,
+              3
+            ],
+            [
+              4,
+              4,
+              4
+            ],
+            [
+              3,
+              2,
+              1
+            ],
+            [
+              2,
+              2,
+              1
+            ],
+            [
+              1,
+              2,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "C Minor": {
-    "voicings": [
-      {
-        "name": "Am-Shape Barre at 3rd",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            3,
-            1
-          ],
-          [
-            4,
-            5,
-            3
-          ],
-          [
-            3,
-            5,
-            4
-          ],
-          [
-            2,
-            4,
-            2
-          ],
-          [
-            1,
-            3,
-            1
+        }
+      ]
+    },
+    "G": {
+      "name": "G Minor",
+      "voicings": [
+        {
+          "name": "Em-Shape Barre at 3rd",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              3,
+              1
+            ],
+            [
+              5,
+              5,
+              3
+            ],
+            [
+              4,
+              5,
+              4
+            ],
+            [
+              3,
+              3,
+              1
+            ],
+            [
+              2,
+              3,
+              1
+            ],
+            [
+              1,
+              3,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "D Minor": {
-    "voicings": [
-      {
-        "name": "Open Dm",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            -1,
-            0
-          ],
-          [
-            4,
-            0,
-            0
-          ],
-          [
-            3,
-            2,
-            2
-          ],
-          [
-            2,
-            3,
-            3
-          ],
-          [
-            1,
-            1,
-            1
+        }
+      ]
+    },
+    "G#": {
+      "name": "G# Minor",
+      "voicings": [
+        {
+          "name": "Em-Shape Barre at 4th",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              4,
+              1
+            ],
+            [
+              5,
+              6,
+              3
+            ],
+            [
+              4,
+              6,
+              4
+            ],
+            [
+              3,
+              4,
+              1
+            ],
+            [
+              2,
+              4,
+              1
+            ],
+            [
+              1,
+              4,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "E Minor": {
-    "voicings": [
-      {
-        "name": "Open Em",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            0,
-            0
-          ],
-          [
-            5,
-            2,
-            2
-          ],
-          [
-            4,
-            2,
-            3
-          ],
-          [
-            3,
-            0,
-            0
-          ],
-          [
-            2,
-            0,
-            0
-          ],
-          [
-            1,
-            0,
-            0
+        }
+      ]
+    },
+    "A": {
+      "name": "A Minor",
+      "voicings": [
+        {
+          "name": "Open Am",
+          "difficulty": "Beginner",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              0,
+              0
+            ],
+            [
+              4,
+              2,
+              2
+            ],
+            [
+              3,
+              2,
+              3
+            ],
+            [
+              2,
+              1,
+              1
+            ],
+            [
+              1,
+              0,
+              0
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "F Minor": {
-    "voicings": [
-      {
-        "name": "Em-Shape Barre at 1st",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            1,
-            1
-          ],
-          [
-            5,
-            3,
-            3
-          ],
-          [
-            4,
-            3,
-            4
-          ],
-          [
-            3,
-            1,
-            1
-          ],
-          [
-            2,
-            1,
-            1
-          ],
-          [
-            1,
-            1,
-            1
+        }
+      ]
+    },
+    "A#": {
+      "name": "A# Minor",
+      "voicings": [
+        {
+          "name": "Em-Shape Barre at 6th",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              6,
+              1
+            ],
+            [
+              5,
+              8,
+              3
+            ],
+            [
+              4,
+              8,
+              4
+            ],
+            [
+              3,
+              6,
+              1
+            ],
+            [
+              2,
+              6,
+              1
+            ],
+            [
+              1,
+              6,
+              1
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "G Minor": {
-    "voicings": [
-      {
-        "name": "Em-Shape Barre at 3rd",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            3,
-            1
-          ],
-          [
-            5,
-            5,
-            3
-          ],
-          [
-            4,
-            5,
-            4
-          ],
-          [
-            3,
-            3,
-            1
-          ],
-          [
-            2,
-            3,
-            1
-          ],
-          [
-            1,
-            3,
-            1
+        }
+      ]
+    },
+    "B": {
+      "name": "B Minor",
+      "voicings": [
+        {
+          "name": "Am-Shape Barre at 2nd",
+          "difficulty": "Intermediate",
+          "fingering": [
+            [
+              6,
+              -1,
+              0
+            ],
+            [
+              5,
+              2,
+              1
+            ],
+            [
+              4,
+              4,
+              3
+            ],
+            [
+              3,
+              4,
+              4
+            ],
+            [
+              2,
+              3,
+              2
+            ],
+            [
+              1,
+              2,
+              1
+            ]
           ]
-        ]
-      }
-    ]
+        }
+      ]
+    }
   },
-  "A Minor": {
-    "voicings": [
-      {
-        "name": "Open Am",
-        "difficulty": "Beginner",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            0,
-            0
-          ],
-          [
-            4,
-            2,
-            2
-          ],
-          [
-            3,
-            2,
-            3
-          ],
-          [
-            2,
-            1,
-            1
-          ],
-          [
-            1,
-            0,
-            0
+  "Diminished": {
+    "C": {
+      "name": "C Diminished",
+      "voicings": []
+    },
+    "C#": {
+      "name": "C# Diminished",
+      "voicings": []
+    },
+    "D": {
+      "name": "D Diminished",
+      "voicings": []
+    },
+    "D#": {
+      "name": "D# Diminished",
+      "voicings": []
+    },
+    "E": {
+      "name": "E Diminished",
+      "voicings": []
+    },
+    "F": {
+      "name": "F Diminished",
+      "voicings": []
+    },
+    "F#": {
+      "name": "F# Diminished",
+      "voicings": []
+    },
+    "G": {
+      "name": "G Diminished",
+      "voicings": []
+    },
+    "G#": {
+      "name": "G# Diminished",
+      "voicings": []
+    },
+    "A": {
+      "name": "A Diminished",
+      "voicings": []
+    },
+    "A#": {
+      "name": "A# Diminished",
+      "voicings": []
+    },
+    "B": {
+      "name": "B Diminished",
+      "voicings": []
+    }
+  },
+  "Major": {
+    "C": {
+      "name": "C Major",
+      "voicings": [
+        {
+          "name": "C Open",
+          "difficulty": "Beginner",
+          "fingering": [
+            [
+              6,
+              0,
+              0
+            ],
+            [
+              5,
+              1,
+              1
+            ],
+            [
+              4,
+              0,
+              0
+            ],
+            [
+              3,
+              2,
+              2
+            ],
+            [
+              2,
+              3,
+              3
+            ],
+            [
+              1,
+              -1,
+              0
+            ]
           ]
-        ]
-      }
-    ]
-  },
-  "B Minor": {
-    "voicings": [
-      {
-        "name": "Am-Shape Barre at 2nd",
-        "difficulty": "Intermediate",
-        "fingering": [
-          [
-            6,
-            -1,
-            0
-          ],
-          [
-            5,
-            2,
-            1
-          ],
-          [
-            4,
-            4,
-            3
-          ],
-          [
-            3,
-            4,
-            4
-          ],
-          [
-            2,
-            3,
-            2
-          ],
-          [
-            1,
-            2,
-            1
-          ]
-        ]
-      }
-    ]
-  },
-  "C Diminished": {
-    "voicings": []
-  },
-  "C# Diminished": {
-    "voicings": []
-  },
-  "D Diminished": {
-    "voicings": []
-  },
-  "D# Diminished": {
-    "voicings": []
-  },
-  "E Diminished": {
-    "voicings": []
-  },
-  "F Diminished": {
-    "voicings": []
-  },
-  "F# Diminished": {
-    "voicings": []
-  },
-  "G Diminished": {
-    "voicings": []
-  },
-  "G# Diminished": {
-    "voicings": []
-  },
-  "A Diminished": {
-    "voicings": []
-  },
-  "A# Diminished": {
-    "voicings": []
-  },
-  "B Diminished": {
-    "voicings": []
-  },
-  "C# Major": {
-    "voicings": []
-  },
-  "D# Major": {
-    "voicings": []
-  },
-  "F# Major": {
-    "voicings": []
-  },
-  "G# Major": {
-    "voicings": []
-  },
-  "A# Major": {
-    "voicings": []
-  },
-  "C# Minor": {
-    "voicings": []
-  },
-  "D# Minor": {
-    "voicings": []
-  },
-  "F# Minor": {
-    "voicings": []
-  },
-  "G# Minor": {
-    "voicings": []
-  },
-  "A# Minor": {
-    "voicings": []
+        }
+      ]
+    },
+    "C#": {
+      "name": "C# Major",
+      "voicings": []
+    },
+    "D": {
+      "name": "D Major",
+      "voicings": []
+    },
+    "D#": {
+      "name": "D# Major",
+      "voicings": []
+    },
+    "E": {
+      "name": "E Major",
+      "voicings": []
+    },
+    "F": {
+      "name": "F Major",
+      "voicings": []
+    },
+    "F#": {
+      "name": "F# Major",
+      "voicings": []
+    },
+    "G": {
+      "name": "G Major",
+      "voicings": []
+    },
+    "G#": {
+      "name": "G# Major",
+      "voicings": []
+    },
+    "A": {
+      "name": "A Major",
+      "voicings": []
+    },
+    "A#": {
+      "name": "A# Major",
+      "voicings": []
+    },
+    "B": {
+      "name": "B Major",
+      "voicings": []
+    }
   }
 }

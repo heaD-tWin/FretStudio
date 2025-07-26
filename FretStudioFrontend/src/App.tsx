@@ -15,10 +15,10 @@ import Selector from './components/Selector';
 import Fretboard from './components/Fretboard';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
-import ChordVisualizer from './pages/ChordVisualizer'; // Import the new page
+import ChordVisualizer from './pages/ChordVisualizer';
 import { useHandedness } from './contexts/HandednessContext';
 import { useAccidentalType } from './contexts/AccidentalTypeContext';
-import { getNoteNames } from './utils/noteUtils';
+import { getNoteNames, unformatNote } from './utils/noteUtils';
 
 const FULL_SCALE_OPTION = 'Show Full Scale';
 
@@ -74,7 +74,11 @@ const MainPage = () => {
   useEffect(() => {
     async function fetchFretboard() {
       if (selectedChord && selectedTuning && selectedRoot && selectedScale) {
-        const data = await getVisualizedChord(selectedChord, selectedRoot, selectedScale);
+        const [rootNote, ...typeParts] = selectedChord.split(' ');
+        const chordTypeName = typeParts.join(' ');
+        const unformattedRoot = unformatNote(rootNote);
+
+        const data = await getVisualizedChord(chordTypeName, unformattedRoot, selectedRoot, selectedScale);
         if (data) {
           setFretboardData(data.fretboard);
           setVoicings(data.voicings);

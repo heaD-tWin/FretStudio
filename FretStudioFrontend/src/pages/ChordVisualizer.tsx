@@ -120,4 +120,4 @@ const ChordVisualizer = () => {
   );
 };
 
-export default ChordVisualizer;
+export default ChordVisualizer; 

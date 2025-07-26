@@ -1,7 +1,7 @@
 import './Fretboard.css';
 import type { FretboardAPIResponse, Voicing } from '../apiService';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
-import { formatNote } from '../utils/noteUtils'; // Import the utility
+import { formatNote } from '../utils/noteUtils';
 
 interface FretboardProps {
   fretboardData: FretboardAPIResponse | null;
@@ -53,7 +53,7 @@ const Fretboard = ({
       let isChordRoot = false;
 
       if (note) {
-        if (scaleRootNote) { // Visualizer Mode
+        if (scaleRootNote) { // Main Scale Visualizer Mode
           if (note.is_in_scale) fretClasses.push('in-scale');
           if (note.note === scaleRootNote) fretClasses.push('scale-root');
           if (selectedVoicing) {
@@ -62,10 +62,28 @@ const Fretboard = ({
             if (note.is_in_chord) isChordNote = true;
           }
           if (isChordNote && note.note === chordRootNote) isChordRoot = true;
-        } else if (validNotes) { // Editor Mode
-          if (validNotes.includes(note.note)) fretClasses.push('in-scale');
-          if (note.note === chordRootNote) fretClasses.push('scale-root');
-          if (finger !== undefined && finger >= 0) isChordNote = true;
+        } else if (validNotes) { // Editor or Chord Visualizer Mode
+          const isNoteInChord = validNotes.includes(note.note);
+
+          // Always highlight the background if the note is valid for the chord.
+          if (isNoteInChord) {
+            fretClasses.push('in-scale');
+          }
+
+          // Now, determine if a marker (dot) should be shown.
+          if (selectedVoicing) {
+            // If a voicing is present (from editor or visualizer), only mark its fingered notes.
+            if (finger !== undefined && finger >= 0) {
+              isChordNote = true;
+            }
+          } else {
+            // If no voicing is selected (visualizer's "All Tones" mode), mark all valid notes.
+            if (isNoteInChord) {
+              isChordNote = true;
+            }
+          }
+
+          if (isChordNote && note.note === chordRootNote) isChordRoot = true;
         }
       }
       

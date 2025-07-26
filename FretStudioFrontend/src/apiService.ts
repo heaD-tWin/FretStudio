@@ -111,10 +111,10 @@ export async function getChordNotesForEditor(rootNote: string, chordTypeName: st
     }
 }
 
-export async function getVoicingsForChord(fullChordName: string): Promise<Voicing[]> {
-    if (!fullChordName) return [];
+export async function getVoicingsForChord(chordTypeName: string, rootNote: string): Promise<Voicing[]> {
+    if (!chordTypeName || !rootNote) return [];
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}`);
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`);
         if (!response.ok) return [];
         return await response.json();
     } catch (error) {
@@ -123,9 +123,9 @@ export async function getVoicingsForChord(fullChordName: string): Promise<Voicin
     }
 }
 
-export async function addVoicingToChord(fullChordName: string, voicing: Voicing): Promise<boolean> {
+export async function addVoicingToChord(chordTypeName: string, rootNote: string, voicing: Voicing): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}`, {
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(voicing),
@@ -137,9 +137,9 @@ export async function addVoicingToChord(fullChordName: string, voicing: Voicing)
     }
 }
 
-export async function deleteVoicing(fullChordName: string, voicingName: string): Promise<boolean> {
+export async function deleteVoicing(chordTypeName: string, rootNote: string, voicingName: string): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(fullChordName)}/${encodeURIComponent(voicingName)}`, {
+        const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicingName)}`, {
             method: 'DELETE',
         });
         return response.ok;
@@ -149,10 +149,11 @@ export async function deleteVoicing(fullChordName: string, voicingName: string):
     }
 }
 
-export async function getVisualizedChord(fullChordName: string, scaleRoot: string, scaleName: string): Promise<ChordVisualizationResponse | null> {
-    if (!fullChordName || !scaleRoot || !scaleName) return null;
+export async function getVisualizedChord(chordTypeName: string, rootNote: string, scaleRoot: string, scaleName: string): Promise<ChordVisualizationResponse | null> {
+    if (!chordTypeName || !rootNote || !scaleRoot || !scaleName) return null;
+    const params = new URLSearchParams({ scale_root_note: scaleRoot, scale_name: scaleName });
     try {
-        const response = await fetch(`${API_BASE_URL}/visualize-chord/${encodeURIComponent(fullChordName)}?scale_root_note=${scaleRoot}&scale_name=${scaleName}`);
+        const response = await fetch(`${API_BASE_URL}/visualize-chord/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}?${params}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         return await response.json();
     } catch (error) {
@@ -161,10 +162,10 @@ export async function getVisualizedChord(fullChordName: string, scaleRoot: strin
     }
 }
 
-export async function getVisualizedChordSimple(rootNote: string, chordTypeName: string): Promise<ChordVisualizationResponse | null> {
-    if (!rootNote || !chordTypeName) return null;
+export async function getVisualizedChordSimple(chordTypeName: string, rootNote: string): Promise<ChordVisualizationResponse | null> {
+    if (!chordTypeName || !rootNote) return null;
     try {
-        const response = await fetch(`${API_BASE_URL}/visualize-chord-simple/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
+        const response = await fetch(`${API_BASE_URL}/visualize-chord-simple/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`);
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {
