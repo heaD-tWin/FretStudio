@@ -65,19 +65,20 @@ const Fretboard = ({
         } else if (validNotes) { // Editor or Chord Visualizer Mode
           const isNoteInChord = validNotes.includes(note.note);
 
-          // Always highlight the background if the note is valid for the chord.
           if (isNoteInChord) {
             fretClasses.push('in-scale');
           }
+          
+          // Add the darker background for the chord's root note.
+          if (note.note === chordRootNote) {
+            fretClasses.push('scale-root');
+          }
 
-          // Now, determine if a marker (dot) should be shown.
           if (selectedVoicing) {
-            // If a voicing is present (from editor or visualizer), only mark its fingered notes.
             if (finger !== undefined && finger >= 0) {
               isChordNote = true;
             }
           } else {
-            // If no voicing is selected (visualizer's "All Tones" mode), mark all valid notes.
             if (isNoteInChord) {
               isChordNote = true;
             }

@@ -76,7 +76,8 @@
     "allowed_chord_types": [
       "Major",
       "Minor",
-      "Diminished"
+      "Diminished",
+      "Test"
     ]
   },
   "test": {
