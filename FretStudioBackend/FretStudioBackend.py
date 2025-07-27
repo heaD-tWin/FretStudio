@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Dict
 import json
 import os
 
@@ -22,7 +22,10 @@ class ChordVisualizationResponse(BaseModel): fretboard: Dict[int, List[Fretboard
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 def load_json_data(file_path: str):
     full_path = os.path.join(__location__, file_path)
-    with open(full_path, "r") as f: return json.load(f)
+    try:
+        with open(full_path, "r") as f: return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 def write_json_data(file_path: str, data):
     full_path = os.path.join(__location__, file_path)
     with open(full_path, "w") as f: json.dump(data, f, indent=2)
@@ -30,7 +33,7 @@ def write_json_data(file_path: str, data):
 # Standardize on the capitalized name as the key
 db_chord_types = {v['name']: ChordType(**v) for v in load_json_data("chord_types.json").values()}
 db_scales = {v['name']: Scale(**v) for v in load_json_data("scales.json").values()}
-db_tunings = {"standard_guitar": Tuning(name="Standard Guitar", notes=["E", "A", "D", "G", "B", "E"])}
+db_tunings = {name: Tuning(name=name, **data) for name, data in load_json_data("tunings.json").items()}
 NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 # Load the new hierarchical voicings library
@@ -45,8 +48,25 @@ def get_notes_from_intervals(root_note: str, intervals: List[int]):
     return [NOTES[(start_index + i) % 12] for i in intervals]
 
 # --- API Endpoints ---
-@app.get("/tunings", response_model=List[str])
-async def get_all_tuning_names(): return [t.name for t in db_tunings.values()]
+@app.get("/tunings", response_model=List[Tuning])
+async def get_tunings():
+    return list(db_tunings.values())
+
+@app.post("/tunings", status_code=201)
+async def add_or_update_tuning(tuning: Tuning):
+    db_tunings[tuning.name] = tuning
+    data_to_save = {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()}
+    write_json_data("tunings.json", data_to_save)
+    return {"message": f"Tuning '{tuning.name}' saved."}
+
+@app.delete("/tunings/{tuning_name}", status_code=200)
+async def delete_tuning(tuning_name: str):
+    if tuning_name not in db_tunings:
+        raise HTTPException(status_code=404, detail="Tuning not found.")
+    del db_tunings[tuning_name]
+    data_to_save = {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()}
+    write_json_data("tunings.json", data_to_save)
+    return {"message": f"Tuning '{tuning_name}' deleted."}
 
 # --- Scale Endpoints ---
 @app.get("/scales", response_model=List[Scale])
@@ -188,7 +208,9 @@ async def get_visualized_chord(chord_type_name: str, root_note: str, scale_root_
     if not scale: raise HTTPException(status_code=404, detail="Scale not found")
     scale_notes = get_notes_from_intervals(scale_root_note, scale.intervals)
     
-    tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
+    tuning = db_tunings.get(tuning_name)
+    if not tuning: raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+    
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
         string_notes: List[FretboardNote] = []
@@ -208,7 +230,10 @@ async def get_visualized_chord_simple(chord_type_name: str, root_note: str, tuni
     if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
     
     chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
-    tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
+    
+    tuning = db_tunings.get(tuning_name)
+    if not tuning: raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
         string_notes: List[FretboardNote] = []
@@ -224,7 +249,10 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, s
     scale = db_scales.get(scale_name)
     if not scale: raise HTTPException(status_code=404, detail="Scale not found")
     scale_notes = get_notes_from_intervals(root_note, scale.intervals)
-    tuning = db_tunings[tuning_name.lower().replace(" ", "_")]
+    
+    tuning = db_tunings.get(tuning_name)
+    if not tuning: raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+
     fretboard: Dict[int, List[FretboardNote]] = {}
     for i, open_note in enumerate(tuning.notes):
         string_notes: List[FretboardNote] = []

@@ -1,19 +1,22 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import App from './App.tsx'
-import './index.css'
-import { HandednessProvider } from './contexts/HandednessContext.tsx';
-import { AccidentalTypeProvider } from './contexts/AccidentalTypeContext.tsx';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { HashRouter } from 'react-router-dom'; // Use HashRouter
+import App from './App';
+import './index.css';
+import { HandednessProvider } from './contexts/HandednessContext';
+import { AccidentalTypeProvider } from './contexts/AccidentalTypeContext';
+import { TuningProvider } from './contexts/TuningContext';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <HashRouter> {/* The single, top-level router */}
       <HandednessProvider>
         <AccidentalTypeProvider>
-          <App />
+          <TuningProvider>
+            <App />
+          </TuningProvider>
         </AccidentalTypeProvider>
       </HandednessProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+    </HashRouter>
+  </React.StrictMode>
+);

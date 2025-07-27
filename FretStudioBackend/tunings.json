@@ -1,0 +1,42 @@
+{
+  "Standard Guitar": {
+    "notes": [
+      "E",
+      "A",
+      "D",
+      "G",
+      "B",
+      "E"
+    ]
+  },
+  "Drop D": {
+    "notes": [
+      "D",
+      "A",
+      "D",
+      "G",
+      "B",
+      "E"
+    ]
+  },
+  "DADGAD": {
+    "notes": [
+      "D",
+      "A",
+      "D",
+      "G",
+      "A",
+      "D"
+    ]
+  },
+  "Open G": {
+    "notes": [
+      "D",
+      "G",
+      "D",
+      "G",
+      "B",
+      "D"
+    ]
+  }
+}

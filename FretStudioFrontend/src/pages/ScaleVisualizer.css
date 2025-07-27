@@ -1,0 +1,10 @@
+.scale-visualizer-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.scale-visualizer-page h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}

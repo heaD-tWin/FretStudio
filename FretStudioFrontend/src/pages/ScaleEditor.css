@@ -1,0 +1,73 @@
+.editor-page {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.editor-page .card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.editor-page h2 {
+  font-size: 1.5em;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.editor-page .controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.editor-page .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-page .form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.editor-page .form-group input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.editor-page .editor-actions {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.editor-page .editor-actions button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  background-color: #007bff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editor-page .editor-actions button:hover {
+  background-color: #0056b3;
+}
+
+.editor-page .editor-actions .remove-button {
+  background-color: #dc3545;
+}
+
+.editor-page .editor-actions .remove-button:hover {
+  background-color: #c82333;
+}

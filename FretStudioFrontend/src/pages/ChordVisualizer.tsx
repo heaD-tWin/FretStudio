@@ -5,7 +5,6 @@ import {
   getChordTypes, 
   getVoicingsForChord,
   getVisualizedScale,
-  getTunings,
   getChordNotesForEditor,
   type FretboardAPIResponse,
   type Voicing,
@@ -13,12 +12,14 @@ import {
 } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
+import { useTuning } from '../contexts/TuningContext'; // Import the new hook
 import { getNoteNames, unformatNote } from '../utils/noteUtils';
 import './ChordVisualizer.css';
 
 const ChordVisualizer = () => {
   const { handedness } = useHandedness();
   const { accidentalType } = useAccidentalType();
+  const { selectedTuning } = useTuning(); // Use the global tuning
   const noteOptions = getNoteNames(accidentalType);
 
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
@@ -26,22 +27,16 @@ const ChordVisualizer = () => {
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingIndex, setSelectedVoicingIndex] = useState<number>(-1);
   const [validNotes, setValidNotes] = useState<string[]>([]);
-  const [tuning, setTuning] = useState<string>('');
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedChordType, setSelectedChordType] = useState<string>('');
 
   useEffect(() => {
     async function fetchInitialData() {
-      const [types, tunings] = await Promise.all([getChordTypes(), getTunings()]);
-      
+      const types = await getChordTypes();
       setChordTypes(types);
       if (types.length > 0) {
         setSelectedChordType(types[0].name);
-      }
-
-      if (tunings.length > 0) {
-        setTuning(tunings[0]);
       }
     }
     fetchInitialData();
@@ -49,13 +44,13 @@ const ChordVisualizer = () => {
 
   useEffect(() => {
     async function fetchChordDetails() {
-      if (selectedRoot && selectedChordType && tuning) {
+      if (selectedRoot && selectedChordType && selectedTuning) {
         const rootForAPI = unformatNote(selectedRoot);
         
         const [fetchedVoicings, notes, fretboard] = await Promise.all([
           getVoicingsForChord(selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedScale(tuning, rootForAPI, 'Major') // Use a base scale for the fretboard notes
+          getVisualizedScale(selectedTuning, rootForAPI, 'Major') // Use a base scale for the fretboard notes
         ]);
         
         setVoicings(fetchedVoicings);
@@ -65,7 +60,7 @@ const ChordVisualizer = () => {
       }
     }
     fetchChordDetails();
-  }, [selectedRoot, selectedChordType, tuning]);
+  }, [selectedRoot, selectedChordType, selectedTuning]);
 
   const handleNextVoicing = () => {
     setSelectedVoicingIndex(prev => {

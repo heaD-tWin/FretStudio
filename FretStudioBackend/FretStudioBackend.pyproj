@@ -52,6 +52,7 @@
   <ItemGroup>
     <Content Include="chord_types.json" />
     <Content Include="scales.json" />
+    <Content Include="tunings.json" />
     <Content Include="voicings_library.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
