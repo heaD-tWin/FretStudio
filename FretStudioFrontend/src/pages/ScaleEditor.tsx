@@ -10,12 +10,16 @@ import {
   type Scale,
   type Tuning
 } from '../apiService';
+import { useTuning } from '../contexts/TuningContext'; // Import the context hook
 import './ScaleEditor.css';
 
 const NEW_SCALE_OPTION = "Create New Scale...";
 const NEW_TUNING_OPTION = "Create New Tuning...";
 
 const ScaleEditor = () => {
+  // --- Global State ---
+  const { selectedTuning, setSelectedTuning } = useTuning();
+
   // --- Scale State ---
   const [scales, setScales] = useState<Scale[]>([]);
   const [selectedScaleName, setSelectedScaleName] = useState<string>(NEW_SCALE_OPTION);
@@ -113,7 +117,6 @@ const ScaleEditor = () => {
   const handleSaveTuning = async () => {
     if (!tuningName || !tuningNotes) return alert("Please provide a name and notes for the tuning.");
     const notes = tuningNotes.split(',').map(n => n.trim().toUpperCase());
-    // Basic validation can be added here if needed
     
     if (await addTuning({ name: tuningName, notes })) {
       alert("Tuning saved!");
@@ -128,6 +131,10 @@ const ScaleEditor = () => {
     if (selectedTuningName === NEW_TUNING_OPTION) return;
     if (await deleteTuning(selectedTuningName)) {
       alert("Tuning deleted!");
+      // If the deleted tuning was the globally selected one, reset the global context
+      if (selectedTuning === selectedTuningName) {
+        setSelectedTuning('Standard Guitar');
+      }
       setTunings(await getTunings());
       resetAndCreateNewTuning();
     } else {
