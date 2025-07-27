@@ -75,8 +75,8 @@ export const deleteScale = async (scaleName: string): Promise<boolean> => {
   return response.ok;
 };
 
-export const getChordsInScale = async (rootNote: string, scaleName: string): Promise<string[]> => {
-  const response = await fetch(`${API_BASE_URL}/scales/${encodeURIComponent(rootNote)}/${encodeURIComponent(scaleName)}/chords`);
+export const getChordsInScale = async (rootNote: string, scaleName: string, tuningName: string): Promise<string[]> => {
+  const response = await fetch(`${API_BASE_URL}/scales/${encodeURIComponent(rootNote)}/${encodeURIComponent(scaleName)}/chords?tuning_name=${encodeURIComponent(tuningName)}`);
   return await handleResponse<string[]>(response) || [];
 };
 
@@ -125,13 +125,13 @@ export const deleteTuning = async (tuningName: string): Promise<boolean> => {
 };
 
 // --- Voicings API ---
-export const getVoicingsForChord = async (chordTypeName: string, rootNote: string): Promise<Voicing[]> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`);
+export const getVoicingsForChord = async (tuningName: string, chordTypeName: string, rootNote: string): Promise<Voicing[]> => {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`);
   return await handleResponse<Voicing[]>(response) || [];
 };
 
-export const addVoicingToChord = async (chordTypeName: string, rootNote: string, voicing: Voicing): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`, {
+export const addVoicingToChord = async (tuningName: string, chordTypeName: string, rootNote: string, voicing: Voicing): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(voicing),
@@ -139,8 +139,8 @@ export const addVoicingToChord = async (chordTypeName: string, rootNote: string,
   return response.ok;
 };
 
-export const deleteVoicing = async (chordTypeName: string, rootNote: string, voicingName: string): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicingName)}`, {
+export const deleteVoicing = async (tuningName: string, chordTypeName: string, rootNote: string, voicingName: string): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicingName)}`, {
     method: 'DELETE',
   });
   return response.ok;
@@ -155,12 +155,4 @@ export const getVisualizedScale = async (tuningName: string, rootNote: string, s
 export const getChordNotesForEditor = async (rootNote: string, chordTypeName: string): Promise<string[]> => {
   const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
   return await handleResponse<string[]>(response) || [];
-};
-
-// This function is now deprecated by the new system but kept for reference if needed.
-export const getVisualizedChordSimple = async (): Promise<VisualizedChordResponse | null> => {
-  // This function would need a dedicated endpoint if it were to be used.
-  // For now, it can be considered deprecated as the visualizer now fetches data differently.
-  console.warn("getVisualizedChordSimple is deprecated and will not function.");
-  return null;
 };

@@ -12,7 +12,7 @@ import {
 } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
-import { useTuning } from '../contexts/TuningContext'; // Import the new hook
+import { useTuning } from '../contexts/TuningContext';
 import { getNoteNames, unformatNote } from '../utils/noteUtils';
 import './ScaleVisualizer.css';
 
@@ -21,7 +21,7 @@ const FULL_SCALE_OPTION = 'Show Full Scale';
 const ScaleVisualizer = () => {
   const { handedness } = useHandedness();
   const { accidentalType } = useAccidentalType();
-  const { selectedTuning } = useTuning(); // Use the global tuning
+  const { selectedTuning } = useTuning();
   const noteOptions = getNoteNames(accidentalType);
 
   const [scales, setScales] = useState<Scale[]>([]);
@@ -37,7 +37,6 @@ const ScaleVisualizer = () => {
 
   const chordRootNote = selectedChord ? selectedChord.split(' ')[0] : null;
 
-  // Fetch initial data for all dropdowns
   useEffect(() => {
     async function fetchInitialData() {
       const scaleData = await getScales();
@@ -47,12 +46,11 @@ const ScaleVisualizer = () => {
     fetchInitialData();
   }, []);
 
-  // Fetch diatonic chords whenever the root or scale changes
   useEffect(() => {
     async function fetchDiatonicChords() {
-      if (selectedRoot && selectedScale) {
+      if (selectedRoot && selectedScale && selectedTuning) {
         const rootForAPI = unformatNote(selectedRoot);
-        const diatonicChords = await getChordsInScale(rootForAPI, selectedScale);
+        const diatonicChords = await getChordsInScale(rootForAPI, selectedScale, selectedTuning);
         setChords(diatonicChords);
         if (selectedChord && !diatonicChords.includes(selectedChord)) {
           setSelectedChord('');
@@ -60,9 +58,8 @@ const ScaleVisualizer = () => {
       }
     }
     fetchDiatonicChords();
-  }, [selectedRoot, selectedScale]);
+  }, [selectedRoot, selectedScale, selectedTuning]);
 
-  // Fetch fretboard data based on user selection
   useEffect(() => {
     async function fetchFretboard() {
       if (selectedTuning && selectedRoot && selectedScale) {
@@ -70,8 +67,8 @@ const ScaleVisualizer = () => {
         if (selectedChord) {
           const [chordRoot, ...typeParts] = selectedChord.split(' ');
           const chordTypeName = typeParts.join(' ');
-          const fetchedVoicings = await getVoicingsForChord(chordTypeName, unformatNote(chordRoot));
-          setVoicings(fetchedVoicings);
+          const fetchedVoicings = await getVoicingsForChord(selectedTuning, chordTypeName, unformatNote(chordRoot));
+          setVoicings(fetchedVoicings || []);
           setSelectedVoicingIndex(-1);
         } else {
           setVoicings([]);

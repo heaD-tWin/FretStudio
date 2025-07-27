@@ -12,14 +12,14 @@ import {
 } from '../apiService';
 import { useHandedness } from '../contexts/HandednessContext';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
-import { useTuning } from '../contexts/TuningContext'; // Import the new hook
+import { useTuning } from '../contexts/TuningContext';
 import { getNoteNames, unformatNote } from '../utils/noteUtils';
 import './ChordVisualizer.css';
 
 const ChordVisualizer = () => {
   const { handedness } = useHandedness();
   const { accidentalType } = useAccidentalType();
-  const { selectedTuning } = useTuning(); // Use the global tuning
+  const { selectedTuning } = useTuning();
   const noteOptions = getNoteNames(accidentalType);
 
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
@@ -48,32 +48,26 @@ const ChordVisualizer = () => {
         const rootForAPI = unformatNote(selectedRoot);
         
         const [fetchedVoicings, notes, fretboard] = await Promise.all([
-          getVoicingsForChord(selectedChordType, rootForAPI),
+          getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedScale(selectedTuning, rootForAPI, 'Major') // Use a base scale for the fretboard notes
+          getVisualizedScale(selectedTuning, rootForAPI, 'Major')
         ]);
         
-        setVoicings(fetchedVoicings);
-        setValidNotes(notes);
+        setVoicings(fetchedVoicings || []);
+        setValidNotes(notes || []);
         setFretboardData(fretboard);
-        setSelectedVoicingIndex(-1); // Reset to "All Tones"
+        setSelectedVoicingIndex(-1);
       }
     }
     fetchChordDetails();
   }, [selectedRoot, selectedChordType, selectedTuning]);
 
   const handleNextVoicing = () => {
-    setSelectedVoicingIndex(prev => {
-      const nextIndex = prev + 1;
-      return nextIndex >= voicings.length ? 0 : nextIndex;
-    });
+    setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
   };
 
   const handlePrevVoicing = () => {
-    setSelectedVoicingIndex(prev => {
-      const prevIndex = prev - 1;
-      return prevIndex < 0 ? voicings.length - 1 : prevIndex;
-    });
+    setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
   };
 
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
@@ -104,8 +98,8 @@ const ChordVisualizer = () => {
         {voicings.length > 0 && (
           <div className="voicing-controls">
             <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
-            <button onClick={handlePrevVoicing} disabled={voicings.length === 0}>Prev Voicing</button>
-            <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
+            <button onClick={handlePrevVoicing} disabled={voicings.length < 2}>Prev Voicing</button>
+            <button onClick={handleNextVoicing} disabled={voicings.length < 2}>Next Voicing</button>
             <span>
               {currentVoicing?.name || 'All Tones'}
               {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
