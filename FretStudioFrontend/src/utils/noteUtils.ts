@@ -10,29 +10,7 @@ const FLAT_TO_SHARP: { [key: string]: string } = {
   'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#',
 };
 
-// --- Existing Exports (Preserved) ---
-export const NOTES = SHARP_NOTES;
-
-export function getNoteIndex(note: string): number {
-  const upperNote = note.toUpperCase();
-  const sharpNote = (FLAT_TO_SHARP[note as keyof typeof FLAT_TO_SHARP] || note).toUpperCase();
-  return NOTES.indexOf(sharpNote);
-}
-
-export function transposeNote(note: string, semitones: number): string {
-  const idx = getNoteIndex(note);
-  if (idx === -1) throw new Error(`Invalid note: ${note}`);
-  const newIdx = (idx + semitones + NOTES.length) % NOTES.length;
-  return NOTES[newIdx];
-}
-
-export function getScaleNotes(root: string, intervals: number[]): string[] {
-  const rootIdx = getNoteIndex(root);
-  if (rootIdx === -1) throw new Error(`Invalid root note: ${root}`);
-  return intervals.map(i => NOTES[(rootIdx + i) % NOTES.length]);
-}
-
-// --- New and Updated Exports ---
+// --- Note Conversion and Formatting ---
 
 /**
  * Converts a user-facing note name (which could be a flat) to its sharp-based equivalent for backend calls.
@@ -64,3 +42,35 @@ export const formatNote = (note: string, accidentalType: AccidentalType = 'sharp
 export const getNoteNames = (accidentalType: AccidentalType): string[] => {
     return accidentalType === 'flats' ? FLAT_NOTES : SHARP_NOTES;
 }
+
+/**
+ * Determines the CSS classes for a note on the fretboard based on its role.
+ * @param note The note to classify.
+ * @param validNotes An array of notes that are part of the current chord or scale.
+ * @param scaleRootNote The root note of the scale.
+ * @param chordRootNote The root note of the chord.
+ * @returns A string of CSS class names.
+ */
+export const getNoteClass = (
+  note: string,
+  validNotes: string[],
+  scaleRootNote?: string,
+  chordRootNote?: string
+): string => {
+  const classes: string[] = [];
+  const isScaleRoot = note === scaleRootNote;
+  const isChordRoot = note === chordRootNote;
+  const isInScaleOrChord = validNotes.includes(note);
+
+  if (isScaleRoot) {
+    classes.push('scale-root');
+  } else if (isChordRoot) {
+    classes.push('chord-root');
+  }
+
+  if (isInScaleOrChord) {
+    classes.push('in-scale'); // Using 'in-scale' for general highlighting
+  }
+
+  return classes.join(' ');
+};

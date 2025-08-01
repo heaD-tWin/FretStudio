@@ -46,6 +46,17 @@ for tuning_name, tuning_data in raw_voicings_data.items():
             note: ChordVoicings(**voicings_data) for note, voicings_data in notes_dict.items()
         }
 
+# --- Helper to save the voicings library ---
+def save_voicings_library():
+    data_to_save = {
+        t_name: {
+            c_name: {n: vs.dict() for n, vs in n_dict.items()}
+            for c_name, n_dict in c_dict.items()
+        }
+        for t_name, c_dict in db_voicings_library.items()
+    }
+    write_json_data("voicings_library.json", data_to_save)
+
 # --- Music Theory Helpers ---
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
@@ -59,8 +70,17 @@ async def get_tunings():
 @app.post("/tunings", status_code=201)
 async def add_or_update_tuning(tuning: Tuning):
     db_tunings[tuning.name] = tuning
-    data_to_save = {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()}
-    write_json_data("tunings.json", data_to_save)
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+
+    # Create a new entry in the voicings library for the new tuning
+    if tuning.name not in db_voicings_library:
+        db_voicings_library[tuning.name] = {}
+        for ct_name in db_chord_types:
+            db_voicings_library[tuning.name][ct_name] = {
+                note: ChordVoicings(name=f"{note} {ct_name}", voicings=[]) for note in NOTES
+            }
+        save_voicings_library()
+    
     return {"message": f"Tuning '{tuning.name}' saved."}
 
 @app.delete("/tunings/{tuning_name}", status_code=200)
@@ -68,8 +88,13 @@ async def delete_tuning(tuning_name: str):
     if tuning_name not in db_tunings:
         raise HTTPException(status_code=404, detail="Tuning not found.")
     del db_tunings[tuning_name]
-    data_to_save = {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()}
-    write_json_data("tunings.json", data_to_save)
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+
+    # Remove the corresponding entry from the voicings library
+    if tuning_name in db_voicings_library:
+        del db_voicings_library[tuning_name]
+        save_voicings_library()
+
     return {"message": f"Tuning '{tuning_name}' deleted."}
 
 # --- Scale Endpoints ---
@@ -107,7 +132,6 @@ async def get_chords_in_scale(root_note: str, scale_name: str, tuning_name: str 
                 chord_notes = set(get_notes_from_intervals(note_in_scale, chord_type.intervals))
                 if chord_notes.issubset(scale_notes_set):
                     full_chord_name = f"{note_in_scale} {chord_type.name}"
-                    # Check if voicings exist for this chord in the specified tuning
                     if db_voicings_library.get(tuning_name, {}).get(chord_type.name, {}).get(note_in_scale):
                         diatonic_chords.append(full_chord_name)
             except (ValueError, IndexError):
@@ -128,20 +152,10 @@ async def add_or_update_chord_type(chord_type: ChordType):
     # Add new type to voicings library under each tuning
     for tuning_name in db_voicings_library:
         if chord_type.name not in db_voicings_library[tuning_name]:
-            db_voicings_library[tuning_name][chord_type.name] = {}
-            for note in NOTES:
-                db_voicings_library[tuning_name][chord_type.name][note] = ChordVoicings(
-                    name=f"{note} {chord_type.name}", voicings=[]
-                )
-    
-    # This is a complex serialization, ensure it's correct
-    write_json_data("voicings_library.json", {
-        t_name: {
-            c_name: {n: vs.dict() for n, vs in n_dict.items()}
-            for c_name, n_dict in c_dict.items()
-        }
-        for t_name, c_dict in db_voicings_library.items()
-    })
+            db_voicings_library[tuning_name][chord_type.name] = {
+                note: ChordVoicings(name=f"{note} {chord_type.name}", voicings=[]) for note in NOTES
+            }
+    save_voicings_library()
     return {"message": f"Chord type '{chord_type.name}' saved."}
 
 @app.delete("/chord-types/{type_name}", status_code=200)
@@ -155,13 +169,7 @@ async def delete_chord_type(type_name: str):
             del db_voicings_library[tuning_name][type_name]
     
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("voicings_library.json", {
-        t_name: {
-            c_name: {n: vs.dict() for n, vs in n_dict.items()}
-            for c_name, n_dict in c_dict.items()
-        }
-        for t_name, c_dict in db_voicings_library.items()
-    })
+    save_voicings_library()
     return {"message": f"Chord type '{type_name}' deleted."}
 
 # --- Voicing and Fretboard Endpoints ---
@@ -191,13 +199,7 @@ async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_not
     else:
         voicings_list.append(voicing)
         
-    write_json_data("voicings_library.json", {
-        t_name: {
-            c_name: {n: vs.dict() for n, vs in n_dict.items()}
-            for c_name, n_dict in c_dict.items()
-        }
-        for t_name, c_dict in db_voicings_library.items()
-    })
+    save_voicings_library()
     return {"message": f"Voicing for '{root_note} {chord_type_name}' in tuning '{tuning_name}' saved."}
 
 @app.delete("/voicings/{tuning_name}/{chord_type_name}/{root_note}/{voicing_name:path}", status_code=200)
@@ -212,13 +214,7 @@ async def delete_voicing(tuning_name: str, chord_type_name: str, root_note: str,
     if len(db_voicings_library[tuning_name][chord_type_name][root_note].voicings) == original_count:
         raise HTTPException(status_code=404, detail="Voicing not found.")
         
-    write_json_data("voicings_library.json", {
-        t_name: {
-            c_name: {n: vs.dict() for n, vs in n_dict.items()}
-            for c_name, n_dict in c_dict.items()
-        }
-        for t_name, c_dict in db_voicings_library.items()
-    })
+    save_voicings_library()
     return {"message": "Voicing deleted."}
 
 @app.get("/fretboard/visualize-scale", response_model=Dict[int, List[FretboardNote]])
