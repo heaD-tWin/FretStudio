@@ -110,7 +110,7 @@ const Fretboard = ({
                     <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
                     {isFretted && (
                       <div className={noteMarkerClasses.join(' ')}>
-                        {isFrettedByVoicing && <span className="finger">{finger > 0 ? finger : 'X'}</span>}
+                        {finger > 0 && <span className="finger">{finger}</span>}
                       </div>
                     )}
                   </div>

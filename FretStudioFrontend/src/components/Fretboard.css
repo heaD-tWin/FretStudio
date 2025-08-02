@@ -75,7 +75,7 @@ sbody {
   color: #ccc;
   font-weight: bold;
   position: relative;
-  z-index: 3; /* Above highlight and marker */
+  z-index: 3;
 }
 
 .note-marker {
@@ -86,7 +86,7 @@ sbody {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2; /* Above highlight, below note name */
+  z-index: 2;
   font-size: 1em;
   color: #fff;
 }
@@ -99,10 +99,22 @@ sbody {
   background-color: #1e8449; /* Dark Green */
 }
 
+/* --- Updated Finger Number Style --- */
 .finger {
-  font-size: 0.9em;
+  position: absolute;
+  bottom: -5px;
+  right: -10px; /* Moved right by its radius */
+  width: 16px;
+  height: 16px;
+  background-color: #c2185b; /* Darker, matt pink */
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
   font-weight: bold;
-  color: #fff;
+  z-index: 4; /* Ensure it's on top */
 }
 
 /* --- Fret Numbers --- */
