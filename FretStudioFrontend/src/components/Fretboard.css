@@ -3,18 +3,23 @@ sbody {
 
 .fretboard-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding: 20px;
   background-color: #2c2c2c;
   border-radius: 8px;
-  overflow-x: auto; /* Allows horizontal scrolling for many frets */
+  overflow-x: auto;
+}
+
+.fretboard-grid {
+  display: flex;
+  flex-direction: column;
 }
 
 .fretboard {
-    display: flex;
-    flex-direction: column;
-    border: 2px solid #444;
-    border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #444;
+  border-radius: 5px;
 }
 
 .string {
@@ -28,17 +33,15 @@ sbody {
 }
 
 .fret {
-    position: relative;
-    width: 60px;
-    height: 40px;
-    border-right: 2px solid #777;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    background-color: #3d3d3d;
-    color: #ccc;
-    cursor: default;
+  position: relative;
+  width: 60px;
+  height: 40px;
+  border-right: 2px solid #777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: #3d3d3d;
 }
 
 .fret.editable {
@@ -49,61 +52,63 @@ sbody {
   border-right-width: 4px; /* Nut */
 }
 
-/* --- Note Styling --- */
-.note {
+/* --- Highlighting Element --- */
+.fret-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: background-color 0.2s ease;
+  z-index: 1;
+}
+
+.fret-highlight.in-scale-highlight {
+  background-color: #3a537a; /* Lighter Blue */
+}
+.fret-highlight.scale-root-highlight {
+  background-color: #2c3e50; /* Darker Blue */
+}
+
+/* --- Note Name and Markers --- */
+.note-name {
+  color: #ccc;
+  font-weight: bold;
+  position: relative;
+  z-index: 3; /* Above highlight and marker */
+}
+
+.note-marker {
+  position: absolute;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
+  z-index: 2; /* Above highlight, below note name */
   font-size: 1em;
   color: #fff;
-  background-color: transparent;
-  transition: all 0.2s ease;
-  position: relative;
 }
 
-.note.in-scale {
-  background-color: #4a5a7a; /* Muted blue for notes in scale */
+.note-marker.fretted {
+  background-color: #27ae60; /* Light Green */
 }
 
-.note.chord-root,
-.note.scale-root {
-  background-color: #d9534f; /* Red for root notes */
-  color: #fff;
+.note-marker.chord-root {
+  background-color: #1e8449; /* Dark Green */
 }
 
-.note.in-chord {
-  background-color: #5bc0de; /* Blue for other chord tones */
-  color: #fff;
-}
-
-.note.fretted {
-  background-color: #f0ad4e; /* Orange for fretted notes in a voicing */
-  color: #000;
-}
-
-.note.fretted.scale-root,
-.note.fretted.chord-root {
-  background-color: #d9534f; /* Root always wins */
-  color: #fff;
-}
-
-/* --- Fingering --- */
 .finger {
-  position: absolute;
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-weight: bold;
-  color: #000;
+  color: #fff;
 }
 
 /* --- Fret Numbers --- */
 .fret-numbers {
   display: flex;
   flex-direction: row;
-  margin-left: 2px; /* Align with frets */
   margin-bottom: 5px;
 }
 
@@ -115,7 +120,35 @@ sbody {
   font-size: 0.8em;
 }
 
+/* --- Strum Indicators --- */
+.strum-indicators {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  margin-left: 10px;
+  padding: 5px 0;
+}
+
+.strum-indicator {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2em;
+}
+
 /* --- Left-Handed View --- */
+.fretboard-container.left-handed {
+  flex-direction: row-reverse;
+}
+
+.fretboard-container.left-handed .fretboard-grid {
+  flex-direction: column;
+}
+
 .fretboard-container.left-handed .fretboard,
 .fretboard-container.left-handed .fret-numbers {
   flex-direction: row-reverse;
@@ -133,4 +166,9 @@ sbody {
 .fretboard-container.left-handed .fret:first-child {
   border-left-width: 4px;
   border-right-width: 0;
+}
+
+.fretboard-container.left-handed .strum-indicators {
+  margin-left: 0;
+  margin-right: 10px;
 }

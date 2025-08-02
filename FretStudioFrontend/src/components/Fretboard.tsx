@@ -1,5 +1,5 @@
 import type { FretboardAPIResponse, Voicing } from '../apiService';
-import { formatNote, getNoteClass } from '../utils/noteUtils';
+import { formatNote } from '../utils/noteUtils';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
 import './Fretboard.css';
 
@@ -12,7 +12,7 @@ interface FretboardProps {
   selectedVoicing?: Voicing | null;
   validNotes?: string[];
   scaleRootNote?: string;
-  chordRootNote?: string;
+  chordRootNote?: string | null; // Allow null
 
   // For editing fingerings
   editableFingering?: [number, number, number][];
@@ -32,16 +32,14 @@ const Fretboard = ({
 }: FretboardProps) => {
 
   const handleFretClick = (string: number, fret: number) => {
-    if (!onFingeringChange || !editableFingering) return; // Not in edit mode
+    if (!onFingeringChange || !editableFingering) return;
 
     const existingIndex = editableFingering.findIndex(([s, f]) => s === string && f === fret);
-
     const newFingering = [...editableFingering];
+
     if (existingIndex > -1) {
-      // Note exists, remove it
       newFingering.splice(existingIndex, 1);
     } else {
-      // Note doesn't exist, add it (with finger 0 as a placeholder for 'open' or 'not specified')
       newFingering.push([string, fret, 0]);
     }
     onFingeringChange(newFingering);
@@ -61,51 +59,78 @@ const Fretboard = ({
 
   const stringNumbers = Object.keys(fretboardData).map(Number).sort((a, b) => a - b);
   const numFrets = fretboardData[stringNumbers[0]]?.length || 25;
-
   const fretNumbers = Array.from({ length: numFrets }, (_, i) => i);
 
   return (
     <div className={`fretboard-container ${isLeftHanded ? 'left-handed' : ''}`}>
-      <div className="fret-numbers">
-        {fretNumbers.map(fret => (
-          <div key={fret} className="fret-number">{fret}</div>
-        ))}
-      </div>
-      <div className="fretboard">
-        {stringNumbers.map(stringNum => (
-          <div key={stringNum} className="string">
-            {fretNumbers.map(fret => {
-              const noteInfo = fretboardData[stringNum][fret];
-              if (!noteInfo) return null;
+      <div className="fretboard-grid">
+        <div className="fret-numbers">
+          {fretNumbers.map(fret => (
+            <div key={fret} className="fret-number">{fret}</div>
+          ))}
+        </div>
+        <div className="fretboard">
+          {stringNumbers.map(stringNum => (
+            <div key={stringNum} className="string">
+              {fretNumbers.map(fret => {
+                const noteInfo = fretboardData[stringNum]?.[fret];
+                if (!noteInfo) return null;
 
-              const fingeringInfo = displayFingering.find(([s, f]) => s === stringNum && f === fret);
-              const isFretted = !!fingeringInfo;
-              const finger = fingeringInfo ? fingeringInfo[2] : 0;
+                // --- Highlighting Logic ---
+                const highlightClasses = ['fret-highlight'];
+                if (noteInfo.is_in_scale) {
+                  highlightClasses.push(noteInfo.note === scaleRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                }
+                
+                // --- Fingering/Marker Logic ---
+                const showAllTonesMode = !selectedVoicing && validNotes.length > 0;
+                const fingeringInfo = displayFingering.find(([s, f]) => s === stringNum && f === fret);
+                
+                const isFrettedByVoicing = !!fingeringInfo;
+                const isFrettedByAllTones = showAllTonesMode && validNotes.includes(noteInfo.note);
+                const isFretted = isFrettedByVoicing || isFrettedByAllTones;
 
-              const noteClass = getNoteClass(
-                noteInfo.note,
-                validNotes,
-                scaleRootNote,
-                chordRootNote
-              );
+                const noteMarkerClasses = ['note-marker'];
+                if (isFretted) {
+                  noteMarkerClasses.push('fretted');
+                  if (noteInfo.note === chordRootNote) {
+                    noteMarkerClasses.push('chord-root');
+                  }
+                }
+                
+                const finger = fingeringInfo ? fingeringInfo[2] : 0;
 
-              const isEditable = !!onFingeringChange;
-
-              return (
-                <div
-                  key={fret}
-                  className={`fret ${isEditable ? 'editable' : ''}`}
-                  onClick={() => isEditable && handleFretClick(stringNum, fret)}
-                >
-                  <div className={`note ${noteClass} ${isFretted ? 'fretted' : ''}`}>
-                    {formatNote(noteInfo.note, accidentalType)}
-                    {isFretted && <span className="finger">{finger > 0 ? finger : 'X'}</span>}
+                return (
+                  <div
+                    key={fret}
+                    className={`fret ${onFingeringChange ? 'editable' : ''}`}
+                    onClick={() => onFingeringChange && handleFretClick(stringNum, fret)}
+                  >
+                    <div className={highlightClasses.join(' ')}></div>
+                    <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
+                    {isFretted && (
+                      <div className={noteMarkerClasses.join(' ')}>
+                        {isFrettedByVoicing && <span className="finger">{finger > 0 ? finger : 'X'}</span>}
+                      </div>
+                    )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="strum-indicators">
+        {stringNumbers.map(stringNum => {
+          const fingeringInfo = displayFingering.find(([s]) => s === stringNum);
+          let indicator = ' ';
+          if (fingeringInfo) {
+            const fret = fingeringInfo[1];
+            if (fret === 0) indicator = 'O';
+            if (fret === -1) indicator = 'X';
+          }
+          return <div key={stringNum} className="strum-indicator">{indicator}</div>;
+        })}
       </div>
     </div>
   );

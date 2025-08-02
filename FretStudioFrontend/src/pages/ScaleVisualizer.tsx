@@ -6,6 +6,7 @@ import {
   getVisualizedScale,
   getChordsInScale, 
   getVoicingsForChord,
+  getChordNotesForEditor, // Import the missing function
   type FretboardAPIResponse,
   type Voicing,
   type Scale
@@ -30,6 +31,7 @@ const ScaleVisualizer = () => {
   
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingIndex, setSelectedVoicingIndex] = useState<number>(-1);
+  const [chordNotes, setChordNotes] = useState<string[]>([]); // State for the chord's notes
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedScale, setSelectedScale] = useState<string>('');
@@ -61,24 +63,36 @@ const ScaleVisualizer = () => {
   }, [selectedRoot, selectedScale, selectedTuning]);
 
   useEffect(() => {
-    async function fetchFretboard() {
+    async function fetchFretboardAndChordData() {
       if (selectedTuning && selectedRoot && selectedScale) {
         const rootForAPI = unformatNote(selectedRoot);
+        
+        // Always fetch the base scale visualization
+        const data = await getVisualizedScale(selectedTuning, rootForAPI, selectedScale);
+        setFretboardData(data);
+
         if (selectedChord) {
           const [chordRoot, ...typeParts] = selectedChord.split(' ');
           const chordTypeName = typeParts.join(' ');
-          const fetchedVoicings = await getVoicingsForChord(selectedTuning, chordTypeName, unformatNote(chordRoot));
+          const rootNoteForChord = unformatNote(chordRoot);
+
+          const [fetchedVoicings, fetchedNotes] = await Promise.all([
+            getVoicingsForChord(selectedTuning, chordTypeName, rootNoteForChord),
+            getChordNotesForEditor(rootNoteForChord, chordTypeName)
+          ]);
+
           setVoicings(fetchedVoicings || []);
-          setSelectedVoicingIndex(-1);
+          setChordNotes(fetchedNotes || []);
+          setSelectedVoicingIndex(fetchedVoicings && fetchedVoicings.length > 0 ? 0 : -1);
         } else {
+          // Clear chord-specific data when showing the full scale
           setVoicings([]);
+          setChordNotes([]);
           setSelectedVoicingIndex(-1);
         }
-        const data = await getVisualizedScale(selectedTuning, rootForAPI, selectedScale);
-        setFretboardData(data);
       }
     }
-    fetchFretboard();
+    fetchFretboardAndChordData();
   }, [selectedRoot, selectedScale, selectedTuning, selectedChord]);
 
   const handleNextVoicing = () => setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
@@ -115,6 +129,7 @@ const ScaleVisualizer = () => {
           selectedVoicing={currentVoicing}
           scaleRootNote={selectedRoot}
           chordRootNote={chordRootNote}
+          validNotes={chordNotes} // Pass the chord notes to the fretboard
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
         />
