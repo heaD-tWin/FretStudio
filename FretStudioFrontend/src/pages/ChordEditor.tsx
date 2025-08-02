@@ -159,7 +159,7 @@ const ChordEditor = () => {
 
   const handleFretClick = (string: number, fret: number) => {
     if (activeFret && activeFret[0] === string && activeFret[1] === fret) {
-      setActiveFret(null); // Toggle off if same fret is clicked
+      setActiveFret(null);
     } else {
       setActiveFret([string, fret]);
     }
@@ -171,9 +171,9 @@ const ChordEditor = () => {
     const newFingering = [...fingering];
     const existingIndex = newFingering.findIndex(([s, f]) => s === string && f === fret);
 
-    if (finger === -1) { // Remove finger
+    if (finger === -1) {
       if (existingIndex > -1) newFingering.splice(existingIndex, 1);
-    } else { // Add or update finger
+    } else {
       if (existingIndex > -1) {
         newFingering[existingIndex] = [string, fret, finger];
       } else {
@@ -181,7 +181,24 @@ const ChordEditor = () => {
       }
     }
     setFingering(newFingering);
-    setActiveFret(null); // Close selector after selection
+    setActiveFret(null);
+  };
+
+  const handleStrumToggle = (stringId: number) => {
+    const newFingering = [...fingering];
+    const existingIndex = newFingering.findIndex(([s]) => s === stringId);
+
+    if (existingIndex > -1) {
+      const currentFret = newFingering[existingIndex][1];
+      if (currentFret === 0) { // Is open, change to muted
+        newFingering[existingIndex] = [stringId, -1, 0];
+      } else { // Is muted or fretted, remove it
+        newFingering.splice(existingIndex, 1);
+      }
+    } else { // Not in voicing, add as open
+      newFingering.push([stringId, 0, 0]);
+    }
+    setFingering(newFingering);
   };
 
   const handleSaveVoicing = async () => {
@@ -272,6 +289,7 @@ const ChordEditor = () => {
           activeFret={activeFret}
           onFretClick={handleFretClick}
           onFingerSelect={handleFingerSelect}
+          onStrumToggle={handleStrumToggle}
         />
       </div>
     </div>

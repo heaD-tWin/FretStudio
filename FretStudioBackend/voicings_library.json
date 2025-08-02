@@ -547,7 +547,20 @@
     "Major": {
       "C": {
         "name": "C Major",
-        "voicings": []
+        "voicings": [
+          {
+            "name": "C Open",
+            "difficulty": "Beginner",
+            "fingering": [
+              [ 6, -1, 0 ],
+              [ 5, 3, 3 ],
+              [ 4, 2, 2 ],
+              [ 3, 0, 0 ],
+              [ 2, 1, 1 ],
+              [ 1, 0, 0 ]
+            ]
+          }
+        ]
       },
       "C#": {
         "name": "C# Major",

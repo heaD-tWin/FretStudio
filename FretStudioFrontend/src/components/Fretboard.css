@@ -3,16 +3,20 @@ sbody {
 
 .fretboard-container {
   display: flex;
-  flex-direction: row;
   padding: 20px;
   background-color: #2c2c2c;
   border-radius: 8px;
   overflow-x: auto;
 }
 
-.fretboard-grid {
+.fretboard-layout {
   display: flex;
   flex-direction: column;
+}
+
+.fretboard-body {
+  display: flex;
+  flex-direction: row;
 }
 
 .fretboard {
@@ -103,7 +107,7 @@ sbody {
 .finger {
   position: absolute;
   bottom: -5px;
-  right: -10px; /* Moved right by its radius */
+  right: -10px;
   width: 16px;
   height: 16px;
   background-color: #c2185b; /* Darker, matt pink */
@@ -156,6 +160,7 @@ sbody {
   display: flex;
   flex-direction: row;
   margin-bottom: 5px;
+  padding-left: 30px; /* Align with start of frets */
 }
 
 .fret-number {
@@ -170,13 +175,12 @@ sbody {
 .strum-indicators {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  margin-left: 10px;
-  padding: 5px 0;
+  margin-right: 10px;
 }
 
 .strum-indicator {
-  height: 40px;
+  height: 41px; /* Match string height + border */
+  width: 20px; /* Give it a defined width */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,13 +190,13 @@ sbody {
   font-size: 1.2em;
 }
 
-/* --- Left-Handed View --- */
-.fretboard-container.left-handed {
-  flex-direction: row-reverse;
+.strum-indicator.interactive {
+  cursor: pointer;
 }
 
-.fretboard-container.left-handed .fretboard-grid {
-  flex-direction: column;
+/* --- Left-Handed View --- */
+.fretboard-container.left-handed .fretboard-body {
+  flex-direction: row-reverse;
 }
 
 .fretboard-container.left-handed .fretboard,
@@ -215,6 +219,11 @@ sbody {
 }
 
 .fretboard-container.left-handed .strum-indicators {
-  margin-left: 0;
-  margin-right: 10px;
+  margin-left: 10px;
+  margin-right: 0;
+}
+
+.fretboard-container.left-handed .fret-numbers {
+  padding-left: 0;
+  padding-right: 30px;
 }
