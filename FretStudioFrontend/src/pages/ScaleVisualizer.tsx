@@ -6,7 +6,7 @@ import {
   getVisualizedScale,
   getChordsInScale, 
   getVoicingsForChord,
-  getChordNotesForEditor, // Import the missing function
+  getChordNotesForEditor,
   type FretboardAPIResponse,
   type Voicing,
   type Scale
@@ -31,7 +31,7 @@ const ScaleVisualizer = () => {
   
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingIndex, setSelectedVoicingIndex] = useState<number>(-1);
-  const [chordNotes, setChordNotes] = useState<string[]>([]); // State for the chord's notes
+  const [chordNotes, setChordNotes] = useState<string[]>([]);
 
   const [selectedRoot, setSelectedRoot] = useState<string>('C');
   const [selectedScale, setSelectedScale] = useState<string>('');
@@ -67,7 +67,6 @@ const ScaleVisualizer = () => {
       if (selectedTuning && selectedRoot && selectedScale) {
         const rootForAPI = unformatNote(selectedRoot);
         
-        // Always fetch the base scale visualization
         const data = await getVisualizedScale(selectedTuning, rootForAPI, selectedScale);
         setFretboardData(data);
 
@@ -83,9 +82,8 @@ const ScaleVisualizer = () => {
 
           setVoicings(fetchedVoicings || []);
           setChordNotes(fetchedNotes || []);
-          setSelectedVoicingIndex(fetchedVoicings && fetchedVoicings.length > 0 ? 0 : -1);
+          setSelectedVoicingIndex(-1); // Always default to "Show All Tones"
         } else {
-          // Clear chord-specific data when showing the full scale
           setVoicings([]);
           setChordNotes([]);
           setSelectedVoicingIndex(-1);
@@ -95,8 +93,20 @@ const ScaleVisualizer = () => {
     fetchFretboardAndChordData();
   }, [selectedRoot, selectedScale, selectedTuning, selectedChord]);
 
-  const handleNextVoicing = () => setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
-  const handlePrevVoicing = () => setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
+  const handleNextVoicing = () => {
+    setSelectedVoicingIndex(prev => {
+      if (prev === voicings.length - 1) return -1; // Cycle from last voicing to "All Tones"
+      return prev + 1;
+    });
+  };
+
+  const handlePrevVoicing = () => {
+    setSelectedVoicingIndex(prev => {
+      if (prev === -1) return voicings.length - 1; // Cycle from "All Tones" to last voicing
+      if (prev === 0) return -1; // Cycle from first voicing to "All Tones"
+      return prev - 1;
+    });
+  };
 
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
 
@@ -113,8 +123,8 @@ const ScaleVisualizer = () => {
         {selectedChord && voicings.length > 0 && (
           <div className="voicing-controls">
             <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
-            <button onClick={handlePrevVoicing} disabled={voicings.length < 2}>Prev Voicing</button>
-            <button onClick={handleNextVoicing} disabled={voicings.length < 2}>Next Voicing</button>
+            <button onClick={handlePrevVoicing} disabled={voicings.length === 0}>Prev Voicing</button>
+            <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
             <span>
               {currentVoicing?.name || 'All Tones'}
               {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
@@ -129,7 +139,7 @@ const ScaleVisualizer = () => {
           selectedVoicing={currentVoicing}
           scaleRootNote={selectedRoot}
           chordRootNote={chordRootNote}
-          validNotes={chordNotes} // Pass the chord notes to the fretboard
+          validNotes={chordNotes}
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
         />
