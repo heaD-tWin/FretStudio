@@ -12,11 +12,16 @@ interface FretboardProps {
   selectedVoicing?: Voicing | null;
   validNotes?: string[];
   scaleRootNote?: string;
-  chordRootNote?: string | null; // Allow null
+  chordRootNote?: string | null;
 
   // For editing fingerings
   editableFingering?: [number, number, number][];
   onFingeringChange?: (newFingering: [number, number, number][]) => void;
+  
+  // For the new finger selection UI
+  activeFret?: [number, number] | null;
+  onFretClick?: (string: number, fret: number) => void;
+  onFingerSelect?: (finger: number) => void;
 }
 
 const Fretboard = ({
@@ -29,9 +34,12 @@ const Fretboard = ({
   chordRootNote,
   editableFingering,
   onFingeringChange,
+  activeFret,
+  onFretClick,
+  onFingerSelect,
 }: FretboardProps) => {
 
-  const handleFretClick = (string: number, fret: number) => {
+  const handleLegacyFretClick = (string: number, fret: number) => {
     if (!onFingeringChange || !editableFingering) return;
 
     const existingIndex = editableFingering.findIndex(([s, f]) => s === string && f === fret);
@@ -76,14 +84,19 @@ const Fretboard = ({
                 const noteInfo = fretboardData[stringNum]?.[fret];
                 if (!noteInfo) return null;
 
-                // --- Highlighting Logic ---
                 const highlightClasses = ['fret-highlight'];
-                if (noteInfo.is_in_scale) {
-                  highlightClasses.push(noteInfo.note === scaleRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                if (scaleRootNote) {
+                  if (noteInfo.is_in_scale) {
+                    highlightClasses.push(noteInfo.note === scaleRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                  }
+                } else {
+                  if (validNotes.includes(noteInfo.note)) {
+                    highlightClasses.push(noteInfo.note === chordRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                  }
                 }
                 
-                // --- Fingering/Marker Logic ---
-                const showAllTonesMode = !selectedVoicing && validNotes.length > 0;
+                const isEditable = !!onFretClick;
+                const showAllTonesMode = !selectedVoicing && validNotes.length > 0 && !isEditable;
                 const fingeringInfo = displayFingering.find(([s, f]) => s === stringNum && f === fret);
                 
                 const isFrettedByVoicing = !!fingeringInfo;
@@ -99,18 +112,25 @@ const Fretboard = ({
                 }
                 
                 const finger = fingeringInfo ? fingeringInfo[2] : 0;
+                const isActive = activeFret && activeFret[0] === stringNum && activeFret[1] === fret;
 
                 return (
                   <div
                     key={fret}
-                    className={`fret ${onFingeringChange ? 'editable' : ''}`}
-                    onClick={() => onFingeringChange && handleFretClick(stringNum, fret)}
+                    className={`fret ${isEditable ? 'editable' : ''}`}
+                    onClick={() => onFretClick ? onFretClick(stringNum, fret) : handleLegacyFretClick(stringNum, fret)}
                   >
                     <div className={highlightClasses.join(' ')}></div>
                     <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
-                    {isFretted && (
+                    {isFretted && !isActive && (
                       <div className={noteMarkerClasses.join(' ')}>
                         {finger > 0 && <span className="finger">{finger}</span>}
+                      </div>
+                    )}
+                    {isActive && onFingerSelect && (
+                      <div className="finger-selector">
+                        {[0, 1, 2, 3, 4].map(f => <button key={f} onMouseDown={(e) => { e.stopPropagation(); onFingerSelect(f); }}>{f}</button>)}
+                        <button className="remove" onMouseDown={(e) => { e.stopPropagation(); onFingerSelect(-1); }}>X</button>
                       </div>
                     )}
                   </div>

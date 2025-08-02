@@ -117,6 +117,40 @@ sbody {
   z-index: 4; /* Ensure it's on top */
 }
 
+/* --- Finger Selector UI --- */
+.finger-selector {
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4f4f4f;
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.finger-selector button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 5px;
+  background-color: #666;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.finger-selector button:hover {
+  background-color: #777;
+}
+
+.finger-selector button.remove {
+  background-color: #d9534f;
+}
+
 /* --- Fret Numbers --- */
 .fret-numbers {
   display: flex;

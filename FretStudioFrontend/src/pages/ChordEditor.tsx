@@ -46,6 +46,7 @@ const ChordEditor = () => {
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
   const [validNotes, setValidNotes] = useState<string[]>([]);
   const [fingering, setFingering] = useState<[number, number, number][]>([]);
+  const [activeFret, setActiveFret] = useState<[number, number] | null>(null);
 
   // Fetch initial data
   useEffect(() => {
@@ -122,7 +123,6 @@ const ChordEditor = () => {
       const newTypes = await getChordTypes();
       setChordTypes(newTypes);
       
-      // If the deleted type was selected in the voicing editor, reset it
       if (selectedChordType === selectedChordTypeName) {
         setSelectedChordType(newTypes.length > 0 ? newTypes[0].name : '');
       }
@@ -139,10 +139,12 @@ const ChordEditor = () => {
     setVoicingName('');
     setVoicingDifficulty('Beginner');
     setFingering([]);
+    setActiveFret(null);
   };
 
   const handleSelectVoicing = (name: string) => {
     setSelectedVoicingName(name);
+    setActiveFret(null);
     if (name === NEW_VOICING_OPTION) {
       resetVoicingFields();
     } else {
@@ -153,6 +155,33 @@ const ChordEditor = () => {
         setFingering(voicing.fingering);
       }
     }
+  };
+
+  const handleFretClick = (string: number, fret: number) => {
+    if (activeFret && activeFret[0] === string && activeFret[1] === fret) {
+      setActiveFret(null); // Toggle off if same fret is clicked
+    } else {
+      setActiveFret([string, fret]);
+    }
+  };
+
+  const handleFingerSelect = (finger: number) => {
+    if (!activeFret) return;
+    const [string, fret] = activeFret;
+    const newFingering = [...fingering];
+    const existingIndex = newFingering.findIndex(([s, f]) => s === string && f === fret);
+
+    if (finger === -1) { // Remove finger
+      if (existingIndex > -1) newFingering.splice(existingIndex, 1);
+    } else { // Add or update finger
+      if (existingIndex > -1) {
+        newFingering[existingIndex] = [string, fret, finger];
+      } else {
+        newFingering.push([string, fret, finger]);
+      }
+    }
+    setFingering(newFingering);
+    setActiveFret(null); // Close selector after selection
   };
 
   const handleSaveVoicing = async () => {
@@ -240,7 +269,9 @@ const ChordEditor = () => {
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
           editableFingering={fingering}
-          onFingeringChange={setFingering}
+          activeFret={activeFret}
+          onFretClick={handleFretClick}
+          onFingerSelect={handleFingerSelect}
         />
       </div>
     </div>
