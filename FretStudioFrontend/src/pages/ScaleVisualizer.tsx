@@ -95,16 +95,17 @@ const ScaleVisualizer = () => {
 
   const handleNextVoicing = () => {
     setSelectedVoicingIndex(prev => {
-      if (prev === voicings.length - 1) return -1; // Cycle from last voicing to "All Tones"
-      return prev + 1;
+      // If at "All Tones", start at the first voicing. Otherwise, cycle.
+      const nextIndex = prev === -1 ? 0 : (prev + 1) % voicings.length;
+      return nextIndex;
     });
   };
 
   const handlePrevVoicing = () => {
     setSelectedVoicingIndex(prev => {
-      if (prev === -1) return voicings.length - 1; // Cycle from "All Tones" to last voicing
-      if (prev === 0) return -1; // Cycle from first voicing to "All Tones"
-      return prev - 1;
+      // If at "All Tones", go to the last voicing. Otherwise, cycle.
+      const prevIndex = prev === -1 ? voicings.length - 1 : (prev - 1 + voicings.length) % voicings.length;
+      return prevIndex;
     });
   };
 
