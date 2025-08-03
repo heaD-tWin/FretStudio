@@ -111,6 +111,7 @@ const ChordVisualizer = () => {
           selectedVoicing={selectedVoicing}
           isLeftHanded={handedness === 'left'}
           accidentalType={accidentalType}
+          disableHighlighting={true}
         />
       </div>
     </div>

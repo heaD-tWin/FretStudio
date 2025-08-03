@@ -13,6 +13,7 @@ interface FretboardProps {
   validNotes?: string[];
   scaleRootNote?: string;
   chordRootNote?: string | null;
+  disableHighlighting?: boolean;
 
   // For editing fingerings
   editableFingering?: [number, number, number][];
@@ -32,6 +33,7 @@ const Fretboard = ({
   validNotes = [],
   scaleRootNote,
   chordRootNote,
+  disableHighlighting = false,
   editableFingering,
   onFingeringChange,
   activeFret,
@@ -66,8 +68,8 @@ const Fretboard = ({
     return <div className="fretboard-container loading">Loading Fretboard...</div>;
   }
 
-  // Sort ascending and then reverse to ensure conventional layout (string 6 at top)
-  const stringNumbers = Object.keys(fretboardData).map(Number).sort((a, b) => a - b);
+  // Sort descending for conventional layout (string 6 at top)
+  const stringNumbers = Object.keys(fretboardData).map(Number).sort((b, a) => b - a);
   const numFrets = fretboardData[stringNumbers[0]]?.length || 25;
   const fretNumbers = Array.from({ length: numFrets }, (_, i) => i);
 
@@ -103,13 +105,15 @@ const Fretboard = ({
                   if (!noteInfo) return null;
 
                   const highlightClasses = ['fret-highlight'];
-                  if (scaleRootNote) {
-                    if (noteInfo.is_in_scale) {
-                      highlightClasses.push(noteInfo.note === scaleRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
-                    }
-                  } else {
-                    if (validNotes.includes(noteInfo.note)) {
-                      highlightClasses.push(noteInfo.note === chordRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                  if (!disableHighlighting) {
+                    if (scaleRootNote) {
+                      if (noteInfo.is_in_scale) {
+                        highlightClasses.push(noteInfo.note === scaleRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                      }
+                    } else {
+                      if (validNotes.includes(noteInfo.note)) {
+                        highlightClasses.push(noteInfo.note === chordRootNote ? 'scale-root-highlight' : 'in-scale-highlight');
+                      }
                     }
                   }
                   
