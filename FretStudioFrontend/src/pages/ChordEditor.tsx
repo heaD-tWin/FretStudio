@@ -190,12 +190,12 @@ const ChordEditor = () => {
 
     if (existingIndex > -1) {
       const currentFret = newFingering[existingIndex][1];
-      if (currentFret === 0) { // Is open, change to muted
+      if (currentFret === 0) {
         newFingering[existingIndex] = [stringId, -1, 0];
-      } else { // Is muted or fretted, remove it
+      } else {
         newFingering.splice(existingIndex, 1);
       }
-    } else { // Not in voicing, add as open
+    } else {
       newFingering.push([stringId, 0, 0]);
     }
     setFingering(newFingering);
