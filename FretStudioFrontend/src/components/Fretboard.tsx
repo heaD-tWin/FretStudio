@@ -66,19 +66,14 @@ const Fretboard = ({
     return <div className="fretboard-container loading">Loading Fretboard...</div>;
   }
 
-  // Sort descending for conventional layout (string 6 at top)
-  const stringNumbers = Object.keys(fretboardData).map(Number).sort((a, b) => b - a);
+  // Sort ascending and then reverse to ensure conventional layout (string 6 at top)
+  const stringNumbers = Object.keys(fretboardData).map(Number).sort((a, b) => a - b);
   const numFrets = fretboardData[stringNumbers[0]]?.length || 25;
   const fretNumbers = Array.from({ length: numFrets }, (_, i) => i);
 
   return (
     <div className={`fretboard-container ${isLeftHanded ? 'left-handed' : ''}`}>
       <div className="fretboard-layout">
-        <div className="fret-numbers">
-          {fretNumbers.map(fret => (
-            <div key={fret} className="fret-number">{fret}</div>
-          ))}
-        </div>
         <div className="fretboard-body">
           <div className="strum-indicators">
             {stringNumbers.map(stringNum => {
@@ -162,6 +157,11 @@ const Fretboard = ({
               </div>
             ))}
           </div>
+        </div>
+        <div className="fret-numbers">
+          {fretNumbers.map(fret => (
+            <div key={fret} className="fret-number">{fret}</div>
+          ))}
         </div>
       </div>
     </div>
