@@ -1,10 +1,22 @@
 .scale-visualizer-page {
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* Remove margin: 0 auto to allow full-width expansion */
+  padding: 1rem 10px;
 }
 
 .scale-visualizer-page h1 {
   text-align: center;
   margin-bottom: 1rem;
+}
+
+.scale-visualizer-page .fretboard-container {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 20px 0; /* Adjust vertical padding, remove horizontal */
+}
+
+/* Make the fretboard wider on this page */
+.scale-visualizer-page .fret,
+.scale-visualizer-page .fret-number {
+    width: 48px; /* Set fixed width to fill a 1920px screen */
+    flex-shrink: 0; /* Prevent frets from shrinking */
 }

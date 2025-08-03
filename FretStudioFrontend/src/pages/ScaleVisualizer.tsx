@@ -82,7 +82,7 @@ const ScaleVisualizer = () => {
 
           setVoicings(fetchedVoicings || []);
           setChordNotes(fetchedNotes || []);
-          setSelectedVoicingIndex(-1); // Always default to "Show All Tones"
+          setSelectedVoicingIndex(-1);
         } else {
           setVoicings([]);
           setChordNotes([]);
@@ -95,17 +95,16 @@ const ScaleVisualizer = () => {
 
   const handleNextVoicing = () => {
     setSelectedVoicingIndex(prev => {
-      // If at "All Tones", start at the first voicing. Otherwise, cycle.
-      const nextIndex = prev === -1 ? 0 : (prev + 1) % voicings.length;
-      return nextIndex;
+      if (prev === voicings.length - 1) return -1;
+      return prev + 1;
     });
   };
 
   const handlePrevVoicing = () => {
     setSelectedVoicingIndex(prev => {
-      // If at "All Tones", go to the last voicing. Otherwise, cycle.
-      const prevIndex = prev === -1 ? voicings.length - 1 : (prev - 1 + voicings.length) % voicings.length;
-      return prevIndex;
+      if (prev === -1) return voicings.length - 1;
+      if (prev === 0) return -1;
+      return prev - 1;
     });
   };
 
@@ -133,18 +132,15 @@ const ScaleVisualizer = () => {
           </div>
         )}
       </div>
-      <div className="card">
-        <h2>Fretboard Visualization</h2>
-        <Fretboard 
-          fretboardData={fretboardData} 
-          selectedVoicing={currentVoicing}
-          scaleRootNote={selectedRoot}
-          chordRootNote={chordRootNote}
-          validNotes={chordNotes}
-          isLeftHanded={handedness === 'left'}
-          accidentalType={accidentalType}
-        />
-      </div>
+      <Fretboard 
+        fretboardData={fretboardData} 
+        selectedVoicing={currentVoicing}
+        scaleRootNote={selectedRoot}
+        chordRootNote={chordRootNote}
+        validNotes={chordNotes}
+        isLeftHanded={handedness === 'left'}
+        accidentalType={accidentalType}
+      />
     </div>
   );
 };
