@@ -154,7 +154,7 @@
   background-color: #d9534f;
 }
 
-/* --- Fret Numbers --- */
+/* --- Fret Numbers & Markers --- */
 .fret-numbers {
   display: flex;
   flex-direction: row;
@@ -168,7 +168,46 @@
   text-align: center;
   color: #aaa;
   font-size: 0.8em;
+  position: relative; /* Needed for marker positioning */
+  display: flex;
+  justify-content: center;
 }
+
+.fret-marker {
+  position: absolute;
+  background-color: #aaa;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+}
+
+.fret-marker.single {
+  top: -258px;
+}
+
+.fret-marker.double {
+  background-color: transparent; /* Make the container invisible */
+}
+
+.fret-marker.double::before,
+.fret-marker.double::after {
+  content: '';
+  position: absolute;
+  background-color: #aaa;
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  top: -258px;
+}
+
+.fret-marker.double::before {
+  left: 10px;
+}
+
+.fret-marker.double::after {
+  right: 10px;
+}
+
 
 /* --- Strum Indicators --- */
 .strum-indicators {
