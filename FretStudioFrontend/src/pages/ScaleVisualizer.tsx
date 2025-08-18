@@ -111,10 +111,18 @@ const ScaleVisualizer = () => {
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
 
   return (
-    <div className="scale-visualizer-page">
-      <h1>Scale Visualizer</h1>
+      <div className="scale-visualizer-page">
+      <Fretboard
+        fretboardData={fretboardData}
+        selectedVoicing={currentVoicing}
+        scaleRootNote={selectedRoot}
+        chordRootNote={chordRootNote}
+        validNotes={chordNotes}
+        isLeftHanded={handedness === 'left'}
+        accidentalType={accidentalType}
+      />
       <div className="card">
-        <h2>Fretboard Controls</h2>
+        <h1>Fretboard Controls</h1>
         <div className="controls-grid">
           <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
           <Selector label="Scale" value={selectedScale} options={scales.map(s => s.name)} onChange={setSelectedScale} />
@@ -132,15 +140,6 @@ const ScaleVisualizer = () => {
           </div>
         )}
       </div>
-      <Fretboard 
-        fretboardData={fretboardData} 
-        selectedVoicing={currentVoicing}
-        scaleRootNote={selectedRoot}
-        chordRootNote={chordRootNote}
-        validNotes={chordNotes}
-        isLeftHanded={handedness === 'left'}
-        accidentalType={accidentalType}
-      />
     </div>
   );
 };
