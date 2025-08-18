@@ -16,6 +16,20 @@
     padding-bottom: 0.5rem;
 }
 
+/* This rule is now specific and will not leak */
+.chord-editor-page .fretboard-container {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 20px 0;
+}
+
+/* This rule is now specific and will not leak */
+.chord-editor-page .fret,
+.chord-editor-page .fret-number {
+    width: 48px;
+    flex-shrink: 0;
+}
+
 .form-group {
     margin-bottom: 1rem;
 }
@@ -84,8 +98,8 @@
     gap: 1rem;
 }
 
-/* Fretboard specific styles */
-.fretboard {
+/* This rule is now specific and will not leak */
+.chord-editor-page .fretboard {
     border-top: 2px solid #007bff;
     padding-top: 1rem;
     margin-top: 1rem;
