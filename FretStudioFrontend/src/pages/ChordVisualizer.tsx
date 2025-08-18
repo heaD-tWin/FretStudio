@@ -88,9 +88,17 @@ const ChordVisualizer = () => {
 
   return (
     <div className="visualizer-page chord-visualizer-page">
-      <h1>Chord Visualizer</h1>
+      <Fretboard
+        fretboardData={fretboardData}
+        validNotes={validNotes}
+        chordRootNote={unformatNote(selectedRoot)}
+        selectedVoicing={selectedVoicing}
+        isLeftHanded={handedness === 'left'}
+        accidentalType={accidentalType}
+        disableHighlighting={true}
+      />
       <div className="card">
-        <h2>Fretboard Controls</h2>
+        <h1>Chord Controls</h1>
         <div className="controls-grid">
           <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
           <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
@@ -101,18 +109,6 @@ const ChordVisualizer = () => {
           <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
           <span>{getVoicingDisplayName()}</span>
         </div>
-      </div>
-      <div className="card">
-        <h2>Fretboard Visualization</h2>
-        <Fretboard
-          fretboardData={fretboardData}
-          validNotes={validNotes}
-          chordRootNote={unformatNote(selectedRoot)}
-          selectedVoicing={selectedVoicing}
-          isLeftHanded={handedness === 'left'}
-          accidentalType={accidentalType}
-          disableHighlighting={true}
-        />
       </div>
     </div>
   );

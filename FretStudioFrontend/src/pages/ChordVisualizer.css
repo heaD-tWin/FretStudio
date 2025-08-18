@@ -1,0 +1,37 @@
+.chord-visualizer-page {
+  padding: 1rem 10px;
+}
+
+.chord-visualizer-page h1 {
+  color: #3d3d3d;
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.chord-visualizer-page .fretboard-container {
+    background-color: transparent;
+    border-radius: 0;
+    padding: 20px 0;
+}
+
+.chord-visualizer-page .fret,
+.chord-visualizer-page .fret-number {
+    width: 48px;
+    flex-shrink: 0;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.voicing-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
