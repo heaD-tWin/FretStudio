@@ -233,10 +233,42 @@ const ChordEditor = () => {
 
   return (
     <div className="chord-editor-page">
-      <h1>Chord Editor</h1>
+        <Fretboard
+            fretboardData={fretboardData}
+            validNotes={validNotes}
+            chordRootNote={unformatNote(selectedRoot)}
+            isLeftHanded={handedness === 'left'}
+            accidentalType={accidentalType}
+            editableFingering={fingering}
+            activeFret={activeFret}
+            onFretClick={handleFretClick}
+            onFingerSelect={handleFingerSelect}
+            onStrumToggle={handleStrumToggle}
+          />
+
+    <div className="card">
+        <h1>Select Chord to Edit Voicings (for {selectedTuning})</h1>
+        <div className="controls-grid">
+            <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
+            <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
+            <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...voicings.map(v => v.name)]} onChange={handleSelectVoicing} />
+        </div>
+        <h1>Voicing Details</h1>
+        <div className="controls-grid">
+            <div className="form-group">
+                <label>Voicing Name</label>
+                <input type="text" value={voicingName} onChange={e => setVoicingName(e.target.value)} />
+            </div>
+            <Selector label="Difficulty" value={voicingDifficulty} options={['Beginner', 'Intermediate', 'Advanced']} onChange={setVoicingDifficulty} />
+        </div>
+        <div className="editor-actions">
+            <button onClick={handleSaveVoicing}>Save Voicing</button>
+            {selectedVoicingName !== NEW_VOICING_OPTION && <button onClick={handleDeleteVoicing} className="remove-button">Delete Voicing</button>}
+        </div>
+    </div>
       
       <div className="card">
-        <h2>Manage Chord Types</h2>
+        <h1>Manage Chord Types</h1>
         <div className="controls-grid">
           <Selector label="Edit Chord Type" value={selectedChordTypeName} options={[NEW_CHORD_TYPE_OPTION, ...chordTypes.map(ct => ct.name)]} onChange={handleSelectChordTypeForEdit} />
           <div className="form-group">
@@ -252,45 +284,6 @@ const ChordEditor = () => {
           {showDeleteChordTypeBtn ? <button onClick={handleDeleteChordType} className="remove-button">Delete Chord Type</button> : <button onClick={handleSaveChordType}>Save Chord Type</button>}
         </div>
       </div>
-
-      <div className="card">
-        <h2>Select Chord to Edit Voicings (for {selectedTuning})</h2>
-        <div className="controls-grid">
-          <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
-          <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
-          <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...voicings.map(v => v.name)]} onChange={handleSelectVoicing} />
-        </div>
-      </div>
-
-      <div className="card">
-        <h2>Voicing Details</h2>
-        <div className="controls-grid">
-          <div className="form-group">
-            <label>Voicing Name</label>
-            <input type="text" value={voicingName} onChange={e => setVoicingName(e.target.value)} />
-          </div>
-          <Selector label="Difficulty" value={voicingDifficulty} options={['Beginner', 'Intermediate', 'Advanced']} onChange={setVoicingDifficulty} />
-        </div>
-        <div className="editor-actions">
-          <button onClick={handleSaveVoicing}>Save Voicing</button>
-          {selectedVoicingName !== NEW_VOICING_OPTION && <button onClick={handleDeleteVoicing} className="remove-button">Delete Voicing</button>}
-        </div>
-      </div>
-
-
-        <Fretboard
-          fretboardData={fretboardData}
-          validNotes={validNotes}
-          chordRootNote={unformatNote(selectedRoot)}
-          isLeftHanded={handedness === 'left'}
-          accidentalType={accidentalType}
-          editableFingering={fingering}
-          activeFret={activeFret}
-          onFretClick={handleFretClick}
-          onFingerSelect={handleFingerSelect}
-          onStrumToggle={handleStrumToggle}
-        />
-
     </div>
   );
 };

@@ -12,16 +12,16 @@ function App() {
       <nav className="navbar">
         <NavLink to="/" end className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Visualizer</NavLink>
         <NavLink to="/chord-visualizer" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Chord Visualizer</NavLink>
-        <NavLink to="/scale-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Editor</NavLink>
         <NavLink to="/chord-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Chord Editor</NavLink>
+        <NavLink to="/scale-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Editor</NavLink>
         <NavLink to="/settings" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Settings</NavLink>
       </nav>
       <main className="content">
         <Routes>
           <Route path="/" element={<ScaleVisualizer />} />
           <Route path="/chord-visualizer" element={<ChordVisualizer />} />
-          <Route path="/scale-editor" element={<ScaleEditor />} />
           <Route path="/chord-editor" element={<ChordEditor />} />
+          <Route path="/scale-editor" element={<ScaleEditor />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>

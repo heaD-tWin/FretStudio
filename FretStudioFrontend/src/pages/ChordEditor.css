@@ -4,9 +4,10 @@
 
 /* NEW: Styles to ensure consistent heading sizes */
 .chord-editor-page h1 {
-    font-size: 2em;
-    margin-bottom: 1rem; /* Adjusted for better spacing */
+    color: #3d3d3d;
+    font-size: 1.5rem;
     text-align: center;
+    margin-bottom: 1rem;
 }
 
 .chord-editor-page h2 {
