@@ -232,7 +232,7 @@ const ChordEditor = () => {
   const showDeleteChordTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isChordTypeModified;
 
   return (
-    <div className="editor-page chord-editor-page">
+    <div className="chord-editor-page">
       <h1>Chord Editor</h1>
       
       <div className="card">
@@ -277,8 +277,7 @@ const ChordEditor = () => {
         </div>
       </div>
 
-      <div className="card">
-        <h2>Fretboard Editor</h2>
+
         <Fretboard
           fretboardData={fretboardData}
           validNotes={validNotes}
@@ -291,7 +290,7 @@ const ChordEditor = () => {
           onFingerSelect={handleFingerSelect}
           onStrumToggle={handleStrumToggle}
         />
-      </div>
+
     </div>
   );
 };
