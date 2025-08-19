@@ -2,33 +2,33 @@
   "Minor": {
     "name": "Minor",
     "intervals": [
-      0,
-      3,
-      7
+      1,
+      4,
+      8
     ]
   },
   "Diminished": {
     "name": "Diminished",
     "intervals": [
-      0,
-      3,
-      6
+      1,
+      4,
+      7
     ]
   },
   "Augmented": {
     "name": "Augmented",
     "intervals": [
-      0,
-      4,
-      8
+      1,
+      5,
+      9
     ]
   },
   "Major": {
     "name": "Major",
     "intervals": [
-      0,
-      4,
-      7
+      1,
+      5,
+      8
     ]
   }
 }

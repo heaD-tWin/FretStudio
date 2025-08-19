@@ -60,7 +60,8 @@ def save_voicings_library():
 # --- Music Theory Helpers ---
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
-    return [NOTES[(start_index + i) % 12] for i in intervals]
+    # Adjust for 1-based intervals by subtracting 1
+    return [NOTES[(start_index + (i - 1)) % 12] for i in intervals]
 
 # --- API Endpoints ---
 @app.get("/tunings", response_model=List[Tuning])

@@ -2,13 +2,13 @@
   "Natural Minor": {
     "name": "Natural Minor",
     "intervals": [
-      0,
-      2,
+      1,
       3,
-      5,
-      7,
+      4,
+      6,
       8,
-      10
+      9,
+      11
     ],
     "allowed_chord_types": [
       "Major",
@@ -19,13 +19,13 @@
   "Harmonic Minor": {
     "name": "Harmonic Minor",
     "intervals": [
-      0,
-      2,
+      1,
       3,
-      5,
-      7,
+      4,
+      6,
       8,
-      11
+      9,
+      12
     ],
     "allowed_chord_types": [
       "Major",
@@ -37,11 +37,11 @@
   "Pentatonic Major": {
     "name": "Pentatonic Major",
     "intervals": [
-      0,
-      2,
-      4,
-      7,
-      9
+      1,
+      3,
+      5,
+      8,
+      10
     ],
     "allowed_chord_types": [
       "Major",
@@ -51,11 +51,11 @@
   "Pentatonic Minor": {
     "name": "Pentatonic Minor",
     "intervals": [
-      0,
-      3,
-      5,
-      7,
-      10
+      1,
+      4,
+      6,
+      8,
+      11
     ],
     "allowed_chord_types": [
       "Major",
@@ -65,13 +65,13 @@
   "Major": {
     "name": "Major",
     "intervals": [
-      0,
-      2,
-      4,
+      1,
+      3,
       5,
-      7,
-      9,
-      11
+      6,
+      8,
+      10,
+      12
     ],
     "allowed_chord_types": [
       "Major",
@@ -83,7 +83,6 @@
   "test": {
     "name": "test",
     "intervals": [
-      0,
       1,
       2,
       3,
@@ -94,7 +93,8 @@
       8,
       9,
       10,
-      11
+      11,
+      12
     ],
     "allowed_chord_types": []
   }
