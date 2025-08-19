@@ -4,9 +4,12 @@ import ChordVisualizer from './pages/ChordVisualizer';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
 import Settings from './pages/Settings';
+import { useFingeringVisibility } from './contexts/FingeringVisibilityContext'; // Import the hook
 import './App.css';
 
 function App() {
+  const { isFingeringVisible, toggleFingeringVisibility } = useFingeringVisibility(); // Use the hook
+
   return (
     <div className="App">
       <div className="navbar-container">
@@ -16,6 +19,14 @@ function App() {
           <NavLink to="/chord-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Chord Editor</NavLink>
           <NavLink to="/scale-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Editor</NavLink>
           <NavLink to="/settings" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Settings</NavLink>
+          
+          {/* Add the new toggle button */}
+          <button 
+            className={`fingering-toggle-button ${isFingeringVisible ? 'active' : ''}`}
+            onClick={toggleFingeringVisibility}
+          >
+            Fingerings
+          </button>
         </nav>
       </div>
       <main className="content">

@@ -1,3 +1,4 @@
+import { useFingeringVisibility } from '../contexts/FingeringVisibilityContext';
 import type { FretboardAPIResponse, Voicing } from '../apiService';
 import { formatNote } from '../utils/noteUtils';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
@@ -41,6 +42,7 @@ const Fretboard = ({
   onFingerSelect,
   onStrumToggle,
 }: FretboardProps) => {
+  const { isFingeringVisible } = useFingeringVisibility();
 
   const handleLegacyFretClick = (string: number, fret: number) => {
     if (!onFingeringChange || !editableFingering) return;
@@ -148,7 +150,8 @@ const Fretboard = ({
                       <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
                       {isFretted && !isActive && (
                         <div className={noteMarkerClasses.join(' ')}>
-                          {finger > 0 && <span className="finger">{finger}</span>}
+                          {/* Updated condition for rendering finger numbers */}
+                          {finger > 0 && (!!editableFingering || isFingeringVisible) && <span className="finger">{finger}</span>}
                         </div>
                       )}
                       {isActive && onFingerSelect && (

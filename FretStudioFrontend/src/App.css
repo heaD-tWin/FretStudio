@@ -52,7 +52,7 @@
 
 .navbar {
   display: flex;
-  justify-content: center;
+  align-items: center; /* Vertically align items */
   gap: 1rem;
 }
 
@@ -75,6 +75,25 @@
   color: #0056b3; /* A darker blue for the active link */
   background-color: #e0e0e0;
 }
+
+/* --- Fingering Toggle Button --- */
+.fingering-toggle-button {
+  margin-left: auto; /* Push the button to the right */
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  background-color: #c2185b; /* Pink color from finger markers */
+  opacity: 0.5; /* Greyed out when off */
+  transition: opacity 0.2s;
+}
+
+.fingering-toggle-button.active {
+  opacity: 1; /* Full color when on */
+}
+
 
 /* Center the main content area */
 .content {
