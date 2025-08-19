@@ -1,8 +1,5 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
   padding: 2rem;
-  text-align: center;
 }
 
 .logo {
@@ -41,24 +38,47 @@
   color: #888;
 }
 
-.main-nav {
+/* --- Navigation Bar Styling --- */
+
+/* 1. Style the container as a card and center it */
+.navbar-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  max-width: 1280px; /* Match content width */
+  margin: 0 auto 2rem; /* Center the container and keep bottom margin */
+}
+
+.navbar {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  padding: 0.5rem;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  margin-bottom: 1rem;
 }
 
-.main-nav a {
+.nav-link {
   text-decoration: none;
   color: #007bff;
   font-weight: bold;
+  /* 2. Add padding to each link */
   padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.main-nav a:hover {
+.nav-link:hover {
+  background-color: #f0f0f0;
+}
+
+/* 3. Highlight the active link's text */
+.nav-link.active {
+  color: #0056b3; /* A darker blue for the active link */
   background-color: #e0e0e0;
-  border-radius: 4px;
+}
+
+/* Center the main content area */
+.content {
+  max-width: 1280px; /* Set a max-width for the content */
+  margin: 0 auto;      /* Center the block with auto horizontal margins */
+  text-align: left;   /* Reset text alignment for the content itself */
 }
