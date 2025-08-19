@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 import json
 import os
 
@@ -15,7 +15,12 @@ class ChordVoicings(BaseModel): name: str; voicings: List[Voicing]
 class ChordType(BaseModel): name: str; intervals: List[int]
 class Scale(BaseModel): name: str; intervals: List[int]; allowed_chord_types: List[str]
 class Tuning(BaseModel): name: str; notes: List[str]
-class FretboardNote(BaseModel): note: str; is_in_scale: bool; is_root: bool; is_in_chord: bool
+class FretboardNote(BaseModel): 
+    note: str
+    is_in_scale: bool
+    is_root: bool
+    is_in_chord: bool
+    interval_degree: Optional[int] = None # Add new field for interval degree
 class ChordVisualizationResponse(BaseModel): fretboard: Dict[int, List[FretboardNote]]; voicings: List[Voicing]
 
 # --- Data Loading ---
@@ -222,7 +227,10 @@ async def delete_voicing(tuning_name: str, chord_type_name: str, root_note: str,
 async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, scale_name: str, num_frets: int = 24):
     scale = db_scales.get(scale_name)
     if not scale: raise HTTPException(status_code=404, detail="Scale not found")
+    
     scale_notes = get_notes_from_intervals(root_note, scale.intervals)
+    # Create a map of note names to their 1-based interval degree
+    scale_note_to_interval_map = {note: i for note, i in zip(scale_notes, scale.intervals)}
     
     tuning = db_tunings.get(tuning_name)
     if not tuning: raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
@@ -233,7 +241,14 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, s
         start_index = NOTES.index(open_note.upper())
         for fret in range(num_frets + 1):
             current_note = NOTES[(start_index + fret) % 12]
-            string_notes.append(FretboardNote(note=current_note, is_in_scale=(current_note in scale_notes), is_root=(current_note == root_note.upper()), is_in_chord=False))
+            interval = scale_note_to_interval_map.get(current_note)
+            string_notes.append(FretboardNote(
+                note=current_note, 
+                is_in_scale=(current_note in scale_notes), 
+                is_root=(current_note == root_note.upper()), 
+                is_in_chord=False,
+                interval_degree=interval
+            ))
         fretboard[len(tuning.notes) - i] = string_notes
     return fretboard
 

@@ -26,6 +26,7 @@ export interface FretboardNote {
   note: string;
   is_in_scale: boolean;
   is_in_chord: boolean;
+  interval_degree?: number; // Add optional interval_degree field
 }
 
 export interface FretboardAPIResponse {

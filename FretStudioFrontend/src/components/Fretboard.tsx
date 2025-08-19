@@ -138,6 +138,7 @@ const Fretboard = ({
                   }
                   
                   const finger = fingeringInfo ? fingeringInfo[2] : 0;
+                  const intervalDegree = noteInfo.interval_degree;
                   const isActive = activeFret && activeFret[0] === stringNum && activeFret[1] === fret;
 
                   return (
@@ -150,8 +151,8 @@ const Fretboard = ({
                       <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
                       {isFretted && !isActive && (
                         <div className={noteMarkerClasses.join(' ')}>
-                          {/* Updated condition for rendering finger numbers */}
                           {finger > 0 && (!!editableFingering || isFingeringVisible) && <span className="finger">{finger}</span>}
+                          {intervalDegree && <span className="interval-degree">{intervalDegree}</span>}
                         </div>
                       )}
                       {isActive && onFingerSelect && (
