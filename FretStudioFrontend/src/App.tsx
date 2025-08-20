@@ -4,11 +4,13 @@ import ChordVisualizer from './pages/ChordVisualizer';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
 import Settings from './pages/Settings';
-import { useFingeringVisibility } from './contexts/FingeringVisibilityContext'; // Import the hook
+import { useFingeringVisibility } from './contexts/FingeringVisibilityContext';
+import { useIntervalVisibility } from './contexts/IntervalVisibilityContext'; // 1. Import new hook
 import './App.css';
 
 function App() {
-  const { isFingeringVisible, toggleFingeringVisibility } = useFingeringVisibility(); // Use the hook
+  const { isFingeringVisible, toggleFingeringVisibility } = useFingeringVisibility();
+  const { isIntervalVisible, toggleIntervalVisibility } = useIntervalVisibility(); // 2. Use new hook
 
   return (
     <div className="App">
@@ -20,13 +22,21 @@ function App() {
           <NavLink to="/scale-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Editor</NavLink>
           <NavLink to="/settings" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Settings</NavLink>
           
-          {/* Add the new toggle button */}
-          <button 
-            className={`fingering-toggle-button ${isFingeringVisible ? 'active' : ''}`}
-            onClick={toggleFingeringVisibility}
-          >
-            Fingerings
-          </button>
+          {/* 3. Add the new toggle buttons */}
+          <div className="nav-controls">
+            <button 
+              className={`nav-toggle-button interval-toggle ${isIntervalVisible ? 'active' : ''}`}
+              onClick={toggleIntervalVisibility}
+            >
+              Intervals
+            </button>
+            <button 
+              className={`nav-toggle-button fingering-toggle ${isFingeringVisible ? 'active' : ''}`}
+              onClick={toggleFingeringVisibility}
+            >
+              Fingerings
+            </button>
+          </div>
         </nav>
       </div>
       <main className="content">

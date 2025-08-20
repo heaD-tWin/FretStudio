@@ -1,4 +1,5 @@
 import { useFingeringVisibility } from '../contexts/FingeringVisibilityContext';
+import { useIntervalVisibility } from '../contexts/IntervalVisibilityContext'; // 1. Import interval hook
 import type { FretboardAPIResponse, Voicing } from '../apiService';
 import { formatNote } from '../utils/noteUtils';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
@@ -9,14 +10,15 @@ interface FretboardProps {
   isLeftHanded: boolean;
   accidentalType: AccidentalType;
   
-  // For displaying voicings or highlighted notes
   selectedVoicing?: Voicing | null;
   validNotes?: string[];
   scaleRootNote?: string;
   chordRootNote?: string | null;
   disableHighlighting?: boolean;
 
-  // For editing fingerings
+  // Add new prop to override the global toggle
+  forceIntervalsVisible?: boolean; // 2. Add new prop
+
   editableFingering?: [number, number, number][];
   onFingeringChange?: (newFingering: [number, number, number][]) => void;
   
@@ -35,6 +37,7 @@ const Fretboard = ({
   scaleRootNote,
   chordRootNote,
   disableHighlighting = false,
+  forceIntervalsVisible = false, // 3. Set default for new prop
   editableFingering,
   onFingeringChange,
   activeFret,
@@ -43,6 +46,7 @@ const Fretboard = ({
   onStrumToggle,
 }: FretboardProps) => {
   const { isFingeringVisible } = useFingeringVisibility();
+  const { isIntervalVisible } = useIntervalVisibility(); // 4. Use interval hook
 
   const handleLegacyFretClick = (string: number, fret: number) => {
     if (!onFingeringChange || !editableFingering) return;
@@ -141,6 +145,10 @@ const Fretboard = ({
                   const intervalDegree = noteInfo.interval_degree;
                   const isActive = activeFret && activeFret[0] === stringNum && activeFret[1] === fret;
 
+                  // 5. Check visibility for both indicators
+                  const showFingerIndicator = finger > 0 && (!!editableFingering || isFingeringVisible);
+                  const showIntervalIndicator = intervalDegree && (forceIntervalsVisible || isIntervalVisible);
+
                   return (
                     <div
                       key={fret}
@@ -151,8 +159,8 @@ const Fretboard = ({
                       <span className="note-name">{formatNote(noteInfo.note, accidentalType)}</span>
                       {isFretted && !isActive && (
                         <div className={noteMarkerClasses.join(' ')}>
-                          {finger > 0 && (!!editableFingering || isFingeringVisible) && <span className="finger">{finger}</span>}
-                          {intervalDegree && <span className="interval-degree">{intervalDegree}</span>}
+                          {showFingerIndicator && <span className="finger">{finger}</span>}
+                          {showIntervalIndicator && <span className="interval-degree">{intervalDegree}</span>}
                         </div>
                       )}
                       {isActive && onFingerSelect && (

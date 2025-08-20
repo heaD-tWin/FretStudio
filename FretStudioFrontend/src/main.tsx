@@ -1,25 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import { HandednessProvider } from './contexts/HandednessContext';
-import { AccidentalTypeProvider } from './contexts/AccidentalTypeContext';
-import { TuningProvider } from './contexts/TuningContext';
-import { FingeringVisibilityProvider } from './contexts/FingeringVisibilityContext'; // Import the new provider
+import App from './App.tsx';
 import './index.css';
+import { BrowserRouter } from 'react-router-dom';
+import { HandednessProvider } from './contexts/HandednessContext.tsx';
+import { AccidentalTypeProvider } from './contexts/AccidentalTypeContext.tsx';
+import { TuningProvider } from './contexts/TuningContext.tsx';
+import { FingeringVisibilityProvider } from './contexts/FingeringVisibilityContext.tsx';
+import { IntervalVisibilityProvider } from './contexts/IntervalVisibilityContext.tsx'; // 1. Import the new provider
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <HandednessProvider>
+      <TuningProvider>
         <AccidentalTypeProvider>
-          <TuningProvider>
-            <FingeringVisibilityProvider> {/* Wrap the App with the new provider */}
-              <App />
+          <HandednessProvider>
+            <FingeringVisibilityProvider>
+              <IntervalVisibilityProvider> {/* 2. Wrap the App component */}
+                <App />
+              </IntervalVisibilityProvider>
             </FingeringVisibilityProvider>
-          </TuningProvider>
+          </HandednessProvider>
         </AccidentalTypeProvider>
-      </HandednessProvider>
+      </TuningProvider>
     </BrowserRouter>
-  </React.StrictMode>
-);
+  </React.StrictMode>,
+)
