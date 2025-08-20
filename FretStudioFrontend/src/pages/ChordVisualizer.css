@@ -21,17 +21,17 @@
     flex-shrink: 0;
 }
 
-.controls-grid {
+.chord-visualizer-page .controls-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.voicing-controls {
+.chord-visualizer-page .voicing-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Align to the left */
   gap: 1rem;
   margin-top: 1rem;
 }

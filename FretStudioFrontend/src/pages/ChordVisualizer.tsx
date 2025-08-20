@@ -5,7 +5,7 @@ import {
   getChordTypes,
   getVoicingsForChord,
   getChordNotesForEditor,
-  getVisualizedChord, // Import the new function
+  getVisualizedChord,
   type ChordType,
   type Voicing,
   type FretboardAPIResponse,
@@ -50,17 +50,16 @@ const ChordVisualizer = () => {
       if (selectedChordType && selectedRoot && selectedTuning) {
         const rootForAPI = unformatNote(selectedRoot);
         
-        // Fetch all data in parallel
         const [fetchedVoicings, notes, fretboardLayout] = await Promise.all([
           getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType) // Use the new function here
+          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType)
         ]);
 
         setVoicings(fetchedVoicings || []);
         setValidNotes(notes || []);
-        setFretboardData(fretboardLayout); // Set the new fretboard data
-        setSelectedVoicingIndex(-1); // Reset voicing selection
+        setFretboardData(fretboardLayout);
+        setSelectedVoicingIndex(-1);
       }
     }
     fetchChordData();
@@ -75,6 +74,7 @@ const ChordVisualizer = () => {
   };
 
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
+  const areVoicingsAvailable = voicings.length > 0;
 
   return (
     <div className="chord-visualizer-page">
@@ -92,17 +92,15 @@ const ChordVisualizer = () => {
           <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
           <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
         </div>
-        {voicings.length > 0 && (
-          <div className="voicing-controls">
-            <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
-            <button onClick={handlePrevVoicing}>Prev Voicing</button>
-            <button onClick={handleNextVoicing}>Next Voicing</button>
-            <span>
-              {currentVoicing?.name || 'All Tones'}
-              {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
-            </span>
-          </div>
-        )}
+        <div className="voicing-controls">
+          <button onClick={() => setSelectedVoicingIndex(-1)} disabled={!areVoicingsAvailable}>Show All Tones</button>
+          <button onClick={handlePrevVoicing} disabled={!areVoicingsAvailable}>Prev Voicing</button>
+          <button onClick={handleNextVoicing} disabled={!areVoicingsAvailable}>Next Voicing</button>
+          <span>
+            {currentVoicing?.name || 'All Tones'}
+            {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
+          </span>
+        </div>
       </div>
     </div>
   );

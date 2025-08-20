@@ -94,21 +94,17 @@ const ScaleVisualizer = () => {
   }, [selectedRoot, selectedScale, selectedTuning, selectedChord]);
 
   const handleNextVoicing = () => {
-    setSelectedVoicingIndex(prev => {
-      if (prev === voicings.length - 1) return -1;
-      return prev + 1;
-    });
+    // Corrected logic: Does not cycle back to "All Tones"
+    setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
   };
 
   const handlePrevVoicing = () => {
-    setSelectedVoicingIndex(prev => {
-      if (prev === -1) return voicings.length - 1;
-      if (prev === 0) return -1;
-      return prev - 1;
-    });
+    // Corrected logic: Does not cycle back to "All Tones"
+    setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
   };
 
   const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
+  const areVoicingsAvailable = voicings.length > 0;
 
   return (
       <div className="scale-visualizer-page">
@@ -128,17 +124,15 @@ const ScaleVisualizer = () => {
           <Selector label="Scale" value={selectedScale} options={scales.map(s => s.name)} onChange={setSelectedScale} />
           <Selector label="Chord" value={selectedChord || FULL_SCALE_OPTION} options={[FULL_SCALE_OPTION, ...chords]} onChange={(value) => setSelectedChord(value === FULL_SCALE_OPTION ? '' : value)} />
         </div>
-        {selectedChord && voicings.length > 0 && (
-          <div className="voicing-controls">
-            <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
-            <button onClick={handlePrevVoicing} disabled={voicings.length === 0}>Prev Voicing</button>
-            <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
-            <span>
-              {currentVoicing?.name || 'All Tones'}
-              {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
-            </span>
-          </div>
-        )}
+        <div className="voicing-controls">
+          <button onClick={() => setSelectedVoicingIndex(-1)} disabled={!areVoicingsAvailable}>Show All Tones</button>
+          <button onClick={handlePrevVoicing} disabled={!areVoicingsAvailable}>Prev Voicing</button>
+          <button onClick={handleNextVoicing} disabled={!areVoicingsAvailable}>Next Voicing</button>
+          <span>
+            {currentVoicing?.name || 'All Tones'}
+            {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
+          </span>
+        </div>
       </div>
     </div>
   );
