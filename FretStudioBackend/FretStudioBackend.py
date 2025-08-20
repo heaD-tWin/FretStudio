@@ -82,7 +82,7 @@ async def add_or_update_tuning(tuning: Tuning):
     if tuning.name not in db_voicings_library:
         db_voicings_library[tuning.name] = {}
         for ct_name in db_chord_types:
-            db_voicings_library[tuning.name][ct_name] = {
+            db_voicings_library[tuning_name][ct_name] = {
                 note: ChordVoicings(name=f"{note} {ct_name}", voicings=[]) for note in NOTES
             }
         save_voicings_library()
@@ -247,6 +247,40 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, s
                 is_in_scale=(current_note in scale_notes), 
                 is_root=(current_note == root_note.upper()), 
                 is_in_chord=False,
+                interval_degree=interval
+            ))
+        fretboard[len(tuning.notes) - i] = string_notes
+    return fretboard
+
+@app.get("/fretboard/visualize-chord", response_model=Dict[int, List[FretboardNote]])
+async def get_visualized_fretboard_for_chord(tuning_name: str, root_note: str, chord_type_name: str, num_frets: int = 24):
+    """
+    Generates a fretboard visualization for a specific chord, including interval degrees for each note.
+    """
+    chord_type = db_chord_types.get(chord_type_name)
+    if not chord_type:
+        raise HTTPException(status_code=404, detail="Chord type not found")
+
+    tuning = db_tunings.get(tuning_name)
+    if not tuning:
+        raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
+
+    chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
+    # Create a map of note names to their 1-based interval degree for the chord
+    chord_note_to_interval_map = {note: i for note, i in zip(chord_notes, chord_type.intervals)}
+
+    fretboard: Dict[int, List[FretboardNote]] = {}
+    for i, open_note in enumerate(tuning.notes):
+        string_notes: List[FretboardNote] = []
+        start_index = NOTES.index(open_note.upper())
+        for fret in range(num_frets + 1):
+            current_note = NOTES[(start_index + fret) % 12]
+            interval = chord_note_to_interval_map.get(current_note)
+            string_notes.append(FretboardNote(
+                note=current_note,
+                is_in_scale=False,  # Not relevant for chord view
+                is_root=(current_note == root_note.upper()),
+                is_in_chord=(current_note in chord_notes),
                 interval_degree=interval
             ))
         fretboard[len(tuning.notes) - i] = string_notes

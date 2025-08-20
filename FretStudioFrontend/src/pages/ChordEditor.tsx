@@ -9,7 +9,7 @@ import {
   addVoicingToChord,
   deleteVoicing,
   getChordNotesForEditor,
-  getVisualizedScale,
+  getVisualizedChord, // Import the new function
   type ChordType,
   type Voicing,
   type FretboardAPIResponse,
@@ -68,11 +68,11 @@ const ChordEditor = () => {
         const [fetchedVoicings, notes, fretboardLayout] = await Promise.all([
           getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedScale(selectedTuning, rootForAPI, 'Major')
+          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType) // Use the new function here
         ]);
         setVoicings(fetchedVoicings || []);
         setValidNotes(notes || []);
-        setFretboardData(fretboardLayout);
+        setFretboardData(fretboardLayout); // Set the new fretboard data
         resetVoicingFields();
       }
     }

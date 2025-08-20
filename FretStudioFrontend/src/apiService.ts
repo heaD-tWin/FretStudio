@@ -153,6 +153,11 @@ export const getVisualizedScale = async (tuningName: string, rootNote: string, s
   return handleResponse<FretboardAPIResponse>(response);
 };
 
+export const getVisualizedChord = async (tuningName: string, rootNote: string, chordTypeName: string): Promise<FretboardAPIResponse | null> => {
+  const response = await fetch(`${API_BASE_URL}/fretboard/visualize-chord?tuning_name=${encodeURIComponent(tuningName)}&root_note=${encodeURIComponent(rootNote)}&chord_type_name=${encodeURIComponent(chordTypeName)}`);
+  return handleResponse<FretboardAPIResponse>(response);
+};
+
 export const getChordNotesForEditor = async (rootNote: string, chordTypeName: string): Promise<string[]> => {
   const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
   return await handleResponse<string[]>(response) || [];

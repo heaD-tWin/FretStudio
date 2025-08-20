@@ -5,7 +5,7 @@ import {
   getChordTypes,
   getVoicingsForChord,
   getChordNotesForEditor,
-  getVisualizedScale,
+  getVisualizedChord, // Import the new function
   type ChordType,
   type Voicing,
   type FretboardAPIResponse,
@@ -16,8 +16,6 @@ import { useTuning } from '../contexts/TuningContext';
 import { getNoteNames, unformatNote } from '../utils/noteUtils';
 import './ChordVisualizer.css';
 
-const ALL_TONES_OPTION = "Show All Tones";
-
 const ChordVisualizer = () => {
   const { handedness } = useHandedness();
   const { accidentalType } = useAccidentalType();
@@ -27,88 +25,84 @@ const ChordVisualizer = () => {
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
   const [selectedChordType, setSelectedChordType] = useState('');
   const [selectedRoot, setSelectedRoot] = useState('C');
-  
+
   const [voicings, setVoicings] = useState<Voicing[]>([]);
-  const [selectedVoicing, setSelectedVoicing] = useState<Voicing | null>(null);
+  const [selectedVoicingIndex, setSelectedVoicingIndex] = useState(-1);
   
   const [fretboardData, setFretboardData] = useState<FretboardAPIResponse | null>(null);
   const [validNotes, setValidNotes] = useState<string[]>([]);
 
+  // Fetch initial list of chord types
   useEffect(() => {
-    async function fetchInitialData() {
+    async function fetchChordTypes() {
       const types = await getChordTypes();
       setChordTypes(types);
       if (types.length > 0) {
         setSelectedChordType(types[0].name);
       }
     }
-    fetchInitialData();
+    fetchChordTypes();
   }, []);
 
+  // Fetch voicings, notes, and fretboard layout when chord selection changes
   useEffect(() => {
     async function fetchChordData() {
       if (selectedChordType && selectedRoot && selectedTuning) {
         const rootForAPI = unformatNote(selectedRoot);
+        
+        // Fetch all data in parallel
         const [fetchedVoicings, notes, fretboardLayout] = await Promise.all([
           getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedScale(selectedTuning, rootForAPI, 'Major')
+          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType) // Use the new function here
         ]);
+
         setVoicings(fetchedVoicings || []);
         setValidNotes(notes || []);
-        setFretboardData(fretboardLayout);
-        setSelectedVoicing(null); // Default to "Show All Tones"
+        setFretboardData(fretboardLayout); // Set the new fretboard data
+        setSelectedVoicingIndex(-1); // Reset voicing selection
       }
     }
     fetchChordData();
   }, [selectedChordType, selectedRoot, selectedTuning]);
 
   const handleNextVoicing = () => {
-    if (voicings.length === 0) return;
-    const currentIndex = selectedVoicing ? voicings.indexOf(selectedVoicing) : -1;
-    const nextIndex = (currentIndex + 1) % voicings.length;
-    setSelectedVoicing(voicings[nextIndex]);
+    setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
   };
 
   const handlePrevVoicing = () => {
-    if (voicings.length === 0) return;
-    const currentIndex = selectedVoicing ? voicings.indexOf(selectedVoicing) : -1;
-    const prevIndex = currentIndex === -1 ? voicings.length - 1 : (currentIndex - 1 + voicings.length) % voicings.length;
-    setSelectedVoicing(voicings[prevIndex]);
+    setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
   };
 
-  const getVoicingDisplayName = () => {
-    if (!selectedVoicing) return ALL_TONES_OPTION;
-    let name = selectedVoicing.name;
-    if (selectedVoicing.difficulty) {
-      name += ` (${selectedVoicing.difficulty})`;
-    }
-    return name;
-  };
+  const currentVoicing = selectedVoicingIndex > -1 ? voicings[selectedVoicingIndex] : null;
 
   return (
-    <div className="visualizer-page chord-visualizer-page">
+    <div className="chord-visualizer-page">
       <Fretboard
         fretboardData={fretboardData}
+        selectedVoicing={currentVoicing}
         validNotes={validNotes}
         chordRootNote={unformatNote(selectedRoot)}
-        selectedVoicing={selectedVoicing}
         isLeftHanded={handedness === 'left'}
         accidentalType={accidentalType}
-        disableHighlighting={true}
       />
       <div className="card">
-        <h1>Chord Controls</h1>
+        <h1>Fretboard Controls</h1>
         <div className="controls-grid">
           <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
           <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
         </div>
-        <div className="voicing-controls">
-          <button onClick={() => setSelectedVoicing(null)}>Show All Tones</button>
-          <button onClick={handlePrevVoicing} disabled={voicings.length === 0}>Prev Voicing</button>
-          <button onClick={handleNextVoicing} disabled={voicings.length === 0}>Next Voicing</button>
-          <span>{getVoicingDisplayName()}</span>
-        </div>
+        {voicings.length > 0 && (
+          <div className="voicing-controls">
+            <button onClick={() => setSelectedVoicingIndex(-1)}>Show All Tones</button>
+            <button onClick={handlePrevVoicing}>Prev Voicing</button>
+            <button onClick={handleNextVoicing}>Next Voicing</button>
+            <span>
+              {currentVoicing?.name || 'All Tones'}
+              {currentVoicing?.difficulty && ` (${currentVoicing.difficulty})`}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
