@@ -90,6 +90,11 @@
   transition: opacity 0.2s;
 }
 
+/* This is the new rule to remove the highlight */
+.nav-toggle-button:focus {
+  outline: none;
+}
+
 .nav-toggle-button.active {
   opacity: 1; /* Full color when on */
 }
