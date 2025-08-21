@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  getScales, addScale, deleteScale, type Scale,
+  getScales, addScale, deleteScale, reorderScale, type Scale,
   getTunings, addTuning, deleteTuning, reorderTuning, type Tuning 
 } from '../apiService';
 import Selector from '../components/Selector';
@@ -103,6 +103,16 @@ const ScaleEditor = () => {
     }
   };
 
+  const handleReorderScale = async (direction: 'up' | 'down') => {
+    if (selectedScaleName === NEW_SCALE_OPTION) return;
+    if (await reorderScale(selectedScaleName, direction)) {
+      const freshData = await getScales();
+      setScales(freshData);
+    } else {
+      alert(`Failed to move scale ${direction}.`);
+    }
+  };
+
   const handleTuningNoteChange = (newNote: string, stringIndex: number) => {
     const newNotes = [...editedTuningNotes];
     newNotes[stringIndex] = newNote;
@@ -151,6 +161,7 @@ const ScaleEditor = () => {
   };
 
   const selectedTuningIndex = tunings.findIndex(t => t.name === selectedTuningName);
+  const selectedScaleIndex = scales.findIndex(s => s.name === selectedScaleName);
 
   return (
     <div className="editor-page">
@@ -190,10 +201,26 @@ const ScaleEditor = () => {
           </div>
         </div>
         <div className="editor-actions">
-          <button onClick={handleSaveScale}>Save Scale</button>
-          {selectedScaleName !== NEW_SCALE_OPTION && (
-            <button className="remove-button" onClick={handleDeleteScale}>Delete Scale</button>
-          )}
+          <div className="reorder-buttons">
+            <button
+              onClick={() => handleReorderScale('up')}
+              disabled={selectedScaleIndex < 1}
+            >
+              Move Up
+            </button>
+            <button
+              onClick={() => handleReorderScale('down')}
+              disabled={selectedScaleIndex === -1 || selectedScaleIndex === scales.length - 1}
+            >
+              Move Down
+            </button>
+          </div>
+          <div className="save-delete-buttons">
+            <button onClick={handleSaveScale}>Save Scale</button>
+            {selectedScaleName !== NEW_SCALE_OPTION && (
+              <button className="remove-button" onClick={handleDeleteScale}>Delete Scale</button>
+            )}
+          </div>
         </div>
       </div>
 

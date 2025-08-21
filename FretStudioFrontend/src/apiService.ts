@@ -76,6 +76,15 @@ export const deleteScale = async (scaleName: string): Promise<boolean> => {
   return response.ok;
 };
 
+export const reorderScale = async (name: string, direction: 'up' | 'down'): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/scales/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, direction }),
+  });
+  return response.ok;
+};
+
 export const getChordsInScale = async (rootNote: string, scaleName: string, tuningName: string): Promise<string[]> => {
   const response = await fetch(`${API_BASE_URL}/scales/${encodeURIComponent(rootNote)}/${encodeURIComponent(scaleName)}/chords?tuning_name=${encodeURIComponent(tuningName)}`);
   return await handleResponse<string[]>(response) || [];

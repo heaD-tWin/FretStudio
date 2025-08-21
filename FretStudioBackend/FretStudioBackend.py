@@ -23,10 +23,9 @@ class FretboardNote(BaseModel):
     interval_degree: Optional[int] = None
 class ChordVisualizationResponse(BaseModel): fretboard: Dict[int, List[FretboardNote]]; voicings: List[Voicing]
 
-# New model for the reorder request
 class ReorderRequest(BaseModel):
     name: str
-    direction: str # "up" or "down"
+    direction: str
 
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -40,13 +39,11 @@ def write_json_data(file_path: str, data):
     full_path = os.path.join(__location__, file_path)
     with open(full_path, "w") as f: json.dump(data, f, indent=2)
 
-# Standardize on the capitalized name as the key
 db_chord_types = {v['name']: ChordType(**v) for v in load_json_data("chord_types.json").values()}
 db_scales = {v['name']: Scale(**v) for v in load_json_data("scales.json").values()}
 db_tunings = {name: Tuning(name=name, **data) for name, data in load_json_data("tunings.json").items()}
 NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
-# Load the new hierarchical voicings library: Tuning -> ChordType -> RootNote -> Voicings
 db_voicings_library: Dict[str, Dict[str, Dict[str, ChordVoicings]]] = {}
 raw_voicings_data = load_json_data("voicings_library.json")
 for tuning_name, tuning_data in raw_voicings_data.items():
@@ -56,7 +53,6 @@ for tuning_name, tuning_data in raw_voicings_data.items():
             note: ChordVoicings(**voicings_data) for note, voicings_data in notes_dict.items()
         }
 
-# --- Helper to save the voicings library ---
 def save_voicings_library():
     data_to_save = {
         t_name: {
@@ -67,7 +63,6 @@ def save_voicings_library():
     }
     write_json_data("voicings_library.json", data_to_save)
 
-# --- Music Theory Helpers ---
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
     return [NOTES[(start_index + (i - 1)) % 12] for i in intervals]
@@ -105,7 +100,6 @@ async def delete_tuning(tuning_name: str):
 
     return {"message": f"Tuning '{tuning_name}' deleted."}
 
-# --- NEW ENDPOINT for reordering tunings ---
 @app.post("/tunings/reorder", status_code=200)
 async def reorder_tuning(req: ReorderRequest):
     global db_tunings
@@ -129,7 +123,6 @@ async def reorder_tuning(req: ReorderRequest):
     else:
         raise HTTPException(status_code=400, detail="Invalid direction. Must be 'up' or 'down'.")
 
-    # Rebuild the dictionary and save it
     new_db_tunings = {name: Tuning(name=name, **data.dict(exclude={'name'})) for name, data in [(k, db_tunings[k]) for k,v in tunings_list]}
     db_tunings = new_db_tunings
     write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
@@ -152,6 +145,36 @@ async def delete_scale(scale_name: str):
     del db_scales[scale_name]
     write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
     return {"message": f"Scale '{scale_name}' deleted."}
+
+# --- NEW ENDPOINT for reordering scales ---
+@app.post("/scales/reorder", status_code=200)
+async def reorder_scale(req: ReorderRequest):
+    global db_scales
+
+    if req.name not in db_scales:
+        raise HTTPException(status_code=404, detail="Scale to reorder not found.")
+
+    scales_list = list(db_scales.items())
+
+    try:
+        idx = [s[0] for s in scales_list].index(req.name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Scale name mismatch in list.")
+
+    if req.direction == "up":
+        if idx == 0: return {"message": "Scale is already at the top."}
+        scales_list.insert(idx - 1, scales_list.pop(idx))
+    elif req.direction == "down":
+        if idx == len(scales_list) - 1: return {"message": "Scale is already at the bottom."}
+        scales_list.insert(idx + 1, scales_list.pop(idx))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid direction. Must be 'up' or 'down'.")
+
+    new_db_scales = {name: data for name, data in scales_list}
+    db_scales = new_db_scales
+    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+
+    return {"message": f"Scale '{req.name}' moved {req.direction}."}
 
 @app.get("/scales/{root_note}/{scale_name}/chords", response_model=List[str])
 async def get_chords_in_scale(root_note: str, scale_name: str, tuning_name: str = "Standard Guitar"):
