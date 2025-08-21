@@ -27,6 +27,14 @@ class ReorderRequest(BaseModel):
     name: str
     direction: str
 
+# New model for reordering a specific voicing
+class ReorderVoicingRequest(BaseModel):
+    tuning_name: str
+    chord_type_name: str
+    root_note: str
+    voicing_name: str
+    direction: str
+
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 def load_json_data(file_path: str):
@@ -231,7 +239,6 @@ async def delete_chord_type(type_name: str):
     save_voicings_library()
     return {"message": f"Chord type '{type_name}' deleted."}
 
-# --- NEW ENDPOINT for reordering chord types ---
 @app.post("/chord-types/reorder", status_code=200)
 async def reorder_chord_type(req: ReorderRequest):
     global db_chord_types, db_voicings_library
@@ -239,7 +246,6 @@ async def reorder_chord_type(req: ReorderRequest):
     if req.name not in db_chord_types:
         raise HTTPException(status_code=404, detail="Chord type to reorder not found.")
 
-    # 1. Reorder the primary chord_types list
     types_list = list(db_chord_types.items())
     try:
         idx = [t[0] for t in types_list].index(req.name)
@@ -259,7 +265,6 @@ async def reorder_chord_type(req: ReorderRequest):
     db_chord_types = new_db_chord_types
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
 
-    # 2. Reorder the voicings_library based on the new chord type order
     new_ordered_type_names = list(new_db_chord_types.keys())
     new_voicings_library = {}
     for tuning_name, tuning_data in db_voicings_library.items():
@@ -318,6 +323,33 @@ async def delete_voicing(tuning_name: str, chord_type_name: str, root_note: str,
         
     save_voicings_library()
     return {"message": "Voicing deleted."}
+
+# --- NEW ENDPOINT for reordering voicings ---
+@app.post("/voicings/reorder", status_code=200)
+async def reorder_voicing(req: ReorderVoicingRequest):
+    global db_voicings_library
+    
+    try:
+        voicings_list = db_voicings_library[req.tuning_name][req.chord_type_name][req.root_note].voicings
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Voicing path not found.")
+
+    try:
+        idx = [v.name for v in voicings_list].index(req.voicing_name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Voicing not found in list.")
+
+    if req.direction == "up":
+        if idx == 0: return {"message": "Voicing is already at the top."}
+        voicings_list.insert(idx - 1, voicings_list.pop(idx))
+    elif req.direction == "down":
+        if idx == len(voicings_list) - 1: return {"message": "Voicing is already at the bottom."}
+        voicings_list.insert(idx + 1, voicings_list.pop(idx))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid direction.")
+
+    save_voicings_library()
+    return {"message": f"Voicing '{req.voicing_name}' moved {req.direction}."}
 
 @app.get("/fretboard/visualize-scale", response_model=Dict[int, List[FretboardNote]])
 async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, scale_name: str, num_frets: int = 24):

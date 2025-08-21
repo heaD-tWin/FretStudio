@@ -174,6 +174,21 @@ export const deleteVoicing = async (tuningName: string, chordTypeName: string, r
   return response.ok;
 };
 
+export const reorderVoicing = async (
+  tuningName: string, 
+  chordTypeName: string, 
+  rootNote: string, 
+  voicingName: string, 
+  direction: 'up' | 'down'
+): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/voicings/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tuning_name: tuningName, chord_type_name: chordTypeName, root_note: rootNote, voicing_name: voicingName, direction }),
+  });
+  return response.ok;
+};
+
 // --- Fretboard Visualization API ---
 export const getVisualizedScale = async (tuningName: string, rootNote: string, scaleName: string): Promise<FretboardAPIResponse | null> => {
   const response = await fetch(`${API_BASE_URL}/fretboard/visualize-scale?tuning_name=${encodeURIComponent(tuningName)}&root_note=${encodeURIComponent(rootNote)}&scale_name=${encodeURIComponent(scaleName)}`);

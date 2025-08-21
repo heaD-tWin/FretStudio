@@ -5,10 +5,11 @@ import {
   getChordTypes,
   addChordType,
   deleteChordType,
-  reorderChordType, // Import the new function
+  reorderChordType,
   getVoicingsForChord,
   addVoicingToChord,
   deleteVoicing,
+  reorderVoicing, // Import the new function
   getChordNotesForEditor,
   getVisualizedChord,
   type ChordType,
@@ -24,7 +25,6 @@ import './ChordEditor.css';
 const NEW_VOICING_OPTION = "Create New Voicing...";
 const NEW_CHORD_TYPE_OPTION = "Create New Chord Type...";
 
-// An array representing intervals 1 through 12 for the checkboxes
 const ALL_INTERVALS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 const ChordEditor = () => {
@@ -33,16 +33,13 @@ const ChordEditor = () => {
   const { selectedTuning } = useTuning();
   const noteOptions = getNoteNames(accidentalType);
 
-  // --- Chord Type State ---
   const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
   const [selectedChordType, setSelectedChordType] = useState('');
   const [selectedChordTypeName, setSelectedChordTypeName] = useState<string>(NEW_CHORD_TYPE_OPTION);
   const [chordTypeName, setChordTypeName] = useState('');
-  // State for intervals is now an array of numbers
   const [chordTypeIntervals, setChordTypeIntervals] = useState<number[]>([]);
   const [isChordTypeModified, setIsChordTypeModified] = useState(false);
 
-  // --- Voicing State (UNCHANGED) ---
   const [selectedRoot, setSelectedRoot] = useState('C');
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingName, setSelectedVoicingName] = useState(NEW_VOICING_OPTION);
@@ -53,7 +50,6 @@ const ChordEditor = () => {
   const [fingering, setFingering] = useState<[number, number, number][]>([]);
   const [activeFret, setActiveFret] = useState<[number, number] | null>(null);
 
-  // Fetch initial data
   useEffect(() => {
     async function fetchInitialData() {
       const types = await getChordTypes();
@@ -65,7 +61,6 @@ const ChordEditor = () => {
     fetchInitialData();
   }, []);
 
-  // Fetch voicings, notes, and fretboard layout when chord selection changes
   useEffect(() => {
     async function fetchChordData() {
       if (selectedChordType && selectedRoot && selectedTuning) {
@@ -84,7 +79,6 @@ const ChordEditor = () => {
     fetchChordData();
   }, [selectedChordType, selectedRoot, selectedTuning]);
 
-  // --- Chord Type Handlers ---
   const handleIntervalChange = (intervalNumber: number) => {
     setChordTypeIntervals(prev =>
       prev.includes(intervalNumber)
@@ -110,7 +104,7 @@ const ChordEditor = () => {
     const chordType = chordTypes.find(ct => ct.name === name);
     if (chordType) {
       setChordTypeName(chordType.name);
-      setChordTypeIntervals(chordType.intervals); // Use the array directly
+      setChordTypeIntervals(chordType.intervals);
       setIsChordTypeModified(false);
     }
   };
@@ -128,7 +122,6 @@ const ChordEditor = () => {
       const newTypes = await getChordTypes();
       setChordTypes(newTypes);
       setIsChordTypeModified(false);
-      // If the saved chord type was the one selected for voicing, keep it selected
       if (selectedChordType === '' || selectedChordType === chordTypeName) {
         setSelectedChordType(chordTypeName);
       }
@@ -166,7 +159,6 @@ const ChordEditor = () => {
     }
   };
 
-  // --- Voicing Handlers (UNCHANGED) ---
   const resetVoicingFields = () => {
     setSelectedVoicingName(NEW_VOICING_OPTION);
     setVoicingName('');
@@ -262,8 +254,20 @@ const ChordEditor = () => {
     }
   };
 
+  const handleReorderVoicing = async (direction: 'up' | 'down') => {
+    if (selectedVoicingName === NEW_VOICING_OPTION || !selectedTuning || !selectedChordType || !selectedRoot) return;
+    const rootForAPI = unformatNote(selectedRoot);
+    if (await reorderVoicing(selectedTuning, selectedChordType, rootForAPI, selectedVoicingName, direction)) {
+      const updatedVoicings = await getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI);
+      setVoicings(updatedVoicings || []);
+    } else {
+      alert(`Failed to move voicing ${direction}.`);
+    }
+  };
+
   const showDeleteChordTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isChordTypeModified;
   const selectedChordTypeIndex = chordTypes.findIndex(ct => ct.name === selectedChordTypeName);
+  const selectedVoicingIndex = voicings.findIndex(v => v.name === selectedVoicingName);
 
   return (
     <div className="chord-editor-page">
@@ -297,8 +301,24 @@ const ChordEditor = () => {
             <Selector label="Difficulty" value={voicingDifficulty} options={['Beginner', 'Intermediate', 'Advanced']} onChange={setVoicingDifficulty} />
         </div>
         <div className="editor-actions">
+          <div className="reorder-buttons">
+            <button
+              onClick={() => handleReorderVoicing('up')}
+              disabled={selectedVoicingIndex < 1}
+            >
+              Move Up
+            </button>
+            <button
+              onClick={() => handleReorderVoicing('down')}
+              disabled={selectedVoicingIndex === -1 || selectedVoicingIndex === voicings.length - 1}
+            >
+              Move Down
+            </button>
+          </div>
+          <div className="save-delete-buttons">
             <button onClick={handleSaveVoicing}>Save Voicing</button>
             {selectedVoicingName !== NEW_VOICING_OPTION && <button className="remove-button" onClick={handleDeleteVoicing}>Delete Voicing</button>}
+          </div>
         </div>
     </div>
       
