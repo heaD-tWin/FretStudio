@@ -4,29 +4,32 @@ import {
   getTunings, addTuning, deleteTuning, type Tuning 
 } from '../apiService';
 import Selector from '../components/Selector';
+import { useAccidentalType } from '../contexts/AccidentalTypeContext';
+import { getNoteNames } from '../utils/noteUtils';
 import './ScaleEditor.css';
 
 const NEW_SCALE_OPTION = "Create New Scale...";
 const NEW_TUNING_OPTION = "Create New Tuning...";
 
-// An array representing intervals 1 through 12 for the checkboxes
 const ALL_INTERVALS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 const ScaleEditor = () => {
-  // --- State for Scale Editor ---
+  const { accidentalType } = useAccidentalType();
+  const noteOptions = getNoteNames(accidentalType);
+
+  // --- State for Scale Editor (UNCHANGED) ---
   const [scales, setScales] = useState<Scale[]>([]);
   const [selectedScaleName, setSelectedScaleName] = useState(NEW_SCALE_OPTION);
   const [editedScaleName, setEditedScaleName] = useState('');
-  // State for intervals is now an array of numbers
   const [selectedIntervals, setSelectedIntervals] = useState<number[]>([]);
 
-  // --- State for Tuning Editor (UNCHANGED) ---
+  // --- State for Tuning Editor ---
   const [tunings, setTunings] = useState<Tuning[]>([]);
   const [selectedTuningName, setSelectedTuningName] = useState(NEW_TUNING_OPTION);
   const [editedTuningName, setEditedTuningName] = useState('');
-  const [editedTuningNotes, setEditedTuningNotes] = useState('');
+  // State for notes is now an array of strings
+  const [editedTuningNotes, setEditedTuningNotes] = useState<string[]>(['E','A','D','G','B','E']);
 
-  // Fetch initial data for both editors
   useEffect(() => {
     async function fetchInitialData() {
       const scalesData = await getScales();
@@ -37,7 +40,7 @@ const ScaleEditor = () => {
     fetchInitialData();
   }, []);
 
-  // Effect to populate scale form
+  // Effect to populate scale form (UNCHANGED)
   useEffect(() => {
     if (selectedScaleName === NEW_SCALE_OPTION) {
       setEditedScaleName('');
@@ -46,26 +49,27 @@ const ScaleEditor = () => {
       const scale = scales.find(s => s.name === selectedScaleName);
       if (scale) {
         setEditedScaleName(scale.name);
-        setSelectedIntervals(scale.intervals); // Use the array directly
+        setSelectedIntervals(scale.intervals);
       }
     }
   }, [selectedScaleName, scales]);
 
-  // Effect to populate tuning form (UNCHANGED)
+  // Effect to populate tuning form
   useEffect(() => {
     if (selectedTuningName === NEW_TUNING_OPTION) {
       setEditedTuningName('');
-      setEditedTuningNotes('');
+      // Default to a 6-string standard tuning for a new entry
+      setEditedTuningNotes(['E','A','D','G','B','E']);
     } else {
       const tuning = tunings.find(t => t.name === selectedTuningName);
       if (tuning) {
         setEditedTuningName(tuning.name);
-        setEditedTuningNotes(tuning.notes.join(', '));
+        setEditedTuningNotes(tuning.notes); // Use the array directly
       }
     }
   }, [selectedTuningName, tunings]);
 
-  // --- Handlers for Scale Editor ---
+  // --- Handlers for Scale Editor (UNCHANGED) ---
   const handleIntervalChange = (intervalNumber: number) => {
     setSelectedIntervals(prev =>
       prev.includes(intervalNumber)
@@ -106,14 +110,20 @@ const ScaleEditor = () => {
     }
   };
 
-  // --- Handlers for Tuning Editor (UNCHANGED) ---
+  // --- Handlers for Tuning Editor ---
+  const handleTuningNoteChange = (newNote: string, stringIndex: number) => {
+    const newNotes = [...editedTuningNotes];
+    newNotes[stringIndex] = newNote;
+    setEditedTuningNotes(newNotes);
+  };
+
   const handleSaveTuning = async () => {
-    if (!editedTuningName || !editedTuningNotes) {
-      alert('Please provide a tuning name and notes.');
+    if (!editedTuningName || editedTuningNotes.some(n => !n)) {
+      alert('Please provide a tuning name and select a note for each string.');
       return;
     }
-    const notes = editedTuningNotes.split(',').map(n => n.trim().toUpperCase());
-    const tuningToSave: Tuning = { name: editedTuningName, notes };
+    // The notes are already in an array, so we can use them directly
+    const tuningToSave: Tuning = { name: editedTuningName, notes: editedTuningNotes };
 
     if (await addTuning(tuningToSave)) {
       alert('Tuning saved!');
@@ -141,9 +151,9 @@ const ScaleEditor = () => {
 
   return (
     <div className="editor-page">
-      {/* --- Scale Editor Card --- */}
+      {/* --- Scale Editor Card (UNCHANGED) --- */}
       <div className="card">
-        <h1>Scale Editor</h1>
+        <h2>Scale Editor</h2>
         <div className="controls-grid">
           <Selector
             label="Select Scale"
@@ -185,9 +195,9 @@ const ScaleEditor = () => {
         </div>
       </div>
 
-      {/* --- Tuning Editor Card (UNCHANGED) --- */}
+      {/* --- Tuning Editor Card --- */}
       <div className="card">
-        <h1>Tuning Editor</h1>
+        <h2>Tuning Editor</h2>
         <div className="controls-grid">
           <Selector
             label="Select Tuning"
@@ -204,15 +214,21 @@ const ScaleEditor = () => {
               onChange={(e) => setEditedTuningName(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="tuning-notes">Notes (comma-separated)</label>
-            <input
-              id="tuning-notes"
-              type="text"
-              value={editedTuningNotes}
-              onChange={(e) => setEditedTuningNotes(e.target.value)}
-            />
-          </div>
+        </div>
+        <div className="form-group">
+            <label>Strings</label>
+            <div className="tuning-selectors-container">
+                {editedTuningNotes.map((note, index) => (
+                    <div key={index} className="tuning-selector-row">
+                        <label>String {editedTuningNotes.length - index}</label>
+                        <Selector
+                            value={note}
+                            options={noteOptions}
+                            onChange={(newNote) => handleTuningNoteChange(newNote, index)}
+                        />
+                    </div>
+                ))}
+            </div>
         </div>
         <div className="editor-actions">
           <button onClick={handleSaveTuning}>Save Tuning</button>
