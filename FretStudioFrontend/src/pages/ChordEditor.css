@@ -1,5 +1,9 @@
 .chord-editor-page {
     padding: 1rem 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
 
 /* NEW: Styles to ensure consistent heading sizes */
@@ -8,6 +12,10 @@
     font-size: 1.5rem;
     text-align: center;
     margin-bottom: 1rem;
+    font-size: 1.5em;
+    margin-top: 0;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.5rem;
 }
 
 .chord-editor-page h2 {
@@ -18,11 +26,11 @@
 }
 
 /* Added from visualizer pages for consistency */
-.chord-editor-page .fretboard-container {
+/*.chord-editor-page .fretboard-container {
     background-color: transparent;
     border-radius: 0;
     padding: 20px 0;
-}
+}*/
 
 /* Added from visualizer pages for consistency */
 .chord-editor-page .fret,
@@ -47,10 +55,56 @@
     box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
+/* --- NEW: Styles for the checkbox row --- */
+.interval-checkbox-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-wrap: wrap;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.checkbox-container label {
+  font-weight: normal;
+  color: #333;
+  margin-bottom: 0;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
 /* NEW: Style for the save button area */
 .editor-actions {
     margin-top: 1rem;
     text-align: right;
+    margin-top: 1.5rem;
+}
+
+.editor-actions button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 10px;
+}
+
+.editor-actions button:hover {
+    background-color: #0056b3;
 }
 
 /* New styles for cards */
@@ -60,6 +114,8 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
     margin-bottom: 2rem;
+    width: 100%;
+    max-width: 1200px;
 }
 
 .card h2 {
@@ -67,25 +123,9 @@
     font-size: 1.5rem;
 }
 
-/* Editor actions button styling */
-.editor-actions button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-size: 1em;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.editor-actions button:hover {
-    background-color: #0056b3;
-}
-
 /* New styles for the remove button */
 .editor-actions .remove-button {
     background-color: #dc3545;
-    margin-left: 0.5rem;
 }
 
 .editor-actions .remove-button:hover {
@@ -97,6 +137,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 /* REMOVED: This unscoped rule was leaking to other pages. */

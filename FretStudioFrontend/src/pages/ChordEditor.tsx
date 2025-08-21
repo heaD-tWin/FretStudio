@@ -9,7 +9,7 @@ import {
   addVoicingToChord,
   deleteVoicing,
   getChordNotesForEditor,
-  getVisualizedChord, // Import the new function
+  getVisualizedChord,
   type ChordType,
   type Voicing,
   type FretboardAPIResponse,
@@ -23,6 +23,9 @@ import './ChordEditor.css';
 const NEW_VOICING_OPTION = "Create New Voicing...";
 const NEW_CHORD_TYPE_OPTION = "Create New Chord Type...";
 
+// An array representing intervals 1 through 12 for the checkboxes
+const ALL_INTERVALS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 const ChordEditor = () => {
   const { handedness } = useHandedness();
   const { accidentalType } = useAccidentalType();
@@ -34,10 +37,11 @@ const ChordEditor = () => {
   const [selectedChordType, setSelectedChordType] = useState('');
   const [selectedChordTypeName, setSelectedChordTypeName] = useState<string>(NEW_CHORD_TYPE_OPTION);
   const [chordTypeName, setChordTypeName] = useState('');
-  const [chordTypeIntervals, setChordTypeIntervals] = useState('');
+  // State for intervals is now an array of numbers
+  const [chordTypeIntervals, setChordTypeIntervals] = useState<number[]>([]);
   const [isChordTypeModified, setIsChordTypeModified] = useState(false);
 
-  // --- Voicing State ---
+  // --- Voicing State (UNCHANGED) ---
   const [selectedRoot, setSelectedRoot] = useState('C');
   const [voicings, setVoicings] = useState<Voicing[]>([]);
   const [selectedVoicingName, setSelectedVoicingName] = useState(NEW_VOICING_OPTION);
@@ -68,11 +72,11 @@ const ChordEditor = () => {
         const [fetchedVoicings, notes, fretboardLayout] = await Promise.all([
           getVoicingsForChord(selectedTuning, selectedChordType, rootForAPI),
           getChordNotesForEditor(rootForAPI, selectedChordType),
-          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType) // Use the new function here
+          getVisualizedChord(selectedTuning, rootForAPI, selectedChordType)
         ]);
         setVoicings(fetchedVoicings || []);
         setValidNotes(notes || []);
-        setFretboardData(fretboardLayout); // Set the new fretboard data
+        setFretboardData(fretboardLayout);
         resetVoicingFields();
       }
     }
@@ -80,10 +84,19 @@ const ChordEditor = () => {
   }, [selectedChordType, selectedRoot, selectedTuning]);
 
   // --- Chord Type Handlers ---
+  const handleIntervalChange = (intervalNumber: number) => {
+    setChordTypeIntervals(prev =>
+      prev.includes(intervalNumber)
+        ? prev.filter(num => num !== intervalNumber)
+        : [...prev, intervalNumber]
+    );
+    setIsChordTypeModified(true);
+  };
+
   const resetAndCreateNewChordType = () => {
     setSelectedChordTypeName(NEW_CHORD_TYPE_OPTION);
     setChordTypeName('');
-    setChordTypeIntervals('');
+    setChordTypeIntervals([]);
     setIsChordTypeModified(false);
   };
 
@@ -96,21 +109,28 @@ const ChordEditor = () => {
     const chordType = chordTypes.find(ct => ct.name === name);
     if (chordType) {
       setChordTypeName(chordType.name);
-      setChordTypeIntervals(chordType.intervals.join(', '));
+      setChordTypeIntervals(chordType.intervals); // Use the array directly
       setIsChordTypeModified(false);
     }
   };
 
   const handleSaveChordType = async () => {
-    if (!chordTypeName || !chordTypeIntervals) return alert("Please provide a name and intervals for the chord type.");
-    const intervals = chordTypeIntervals.split(',').map(n => parseInt(n.trim()));
-    if (intervals.some(isNaN)) return alert("Intervals must be comma-separated numbers.");
+    if (!chordTypeName || chordTypeIntervals.length === 0) {
+      alert("Please provide a name and select at least one interval for the chord type.");
+      return;
+    }
+    const sortedIntervals = [...chordTypeIntervals].sort((a, b) => a - b);
+    const chordTypeToSave: ChordType = { name: chordTypeName, intervals: sortedIntervals };
     
-    if (await addChordType({ name: chordTypeName, intervals })) {
+    if (await addChordType(chordTypeToSave)) {
       alert("Chord type saved!");
       const newTypes = await getChordTypes();
       setChordTypes(newTypes);
       setIsChordTypeModified(false);
+      // If the saved chord type was the one selected for voicing, keep it selected
+      if (selectedChordType === '' || selectedChordType === chordTypeName) {
+        setSelectedChordType(chordTypeName);
+      }
     } else {
       alert("Failed to save chord type.");
     }
@@ -118,22 +138,24 @@ const ChordEditor = () => {
 
   const handleDeleteChordType = async () => {
     if (selectedChordTypeName === NEW_CHORD_TYPE_OPTION) return;
-    if (await deleteChordType(selectedChordTypeName)) {
-      alert("Chord type deleted!");
-      const newTypes = await getChordTypes();
-      setChordTypes(newTypes);
-      
-      if (selectedChordType === selectedChordTypeName) {
-        setSelectedChordType(newTypes.length > 0 ? newTypes[0].name : '');
-      }
+    if (window.confirm(`Are you sure you want to delete the chord type: ${selectedChordTypeName}?`)) {
+        if (await deleteChordType(selectedChordTypeName)) {
+        alert("Chord type deleted!");
+        const newTypes = await getChordTypes();
+        setChordTypes(newTypes);
+        
+        if (selectedChordType === selectedChordTypeName) {
+            setSelectedChordType(newTypes.length > 0 ? newTypes[0].name : '');
+        }
 
-      resetAndCreateNewChordType();
-    } else {
-      alert("Failed to delete chord type.");
+        resetAndCreateNewChordType();
+        } else {
+        alert("Failed to delete chord type.");
+        }
     }
   };
 
-  // --- Voicing Handlers ---
+  // --- Voicing Handlers (UNCHANGED) ---
   const resetVoicingFields = () => {
     setSelectedVoicingName(NEW_VOICING_OPTION);
     setVoicingName('');
@@ -244,6 +266,7 @@ const ChordEditor = () => {
             onFretClick={handleFretClick}
             onFingerSelect={handleFingerSelect}
             onStrumToggle={handleStrumToggle}
+            forceIntervalsVisible={true}
           />
 
     <div className="card">
@@ -275,10 +298,22 @@ const ChordEditor = () => {
             <label>Chord Type Name</label>
             <input type="text" value={chordTypeName} onChange={e => { setChordTypeName(e.target.value); setIsChordTypeModified(true); }} />
           </div>
-          <div className="form-group">
-            <label>Intervals (comma-separated)</label>
-            <input type="text" value={chordTypeIntervals} onChange={e => { setChordTypeIntervals(e.target.value); setIsChordTypeModified(true); }} />
-          </div>
+        </div>
+        <div className="form-group">
+            <label>Intervals</label>
+            <div className="interval-checkbox-row">
+                {ALL_INTERVALS.map(num => (
+                    <div key={num} className="checkbox-container">
+                        <input
+                            type="checkbox"
+                            id={`chord-interval-${num}`}
+                            checked={chordTypeIntervals.includes(num)}
+                            onChange={() => handleIntervalChange(num)}
+                        />
+                        <label htmlFor={`chord-interval-${num}`}>{num}</label>
+                    </div>
+                ))}
+            </div>
         </div>
         <div className="editor-actions">
           {showDeleteChordTypeBtn ? <button onClick={handleDeleteChordType} className="remove-button">Delete Chord Type</button> : <button onClick={handleSaveChordType}>Save Chord Type</button>}
