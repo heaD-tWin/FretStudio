@@ -3,14 +3,15 @@ import ScaleVisualizer from './pages/ScaleVisualizer';
 import ChordVisualizer from './pages/ChordVisualizer';
 import ChordEditor from './pages/ChordEditor';
 import ScaleEditor from './pages/ScaleEditor';
+import SaveLoadPage from './pages/SaveLoadPage'; // 1. Import the new page
 import Settings from './pages/Settings';
 import { useFingeringVisibility } from './contexts/FingeringVisibilityContext';
-import { useIntervalVisibility } from './contexts/IntervalVisibilityContext'; // 1. Import new hook
+import { useIntervalVisibility } from './contexts/IntervalVisibilityContext';
 import './App.css';
 
 function App() {
   const { isFingeringVisible, toggleFingeringVisibility } = useFingeringVisibility();
-  const { isIntervalVisible, toggleIntervalVisibility } = useIntervalVisibility(); // 2. Use new hook
+  const { isIntervalVisible, toggleIntervalVisibility } = useIntervalVisibility();
 
   return (
     <div className="App">
@@ -20,9 +21,10 @@ function App() {
           <NavLink to="/chord-visualizer" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Chord Visualizer</NavLink>
           <NavLink to="/chord-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Chord Editor</NavLink>
           <NavLink to="/scale-editor" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Editor</NavLink>
+          {/* 2. Add the new navigation link */}
+          <NavLink to="/save-load" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Save/Load</NavLink>
           <NavLink to="/settings" className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Settings</NavLink>
           
-          {/* 3. Add the new toggle buttons */}
           <div className="nav-controls">
             <button 
               className={`nav-toggle-button interval-toggle ${isIntervalVisible ? 'active' : ''}`}
@@ -45,6 +47,8 @@ function App() {
           <Route path="/chord-visualizer" element={<ChordVisualizer />} />
           <Route path="/chord-editor" element={<ChordEditor />} />
           <Route path="/scale-editor" element={<ScaleEditor />} />
+          {/* 3. Add the new route */}
+          <Route path="/save-load" element={<SaveLoadPage />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </main>
