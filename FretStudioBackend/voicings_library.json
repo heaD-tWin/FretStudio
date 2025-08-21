@@ -1,5 +1,92 @@
 {
   "Standard Guitar": {
+    "Major": {
+      "C": {
+        "name": "C Major",
+        "voicings": [
+          {
+            "name": "C Open",
+            "difficulty": "Beginner",
+            "fingering": [
+              [
+                6,
+                -1,
+                0
+              ],
+              [
+                5,
+                3,
+                3
+              ],
+              [
+                4,
+                2,
+                2
+              ],
+              [
+                3,
+                0,
+                0
+              ],
+              [
+                2,
+                1,
+                1
+              ],
+              [
+                1,
+                0,
+                0
+              ]
+            ]
+          }
+        ]
+      },
+      "C#": {
+        "name": "C# Major",
+        "voicings": []
+      },
+      "D": {
+        "name": "D Major",
+        "voicings": []
+      },
+      "D#": {
+        "name": "D# Major",
+        "voicings": []
+      },
+      "E": {
+        "name": "E Major",
+        "voicings": []
+      },
+      "F": {
+        "name": "F Major",
+        "voicings": []
+      },
+      "F#": {
+        "name": "F# Major",
+        "voicings": []
+      },
+      "G": {
+        "name": "G Major",
+        "voicings": []
+      },
+      "G#": {
+        "name": "G# Major",
+        "voicings": []
+      },
+      "A": {
+        "name": "A Major",
+        "voicings": []
+      },
+      "A#": {
+        "name": "A# Major",
+        "voicings": []
+      },
+      "B": {
+        "name": "B Major",
+        "voicings": []
+      }
+    },
     "Minor": {
       "C": {
         "name": "C Minor",
@@ -541,93 +628,6 @@
       },
       "B": {
         "name": "B Diminished",
-        "voicings": []
-      }
-    },
-    "Major": {
-      "C": {
-        "name": "C Major",
-        "voicings": [
-          {
-            "name": "C Open",
-            "difficulty": "Beginner",
-            "fingering": [
-              [
-                6,
-                -1,
-                0
-              ],
-              [
-                5,
-                3,
-                3
-              ],
-              [
-                4,
-                2,
-                2
-              ],
-              [
-                3,
-                0,
-                0
-              ],
-              [
-                2,
-                1,
-                1
-              ],
-              [
-                1,
-                0,
-                0
-              ]
-            ]
-          }
-        ]
-      },
-      "C#": {
-        "name": "C# Major",
-        "voicings": []
-      },
-      "D": {
-        "name": "D Major",
-        "voicings": []
-      },
-      "D#": {
-        "name": "D# Major",
-        "voicings": []
-      },
-      "E": {
-        "name": "E Major",
-        "voicings": []
-      },
-      "F": {
-        "name": "F Major",
-        "voicings": []
-      },
-      "F#": {
-        "name": "F# Major",
-        "voicings": []
-      },
-      "G": {
-        "name": "G Major",
-        "voicings": []
-      },
-      "G#": {
-        "name": "G# Major",
-        "voicings": []
-      },
-      "A": {
-        "name": "A Major",
-        "voicings": []
-      },
-      "A#": {
-        "name": "A# Major",
-        "voicings": []
-      },
-      "B": {
-        "name": "B Major",
         "voicings": []
       }
     }

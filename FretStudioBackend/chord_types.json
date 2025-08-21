@@ -1,4 +1,12 @@
 {
+  "Major": {
+    "name": "Major",
+    "intervals": [
+      1,
+      5,
+      8
+    ]
+  },
   "Minor": {
     "name": "Minor",
     "intervals": [
@@ -21,14 +29,6 @@
       1,
       5,
       9
-    ]
-  },
-  "Major": {
-    "name": "Major",
-    "intervals": [
-      1,
-      5,
-      8
     ]
   }
 }

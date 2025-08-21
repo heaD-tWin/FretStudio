@@ -146,7 +146,6 @@ async def delete_scale(scale_name: str):
     write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
     return {"message": f"Scale '{scale_name}' deleted."}
 
-# --- NEW ENDPOINT for reordering scales ---
 @app.post("/scales/reorder", status_code=200)
 async def reorder_scale(req: ReorderRequest):
     global db_scales
@@ -231,6 +230,49 @@ async def delete_chord_type(type_name: str):
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
     save_voicings_library()
     return {"message": f"Chord type '{type_name}' deleted."}
+
+# --- NEW ENDPOINT for reordering chord types ---
+@app.post("/chord-types/reorder", status_code=200)
+async def reorder_chord_type(req: ReorderRequest):
+    global db_chord_types, db_voicings_library
+
+    if req.name not in db_chord_types:
+        raise HTTPException(status_code=404, detail="Chord type to reorder not found.")
+
+    # 1. Reorder the primary chord_types list
+    types_list = list(db_chord_types.items())
+    try:
+        idx = [t[0] for t in types_list].index(req.name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Chord type name mismatch in list.")
+
+    if req.direction == "up":
+        if idx == 0: return {"message": "Chord type is already at the top."}
+        types_list.insert(idx - 1, types_list.pop(idx))
+    elif req.direction == "down":
+        if idx == len(types_list) - 1: return {"message": "Chord type is already at the bottom."}
+        types_list.insert(idx + 1, types_list.pop(idx))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid direction.")
+
+    new_db_chord_types = {name: data for name, data in types_list}
+    db_chord_types = new_db_chord_types
+    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+
+    # 2. Reorder the voicings_library based on the new chord type order
+    new_ordered_type_names = list(new_db_chord_types.keys())
+    new_voicings_library = {}
+    for tuning_name, tuning_data in db_voicings_library.items():
+        new_tuning_data = {}
+        for type_name in new_ordered_type_names:
+            if type_name in tuning_data:
+                new_tuning_data[type_name] = tuning_data[type_name]
+        new_voicings_library[tuning_name] = new_tuning_data
+    
+    db_voicings_library = new_voicings_library
+    save_voicings_library()
+
+    return {"message": f"Chord type '{req.name}' moved {req.direction}."}
 
 # --- Voicing and Fretboard Endpoints ---
 @app.get("/notes/{root_note}/{chord_type_name}", response_model=List[str])

@@ -112,6 +112,15 @@ export const deleteChordType = async (typeName: string): Promise<boolean> => {
   return response.ok;
 };
 
+export const reorderChordType = async (name: string, direction: 'up' | 'down'): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/chord-types/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, direction }),
+  });
+  return response.ok;
+};
+
 // --- Tunings API ---
 export const getTunings = async (): Promise<Tuning[]> => {
   const response = await fetch(`${API_BASE_URL}/tunings`);

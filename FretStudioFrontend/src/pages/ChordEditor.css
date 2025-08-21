@@ -87,8 +87,9 @@
 /* NEW: Style for the save button area */
 .editor-actions {
     margin-top: 1rem;
-    text-align: right;
-    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .editor-actions button {
@@ -100,11 +101,20 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-left: 10px;
 }
 
-.editor-actions button:hover {
+.editor-actions button:hover:not(:disabled) {
     background-color: #0056b3;
+}
+
+.editor-actions button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.reorder-buttons, .save-delete-buttons {
+    display: flex;
+    gap: 10px;
 }
 
 /* New styles for cards */

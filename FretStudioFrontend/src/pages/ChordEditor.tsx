@@ -5,6 +5,7 @@ import {
   getChordTypes,
   addChordType,
   deleteChordType,
+  reorderChordType, // Import the new function
   getVoicingsForChord,
   addVoicingToChord,
   deleteVoicing,
@@ -155,6 +156,16 @@ const ChordEditor = () => {
     }
   };
 
+  const handleReorderChordType = async (direction: 'up' | 'down') => {
+    if (selectedChordTypeName === NEW_CHORD_TYPE_OPTION) return;
+    if (await reorderChordType(selectedChordTypeName, direction)) {
+      const freshData = await getChordTypes();
+      setChordTypes(freshData);
+    } else {
+      alert(`Failed to move chord type ${direction}.`);
+    }
+  };
+
   // --- Voicing Handlers (UNCHANGED) ---
   const resetVoicingFields = () => {
     setSelectedVoicingName(NEW_VOICING_OPTION);
@@ -252,6 +263,7 @@ const ChordEditor = () => {
   };
 
   const showDeleteChordTypeBtn = selectedChordTypeName !== NEW_CHORD_TYPE_OPTION && !isChordTypeModified;
+  const selectedChordTypeIndex = chordTypes.findIndex(ct => ct.name === selectedChordTypeName);
 
   return (
     <div className="chord-editor-page">
@@ -286,7 +298,7 @@ const ChordEditor = () => {
         </div>
         <div className="editor-actions">
             <button onClick={handleSaveVoicing}>Save Voicing</button>
-            {selectedVoicingName !== NEW_VOICING_OPTION && <button onClick={handleDeleteVoicing} className="remove-button">Delete Voicing</button>}
+            {selectedVoicingName !== NEW_VOICING_OPTION && <button className="remove-button" onClick={handleDeleteVoicing}>Delete Voicing</button>}
         </div>
     </div>
       
@@ -316,7 +328,23 @@ const ChordEditor = () => {
             </div>
         </div>
         <div className="editor-actions">
-          {showDeleteChordTypeBtn ? <button onClick={handleDeleteChordType} className="remove-button">Delete Chord Type</button> : <button onClick={handleSaveChordType}>Save Chord Type</button>}
+          <div className="reorder-buttons">
+            <button
+              onClick={() => handleReorderChordType('up')}
+              disabled={selectedChordTypeIndex < 1}
+            >
+              Move Up
+            </button>
+            <button
+              onClick={() => handleReorderChordType('down')}
+              disabled={selectedChordTypeIndex === -1 || selectedChordTypeIndex === chordTypes.length - 1}
+            >
+              Move Down
+            </button>
+          </div>
+          <div className="save-delete-buttons">
+            {showDeleteChordTypeBtn ? <button className="remove-button" onClick={handleDeleteChordType}>Delete Chord Type</button> : <button onClick={handleSaveChordType}>Save Chord Type</button>}
+          </div>
         </div>
       </div>
     </div>
