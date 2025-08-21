@@ -1,186 +1,224 @@
 import { useState, useEffect } from 'react';
-import Selector from '../components/Selector';
 import { 
-  getScales, 
-  addScale, 
-  deleteScale,
-  getTunings,
-  addTuning,
-  deleteTuning,
-  type Scale,
-  type Tuning
+  getScales, addScale, deleteScale, type Scale,
+  getTunings, addTuning, deleteTuning, type Tuning 
 } from '../apiService';
-import { useTuning } from '../contexts/TuningContext'; // Import the context hook
+import Selector from '../components/Selector';
 import './ScaleEditor.css';
 
 const NEW_SCALE_OPTION = "Create New Scale...";
 const NEW_TUNING_OPTION = "Create New Tuning...";
 
+// An array representing intervals 1 through 12 for the checkboxes
+const ALL_INTERVALS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 const ScaleEditor = () => {
-  // --- Global State ---
-  const { selectedTuning, setSelectedTuning } = useTuning();
-
-  // --- Scale State ---
+  // --- State for Scale Editor ---
   const [scales, setScales] = useState<Scale[]>([]);
-  const [selectedScaleName, setSelectedScaleName] = useState<string>(NEW_SCALE_OPTION);
-  const [scaleName, setScaleName] = useState('');
-  const [scaleIntervals, setScaleIntervals] = useState('');
-  const [isScaleModified, setIsScaleModified] = useState(false);
+  const [selectedScaleName, setSelectedScaleName] = useState(NEW_SCALE_OPTION);
+  const [editedScaleName, setEditedScaleName] = useState('');
+  // State for intervals is now an array of numbers
+  const [selectedIntervals, setSelectedIntervals] = useState<number[]>([]);
 
-  // --- Tuning State ---
+  // --- State for Tuning Editor (UNCHANGED) ---
   const [tunings, setTunings] = useState<Tuning[]>([]);
-  const [selectedTuningName, setSelectedTuningName] = useState<string>(NEW_TUNING_OPTION);
-  const [tuningName, setTuningName] = useState('');
-  const [tuningNotes, setTuningNotes] = useState('');
-  const [isTuningModified, setIsTuningModified] = useState(false);
+  const [selectedTuningName, setSelectedTuningName] = useState(NEW_TUNING_OPTION);
+  const [editedTuningName, setEditedTuningName] = useState('');
+  const [editedTuningNotes, setEditedTuningNotes] = useState('');
 
-  // --- Effects ---
+  // Fetch initial data for both editors
   useEffect(() => {
-    async function fetchData() {
+    async function fetchInitialData() {
       const scalesData = await getScales();
-      const tuningsData = await getTunings();
       setScales(scalesData);
+      const tuningsData = await getTunings();
       setTunings(tuningsData);
     }
-    fetchData();
+    fetchInitialData();
   }, []);
 
-  // --- Scale Handlers ---
-  const resetAndCreateNewScale = () => {
-    setSelectedScaleName(NEW_SCALE_OPTION);
-    setScaleName('');
-    setScaleIntervals('');
-    setIsScaleModified(false);
-  };
+  // Effect to populate scale form
+  useEffect(() => {
+    if (selectedScaleName === NEW_SCALE_OPTION) {
+      setEditedScaleName('');
+      setSelectedIntervals([]);
+    } else {
+      const scale = scales.find(s => s.name === selectedScaleName);
+      if (scale) {
+        setEditedScaleName(scale.name);
+        setSelectedIntervals(scale.intervals); // Use the array directly
+      }
+    }
+  }, [selectedScaleName, scales]);
 
-  const handleSelectScale = (name: string) => {
-    setSelectedScaleName(name);
-    if (name === NEW_SCALE_OPTION) {
-      resetAndCreateNewScale();
-      return;
+  // Effect to populate tuning form (UNCHANGED)
+  useEffect(() => {
+    if (selectedTuningName === NEW_TUNING_OPTION) {
+      setEditedTuningName('');
+      setEditedTuningNotes('');
+    } else {
+      const tuning = tunings.find(t => t.name === selectedTuningName);
+      if (tuning) {
+        setEditedTuningName(tuning.name);
+        setEditedTuningNotes(tuning.notes.join(', '));
+      }
     }
-    const scale = scales.find(s => s.name === name);
-    if (scale) {
-      setScaleName(scale.name);
-      setScaleIntervals(scale.intervals.join(', '));
-      setIsScaleModified(false);
-    }
+  }, [selectedTuningName, tunings]);
+
+  // --- Handlers for Scale Editor ---
+  const handleIntervalChange = (intervalNumber: number) => {
+    setSelectedIntervals(prev =>
+      prev.includes(intervalNumber)
+        ? prev.filter(num => num !== intervalNumber)
+        : [...prev, intervalNumber]
+    );
   };
 
   const handleSaveScale = async () => {
-    if (!scaleName || !scaleIntervals) return alert("Please provide a name and intervals for the scale.");
-    const intervals = scaleIntervals.split(',').map(n => parseInt(n.trim()));
-    if (intervals.some(isNaN)) return alert("Intervals must be comma-separated numbers.");
-    
-    if (await addScale({ name: scaleName, intervals })) {
-      alert("Scale saved!");
-      setScales(await getScales());
-      setIsScaleModified(false);
+    if (!editedScaleName || selectedIntervals.length === 0) {
+      alert('Please provide a scale name and select at least one interval.');
+      return;
+    }
+    const sortedIntervals = [...selectedIntervals].sort((a, b) => a - b);
+    const scaleToSave: Scale = { name: editedScaleName, intervals: sortedIntervals };
+
+    if (await addScale(scaleToSave)) {
+      alert('Scale saved!');
+      const freshData = await getScales();
+      setScales(freshData);
+      setSelectedScaleName(editedScaleName);
     } else {
-      alert("Failed to save scale.");
+      alert('Failed to save scale.');
     }
   };
 
   const handleDeleteScale = async () => {
     if (selectedScaleName === NEW_SCALE_OPTION) return;
-    if (await deleteScale(selectedScaleName)) {
-      alert("Scale deleted!");
-      setScales(await getScales());
-      resetAndCreateNewScale();
-    } else {
-      alert("Failed to delete scale.");
+    if (window.confirm(`Delete scale: ${selectedScaleName}?`)) {
+      if (await deleteScale(selectedScaleName)) {
+        alert('Scale deleted!');
+        const freshData = await getScales();
+        setScales(freshData);
+        setSelectedScaleName(NEW_SCALE_OPTION);
+      } else {
+        alert('Failed to delete scale.');
+      }
     }
   };
 
-  // --- Tuning Handlers ---
-  const resetAndCreateNewTuning = () => {
-    setSelectedTuningName(NEW_TUNING_OPTION);
-    setTuningName('');
-    setTuningNotes('');
-    setIsTuningModified(false);
-  };
-
-  const handleSelectTuning = (name: string) => {
-    setSelectedTuningName(name);
-    if (name === NEW_TUNING_OPTION) {
-      resetAndCreateNewTuning();
+  // --- Handlers for Tuning Editor (UNCHANGED) ---
+  const handleSaveTuning = async () => {
+    if (!editedTuningName || !editedTuningNotes) {
+      alert('Please provide a tuning name and notes.');
       return;
     }
-    const tuning = tunings.find(t => t.name === name);
-    if (tuning) {
-      setTuningName(tuning.name);
-      setTuningNotes(tuning.notes.join(', '));
-      setIsTuningModified(false);
-    }
-  };
+    const notes = editedTuningNotes.split(',').map(n => n.trim().toUpperCase());
+    const tuningToSave: Tuning = { name: editedTuningName, notes };
 
-  const handleSaveTuning = async () => {
-    if (!tuningName || !tuningNotes) return alert("Please provide a name and notes for the tuning.");
-    const notes = tuningNotes.split(',').map(n => n.trim().toUpperCase());
-    
-    if (await addTuning({ name: tuningName, notes })) {
-      alert("Tuning saved!");
-      setTunings(await getTunings());
-      setIsTuningModified(false);
+    if (await addTuning(tuningToSave)) {
+      alert('Tuning saved!');
+      const freshData = await getTunings();
+      setTunings(freshData);
+      setSelectedTuningName(editedTuningName);
     } else {
-      alert("Failed to save tuning.");
+      alert('Failed to save tuning.');
     }
   };
 
   const handleDeleteTuning = async () => {
     if (selectedTuningName === NEW_TUNING_OPTION) return;
-    if (await deleteTuning(selectedTuningName)) {
-      alert("Tuning deleted!");
-      // If the deleted tuning was the globally selected one, reset the global context
-      if (selectedTuning === selectedTuningName) {
-        setSelectedTuning('Standard Guitar');
+    if (window.confirm(`Delete tuning: ${selectedTuningName}?`)) {
+      if (await deleteTuning(selectedTuningName)) {
+        alert('Tuning deleted!');
+        const freshData = await getTunings();
+        setTunings(freshData);
+        setSelectedTuningName(NEW_TUNING_OPTION);
+      } else {
+        alert('Failed to delete tuning.');
       }
-      setTunings(await getTunings());
-      resetAndCreateNewTuning();
-    } else {
-      alert("Failed to delete tuning.");
     }
   };
 
-  // --- Render Logic ---
-  const showDeleteScaleBtn = selectedScaleName !== NEW_SCALE_OPTION && !isScaleModified;
-  const showDeleteTuningBtn = selectedTuningName !== NEW_TUNING_OPTION && !isTuningModified;
-
   return (
     <div className="editor-page">
+      {/* --- Scale Editor Card --- */}
       <div className="card">
-        <h2>Manage Scales</h2>
+        <h1>Scale Editor</h1>
         <div className="controls-grid">
-          <Selector label="Edit Scale" value={selectedScaleName} options={[NEW_SCALE_OPTION, ...scales.map(s => s.name)]} onChange={handleSelectScale} />
+          <Selector
+            label="Select Scale"
+            value={selectedScaleName}
+            options={[NEW_SCALE_OPTION, ...scales.map(s => s.name)]}
+            onChange={setSelectedScaleName}
+          />
           <div className="form-group">
-            <label>Scale Name</label>
-            <input type="text" value={scaleName} onChange={e => { setScaleName(e.target.value); setIsScaleModified(true); }} />
+            <label htmlFor="scale-name">Scale Name</label>
+            <input
+              id="scale-name"
+              type="text"
+              value={editedScaleName}
+              onChange={(e) => setEditedScaleName(e.target.value)}
+            />
           </div>
-          <div className="form-group">
-            <label>Intervals (comma-separated)</label>
-            <input type="text" value={scaleIntervals} onChange={e => { setScaleIntervals(e.target.value); setIsScaleModified(true); }} />
+        </div>
+        <div className="form-group">
+          <label>Intervals</label>
+          <div className="interval-checkbox-row">
+            {ALL_INTERVALS.map(num => (
+              <div key={num} className="checkbox-container">
+                <input
+                  type="checkbox"
+                  id={`interval-${num}`}
+                  checked={selectedIntervals.includes(num)}
+                  onChange={() => handleIntervalChange(num)}
+                />
+                <label htmlFor={`interval-${num}`}>{num}</label>
+              </div>
+            ))}
           </div>
         </div>
         <div className="editor-actions">
-          {showDeleteScaleBtn ? <button onClick={handleDeleteScale} className="remove-button">Delete Scale</button> : <button onClick={handleSaveScale}>Save Scale</button>}
+          <button onClick={handleSaveScale}>Save Scale</button>
+          {selectedScaleName !== NEW_SCALE_OPTION && (
+            <button className="remove-button" onClick={handleDeleteScale}>Delete Scale</button>
+          )}
         </div>
       </div>
 
+      {/* --- Tuning Editor Card (UNCHANGED) --- */}
       <div className="card">
-        <h2>Manage Tunings</h2>
+        <h1>Tuning Editor</h1>
         <div className="controls-grid">
-          <Selector label="Edit Tuning" value={selectedTuningName} options={[NEW_TUNING_OPTION, ...tunings.map(t => t.name)]} onChange={handleSelectTuning} />
+          <Selector
+            label="Select Tuning"
+            value={selectedTuningName}
+            options={[NEW_TUNING_OPTION, ...tunings.map(t => t.name)]}
+            onChange={setSelectedTuningName}
+          />
           <div className="form-group">
-            <label>Tuning Name</label>
-            <input type="text" value={tuningName} onChange={e => { setTuningName(e.target.value); setIsTuningModified(true); }} />
+            <label htmlFor="tuning-name">Tuning Name</label>
+            <input
+              id="tuning-name"
+              type="text"
+              value={editedTuningName}
+              onChange={(e) => setEditedTuningName(e.target.value)}
+            />
           </div>
           <div className="form-group">
-            <label>Notes (comma-separated, e.g., E,A,D,G,B,E)</label>
-            <input type="text" value={tuningNotes} onChange={e => { setTuningNotes(e.target.value); setIsTuningModified(true); }} />
+            <label htmlFor="tuning-notes">Notes (comma-separated)</label>
+            <input
+              id="tuning-notes"
+              type="text"
+              value={editedTuningNotes}
+              onChange={(e) => setEditedTuningNotes(e.target.value)}
+            />
           </div>
         </div>
         <div className="editor-actions">
-          {showDeleteTuningBtn ? <button onClick={handleDeleteTuning} className="remove-button">Delete Tuning</button> : <button onClick={handleSaveTuning}>Save Tuning</button>}
+          <button onClick={handleSaveTuning}>Save Tuning</button>
+          {selectedTuningName !== NEW_TUNING_OPTION && (
+            <button className="remove-button" onClick={handleDeleteTuning}>Delete Tuning</button>
+          )}
         </div>
       </div>
     </div>
