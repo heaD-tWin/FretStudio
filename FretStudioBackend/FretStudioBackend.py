@@ -20,8 +20,13 @@ class FretboardNote(BaseModel):
     is_in_scale: bool
     is_root: bool
     is_in_chord: bool
-    interval_degree: Optional[int] = None # Add new field for interval degree
+    interval_degree: Optional[int] = None
 class ChordVisualizationResponse(BaseModel): fretboard: Dict[int, List[FretboardNote]]; voicings: List[Voicing]
+
+# New model for the reorder request
+class ReorderRequest(BaseModel):
+    name: str
+    direction: str # "up" or "down"
 
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -65,7 +70,6 @@ def save_voicings_library():
 # --- Music Theory Helpers ---
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
-    # Adjust for 1-based intervals by subtracting 1
     return [NOTES[(start_index + (i - 1)) % 12] for i in intervals]
 
 # --- API Endpoints ---
@@ -78,11 +82,10 @@ async def add_or_update_tuning(tuning: Tuning):
     db_tunings[tuning.name] = tuning
     write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
 
-    # Create a new entry in the voicings library for the new tuning
     if tuning.name not in db_voicings_library:
         db_voicings_library[tuning.name] = {}
         for ct_name in db_chord_types:
-            db_voicings_library[tuning_name][ct_name] = {
+            db_voicings_library[tuning.name][ct_name] = {
                 note: ChordVoicings(name=f"{note} {ct_name}", voicings=[]) for note in NOTES
             }
         save_voicings_library()
@@ -96,12 +99,42 @@ async def delete_tuning(tuning_name: str):
     del db_tunings[tuning_name]
     write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
 
-    # Remove the corresponding entry from the voicings library
     if tuning_name in db_voicings_library:
         del db_voicings_library[tuning_name]
         save_voicings_library()
 
     return {"message": f"Tuning '{tuning_name}' deleted."}
+
+# --- NEW ENDPOINT for reordering tunings ---
+@app.post("/tunings/reorder", status_code=200)
+async def reorder_tuning(req: ReorderRequest):
+    global db_tunings
+    
+    if req.name not in db_tunings:
+        raise HTTPException(status_code=404, detail="Tuning to reorder not found.")
+
+    tunings_list = list(db_tunings.items())
+    
+    try:
+        idx = [t[0] for t in tunings_list].index(req.name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Tuning name mismatch in list.")
+
+    if req.direction == "up":
+        if idx == 0: return {"message": "Tuning is already at the top."}
+        tunings_list.insert(idx - 1, tunings_list.pop(idx))
+    elif req.direction == "down":
+        if idx == len(tunings_list) - 1: return {"message": "Tuning is already at the bottom."}
+        tunings_list.insert(idx + 1, tunings_list.pop(idx))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid direction. Must be 'up' or 'down'.")
+
+    # Rebuild the dictionary and save it
+    new_db_tunings = {name: Tuning(name=name, **data.dict(exclude={'name'})) for name, data in [(k, db_tunings[k]) for k,v in tunings_list]}
+    db_tunings = new_db_tunings
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    
+    return {"message": f"Tuning '{req.name}' moved {req.direction}."}
 
 # --- Scale Endpoints ---
 @app.get("/scales", response_model=List[Scale])
@@ -155,7 +188,6 @@ async def add_or_update_chord_type(chord_type: ChordType):
     db_chord_types[chord_type.name] = chord_type
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
     
-    # Add new type to voicings library under each tuning
     for tuning_name in db_voicings_library:
         if chord_type.name not in db_voicings_library[tuning_name]:
             db_voicings_library[tuning_name][chord_type.name] = {
@@ -169,7 +201,6 @@ async def delete_chord_type(type_name: str):
     if type_name not in db_chord_types: raise HTTPException(status_code=404, detail="Chord type not found.")
     del db_chord_types[type_name]
     
-    # Delete chord type from all tunings
     for tuning_name in db_voicings_library:
         if type_name in db_voicings_library[tuning_name]:
             del db_voicings_library[tuning_name][type_name]
@@ -229,7 +260,6 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, s
     if not scale: raise HTTPException(status_code=404, detail="Scale not found")
     
     scale_notes = get_notes_from_intervals(root_note, scale.intervals)
-    # Create a map of note names to their 1-based interval degree
     scale_note_to_interval_map = {note: i for note, i in zip(scale_notes, scale.intervals)}
     
     tuning = db_tunings.get(tuning_name)
@@ -254,9 +284,6 @@ async def get_visualized_fretboard_for_scale(tuning_name: str, root_note: str, s
 
 @app.get("/fretboard/visualize-chord", response_model=Dict[int, List[FretboardNote]])
 async def get_visualized_fretboard_for_chord(tuning_name: str, root_note: str, chord_type_name: str, num_frets: int = 24):
-    """
-    Generates a fretboard visualization for a specific chord, including interval degrees for each note.
-    """
     chord_type = db_chord_types.get(chord_type_name)
     if not chord_type:
         raise HTTPException(status_code=404, detail="Chord type not found")
@@ -266,7 +293,6 @@ async def get_visualized_fretboard_for_chord(tuning_name: str, root_note: str, c
         raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
 
     chord_notes = get_notes_from_intervals(root_note, chord_type.intervals)
-    # Create a map of note names to their 1-based interval degree for the chord
     chord_note_to_interval_map = {note: i for note, i in zip(chord_notes, chord_type.intervals)}
 
     fretboard: Dict[int, List[FretboardNote]] = {}
@@ -278,7 +304,7 @@ async def get_visualized_fretboard_for_chord(tuning_name: str, root_note: str, c
             interval = chord_note_to_interval_map.get(current_note)
             string_notes.append(FretboardNote(
                 note=current_note,
-                is_in_scale=False,  # Not relevant for chord view
+                is_in_scale=False,
                 is_root=(current_note == root_note.upper()),
                 is_in_chord=(current_note in chord_notes),
                 interval_degree=interval

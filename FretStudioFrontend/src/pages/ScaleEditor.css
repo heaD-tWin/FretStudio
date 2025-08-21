@@ -97,12 +97,14 @@
 }
 
 .tuning-selector-row > div {
-    flex-grow: 1; /* Allow the selector to take remaining space */
+    flex-grow: 1;
 }
 
 .editor-page .editor-actions {
   margin-top: 1.5rem;
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .editor-page .editor-actions button {
@@ -113,11 +115,20 @@
   background-color: #007bff;
   cursor: pointer;
   transition: background-color 0.2s;
-  margin-left: 10px;
 }
 
-.editor-page .editor-actions button:hover {
+.editor-page .editor-actions button:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.editor-page .editor-actions button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.reorder-buttons, .save-delete-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .editor-page .editor-actions .remove-button {

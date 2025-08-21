@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   getScales, addScale, deleteScale, type Scale,
-  getTunings, addTuning, deleteTuning, type Tuning 
+  getTunings, addTuning, deleteTuning, reorderTuning, type Tuning 
 } from '../apiService';
 import Selector from '../components/Selector';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
@@ -17,17 +17,14 @@ const ScaleEditor = () => {
   const { accidentalType } = useAccidentalType();
   const noteOptions = getNoteNames(accidentalType);
 
-  // --- State for Scale Editor (UNCHANGED) ---
   const [scales, setScales] = useState<Scale[]>([]);
   const [selectedScaleName, setSelectedScaleName] = useState(NEW_SCALE_OPTION);
   const [editedScaleName, setEditedScaleName] = useState('');
   const [selectedIntervals, setSelectedIntervals] = useState<number[]>([]);
 
-  // --- State for Tuning Editor ---
   const [tunings, setTunings] = useState<Tuning[]>([]);
   const [selectedTuningName, setSelectedTuningName] = useState(NEW_TUNING_OPTION);
   const [editedTuningName, setEditedTuningName] = useState('');
-  // State for notes is now an array of strings
   const [editedTuningNotes, setEditedTuningNotes] = useState<string[]>(['E','A','D','G','B','E']);
 
   useEffect(() => {
@@ -40,7 +37,6 @@ const ScaleEditor = () => {
     fetchInitialData();
   }, []);
 
-  // Effect to populate scale form (UNCHANGED)
   useEffect(() => {
     if (selectedScaleName === NEW_SCALE_OPTION) {
       setEditedScaleName('');
@@ -54,22 +50,19 @@ const ScaleEditor = () => {
     }
   }, [selectedScaleName, scales]);
 
-  // Effect to populate tuning form
   useEffect(() => {
     if (selectedTuningName === NEW_TUNING_OPTION) {
       setEditedTuningName('');
-      // Default to a 6-string standard tuning for a new entry
       setEditedTuningNotes(['E','A','D','G','B','E']);
     } else {
       const tuning = tunings.find(t => t.name === selectedTuningName);
       if (tuning) {
         setEditedTuningName(tuning.name);
-        setEditedTuningNotes(tuning.notes); // Use the array directly
+        setEditedTuningNotes(tuning.notes);
       }
     }
   }, [selectedTuningName, tunings]);
 
-  // --- Handlers for Scale Editor (UNCHANGED) ---
   const handleIntervalChange = (intervalNumber: number) => {
     setSelectedIntervals(prev =>
       prev.includes(intervalNumber)
@@ -110,7 +103,6 @@ const ScaleEditor = () => {
     }
   };
 
-  // --- Handlers for Tuning Editor ---
   const handleTuningNoteChange = (newNote: string, stringIndex: number) => {
     const newNotes = [...editedTuningNotes];
     newNotes[stringIndex] = newNote;
@@ -122,7 +114,6 @@ const ScaleEditor = () => {
       alert('Please provide a tuning name and select a note for each string.');
       return;
     }
-    // The notes are already in an array, so we can use them directly
     const tuningToSave: Tuning = { name: editedTuningName, notes: editedTuningNotes };
 
     if (await addTuning(tuningToSave)) {
@@ -149,9 +140,20 @@ const ScaleEditor = () => {
     }
   };
 
+  const handleReorderTuning = async (direction: 'up' | 'down') => {
+    if (selectedTuningName === NEW_TUNING_OPTION) return;
+    if (await reorderTuning(selectedTuningName, direction)) {
+      const freshData = await getTunings();
+      setTunings(freshData);
+    } else {
+      alert(`Failed to move tuning ${direction}.`);
+    }
+  };
+
+  const selectedTuningIndex = tunings.findIndex(t => t.name === selectedTuningName);
+
   return (
     <div className="editor-page">
-      {/* --- Scale Editor Card (UNCHANGED) --- */}
       <div className="card">
         <h2>Scale Editor</h2>
         <div className="controls-grid">
@@ -195,7 +197,6 @@ const ScaleEditor = () => {
         </div>
       </div>
 
-      {/* --- Tuning Editor Card --- */}
       <div className="card">
         <h2>Tuning Editor</h2>
         <div className="controls-grid">
@@ -231,10 +232,26 @@ const ScaleEditor = () => {
             </div>
         </div>
         <div className="editor-actions">
-          <button onClick={handleSaveTuning}>Save Tuning</button>
-          {selectedTuningName !== NEW_TUNING_OPTION && (
-            <button className="remove-button" onClick={handleDeleteTuning}>Delete Tuning</button>
-          )}
+          <div className="reorder-buttons">
+            <button 
+              onClick={() => handleReorderTuning('up')}
+              disabled={selectedTuningIndex < 1}
+            >
+              Move Up
+            </button>
+            <button 
+              onClick={() => handleReorderTuning('down')}
+              disabled={selectedTuningIndex === -1 || selectedTuningIndex === tunings.length - 1}
+            >
+              Move Down
+            </button>
+          </div>
+          <div className="save-delete-buttons">
+            <button onClick={handleSaveTuning}>Save Tuning</button>
+            {selectedTuningName !== NEW_TUNING_OPTION && (
+              <button className="remove-button" onClick={handleDeleteTuning}>Delete Tuning</button>
+            )}
+          </div>
         </div>
       </div>
     </div>

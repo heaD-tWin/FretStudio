@@ -26,7 +26,7 @@ export interface FretboardNote {
   note: string;
   is_in_scale: boolean;
   is_in_chord: boolean;
-  interval_degree?: number; // Add optional interval_degree field
+  interval_degree?: number;
 }
 
 export interface FretboardAPIResponse {
@@ -121,6 +121,15 @@ export const addTuning = async (tuning: Tuning): Promise<boolean> => {
 export const deleteTuning = async (tuningName: string): Promise<boolean> => {
   const response = await fetch(`${API_BASE_URL}/tunings/${encodeURIComponent(tuningName)}`, {
     method: 'DELETE',
+  });
+  return response.ok;
+};
+
+export const reorderTuning = async (name: string, direction: 'up' | 'down'): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/tunings/reorder`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, direction }),
   });
   return response.ok;
 };
