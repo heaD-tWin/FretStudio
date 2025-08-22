@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   getAllDataForSaveLoad, 
   generateSaveFile, 
+  hardLoadFromFile,
+  softLoadFromFile,
   type AllData, 
   type SaveSelectionsPayload 
 } from '../apiService';
@@ -18,22 +20,23 @@ interface Selections {
 const SaveLoadPage = () => {
   const [allData, setAllData] = useState<AllData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // State to manage all checkbox selections
   const [selections, setSelections] = useState<Selections>({
     scales: new Set(),
     chordTypes: new Set(),
     tunings: new Set(),
     voicings: new Set(),
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loadMode, setLoadMode] = useState<'hard' | 'soft' | null>(null);
 
-  // Fetch data on component mount
+  const fetchData = async () => {
+    setIsLoading(true);
+    const data = await getAllDataForSaveLoad();
+    setAllData(data);
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const data = await getAllDataForSaveLoad();
-      setAllData(data);
-      setIsLoading(false);
-    };
     fetchData();
   }, []);
 
@@ -69,7 +72,6 @@ const SaveLoadPage = () => {
     setSelections(prev => ({ ...prev, tunings: newSelections }));
   };
 
-  // Handles the hierarchical logic when a voicing is checked
   const handleVoicingChange = (tuningName: string, chordTypeName: string, voicingName: string) => {
     const voicingId = `${tuningName}::${chordTypeName}::${voicingName}`;
     const newVoicingSelections = new Set(selections.voicings);
@@ -79,7 +81,6 @@ const SaveLoadPage = () => {
     if (newVoicingSelections.has(voicingId)) {
       newVoicingSelections.delete(voicingId);
     } else {
-      // When checking a voicing, automatically check its parent tuning and chord type
       newVoicingSelections.add(voicingId);
       newTuningSelections.add(tuningName);
       newChordTypeSelections.add(chordTypeName);
@@ -89,7 +90,6 @@ const SaveLoadPage = () => {
 
   // --- Locking Logic ---
 
-  // A chord type is locked if any of its voicings are selected
   const isChordTypeLocked = (typeName: string) => {
     for (const voicingId of selections.voicings) {
       if (voicingId.split('::')[1] === typeName) return true;
@@ -97,7 +97,6 @@ const SaveLoadPage = () => {
     return false;
   };
 
-  // A tuning is locked if any of its voicings are selected
   const isTuningLocked = (tuningName: string) => {
     for (const voicingId of selections.voicings) {
       if (voicingId.startsWith(tuningName)) return true;
@@ -198,7 +197,6 @@ const SaveLoadPage = () => {
     setSelections(prev => ({ ...prev, voicings: newVoicingSelections, tunings: newTuningSelections, chordTypes: newChordTypeSelections }));
   };
 
-  // --- NEW: Save Handler ---
   const handleSave = async () => {
     const payload: SaveSelectionsPayload = {
       scales: Array.from(selections.scales),
@@ -223,6 +221,36 @@ const SaveLoadPage = () => {
     }
   };
 
+  // --- File Load Handlers ---
+  const handleLoadClick = (mode: 'hard' | 'soft') => {
+    setLoadMode(mode);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !loadMode) return;
+
+    let success = false;
+    if (loadMode === 'hard') {
+      success = await hardLoadFromFile(file);
+    } else {
+      success = await softLoadFromFile(file);
+    }
+
+    if (success) {
+      alert(`Successfully performed ${loadMode} load! Data has been updated.`);
+      fetchData(); // Refresh the data on the page
+    } else {
+      alert(`Failed to perform ${loadMode} load. Please check if the file is a valid FretStudio backup.`);
+    }
+
+    if(fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setLoadMode(null);
+  };
+
   if (isLoading) {
     return <div className="save-load-page"><h1>Loading...</h1></div>;
   }
@@ -233,6 +261,13 @@ const SaveLoadPage = () => {
 
   return (
     <div className="save-load-page">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange}
+        accept=".json"
+        style={{ display: 'none' }} 
+      />
       <div className="page-header">
         <div className="page-title-and-global-actions">
             <h1>Save/Load User Data</h1>
@@ -240,8 +275,8 @@ const SaveLoadPage = () => {
             <button onClick={() => handleSelectAll(false)}>Deselect All</button>
         </div>
         <div className="main-actions">
-          <button>Hard Load</button>
-          <button>Soft Load</button>
+          <button onClick={() => handleLoadClick('hard')}>Hard Load</button>
+          <button onClick={() => handleLoadClick('soft')}>Soft Load</button>
           <button onClick={handleSave}>Save Selections</button>
         </div>
       </div>

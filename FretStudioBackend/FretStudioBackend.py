@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing import List, Dict, Optional, Set
 import json
 import os
@@ -40,12 +40,11 @@ class AllDataResponse(BaseModel):
     tunings: List[Tuning]
     voicings_library: Dict[str, Dict[str, Dict[str, ChordVoicings]]]
 
-# --- NEW: Model for the save request payload ---
 class SaveRequest(BaseModel):
     scales: List[str]
     chordTypes: List[str]
     tunings: List[str]
-    voicings: List[str] # Format: "tuningName::chordTypeName::voicingName"
+    voicings: List[str]
 
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -97,51 +96,84 @@ async def get_all_data_for_save_load():
         voicings_library=db_voicings_library
     )
 
-# --- NEW: Endpoint to generate the save file content ---
 @app.post("/save-load/generate-file", response_model=AllDataResponse)
 async def generate_save_file(req: SaveRequest):
-    # Filter scales
     selected_scales = [s for name, s in db_scales.items() if name in req.scales]
-    
-    # Filter chord types
     selected_chord_types = [ct for name, ct in db_chord_types.items() if name in req.chordTypes]
-    
-    # Filter tunings
     selected_tunings = [t for name, t in db_tunings.items() if name in req.tunings]
-    
-    # Filter voicings library
     selected_voicings_library = {}
     voicings_set = set(req.voicings)
-    
     for tuning_name, tuning_content in db_voicings_library.items():
-        if tuning_name not in req.tunings:
-            continue
-        
+        if tuning_name not in req.tunings: continue
         selected_voicings_library[tuning_name] = {}
         for chord_type_name, chord_content in tuning_content.items():
-            if chord_type_name not in req.chordTypes:
-                continue
-
+            if chord_type_name not in req.chordTypes: continue
             selected_voicings_library[tuning_name][chord_type_name] = {}
             for root_note, root_content in chord_content.items():
-                
-                filtered_voicings = [
-                    v for v in root_content.voicings 
-                    if f"{tuning_name}::{chord_type_name}::{v.name}" in voicings_set
-                ]
-                
+                filtered_voicings = [v for v in root_content.voicings if f"{tuning_name}::{chord_type_name}::{v.name}" in voicings_set]
                 if filtered_voicings:
-                    selected_voicings_library[tuning_name][chord_type_name][root_note] = ChordVoicings(
-                        name=root_content.name,
-                        voicings=filtered_voicings
-                    )
+                    selected_voicings_library[tuning_name][chord_type_name][root_note] = ChordVoicings(name=root_content.name, voicings=filtered_voicings)
+    return AllDataResponse(scales=selected_scales, chord_types=selected_chord_types, tunings=selected_tunings, voicings_library=selected_voicings_library)
 
-    return AllDataResponse(
-        scales=selected_scales,
-        chord_types=selected_chord_types,
-        tunings=selected_tunings,
-        voicings_library=selected_voicings_library
-    )
+async def process_uploaded_file(file: UploadFile):
+    content = await file.read()
+    try:
+        data = json.loads(content)
+        return AllDataResponse(**data)
+    except (json.JSONDecodeError, ValidationError):
+        raise HTTPException(status_code=400, detail="Invalid or corrupt file format.")
+
+@app.post("/save-load/hard-load", status_code=200)
+async def hard_load_data(file: UploadFile = File(...)):
+    global db_scales, db_chord_types, db_tunings, db_voicings_library
+    loaded_data = await process_uploaded_file(file)
+    
+    db_scales = {s.name: s for s in loaded_data.scales}
+    db_chord_types = {ct.name: ct for ct in loaded_data.chord_types}
+    db_tunings = {t.name: t for t in loaded_data.tunings}
+    db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in loaded_data.voicings_library.items()}
+
+    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    save_voicings_library()
+    
+    return {"message": "Hard load successful. All data has been replaced."}
+
+@app.post("/save-load/soft-load", status_code=200)
+async def soft_load_data(file: UploadFile = File(...)):
+    global db_scales, db_chord_types, db_tunings, db_voicings_library
+    loaded_data = await process_uploaded_file(file)
+
+    for scale in loaded_data.scales:
+        if scale.name not in db_scales: db_scales[scale.name] = scale
+    
+    for ct in loaded_data.chord_types:
+        if ct.name not in db_chord_types: db_chord_types[ct.name] = ct
+
+    for tuning in loaded_data.tunings:
+        if tuning.name not in db_tunings: db_tunings[tuning.name] = tuning
+
+    for t_name, t_data in loaded_data.voicings_library.items():
+        if t_name not in db_voicings_library: db_voicings_library[t_name] = {}
+        for c_name, c_data in t_data.items():
+            if c_name not in db_voicings_library[t_name]: db_voicings_library[t_name][c_name] = {}
+            for r_name, r_data in c_data.items():
+                voicings_list = r_data.voicings
+                if r_name not in db_voicings_library[t_name][c_name]:
+                    db_voicings_library[t_name][c_name][r_name] = ChordVoicings(name=r_data.name, voicings=[])
+                
+                existing_voicing_names = {v.name for v in db_voicings_library[t_name][c_name][r_name].voicings}
+                for voicing in voicings_list:
+                    if voicing.name not in existing_voicing_names:
+                        db_voicings_library[t_name][c_name][r_name].voicings.append(voicing)
+
+    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    save_voicings_library()
+
+    return {"message": "Soft load successful. New data has been merged."}
 
 # --- Other API Endpoints ---
 @app.get("/tunings", response_model=List[Tuning])
@@ -219,7 +251,7 @@ async def delete_scale(scale_name: str):
     if scale_name not in db_scales: raise HTTPException(status_code=404, detail="Scale not found.")
     del db_scales[scale_name]
     write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
-    return {"message": f"Scale '{scale_name}' deleted."}
+    return {"message": f"Scale '{scale.name}' deleted."}
 
 @app.post("/scales/reorder", status_code=200)
 async def reorder_scale(req: ReorderRequest):

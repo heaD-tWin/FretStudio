@@ -55,7 +55,6 @@ export interface AllData {
   };
 }
 
-// --- NEW: Type for the save file payload ---
 export interface SaveSelectionsPayload {
   scales: string[];
   chordTypes: string[];
@@ -85,7 +84,6 @@ export const getAllDataForSaveLoad = async (): Promise<AllData | null> => {
   return handleResponse<AllData>(response);
 };
 
-// --- NEW: API call to generate the save file ---
 export const generateSaveFile = async (selections: SaveSelectionsPayload): Promise<AllData | null> => {
   const response = await fetch(`${API_BASE_URL}/save-load/generate-file`, {
     method: 'POST',
@@ -93,6 +91,27 @@ export const generateSaveFile = async (selections: SaveSelectionsPayload): Promi
     body: JSON.stringify(selections),
   });
   return handleResponse<AllData>(response);
+};
+
+// --- NEW: Functions for Hard and Soft Load ---
+export const hardLoadFromFile = async (file: File): Promise<boolean> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}/save-load/hard-load`, {
+    method: 'POST',
+    body: formData,
+  });
+  return response.ok;
+};
+
+export const softLoadFromFile = async (file: File): Promise<boolean> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}/save-load/soft-load`, {
+    method: 'POST',
+    body: formData,
+  });
+  return response.ok;
 };
 
 
