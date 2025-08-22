@@ -35,6 +35,13 @@ class ReorderVoicingRequest(BaseModel):
     voicing_name: str
     direction: str
 
+# --- Model for aggregating all data for the save/load page ---
+class AllDataResponse(BaseModel):
+    scales: List[Scale]
+    chord_types: List[ChordType]
+    tunings: List[Tuning]
+    voicings_library: Dict[str, Dict[str, Dict[str, ChordVoicings]]]
+
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 def load_json_data(file_path: str):
@@ -75,7 +82,17 @@ def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
     return [NOTES[(start_index + (i - 1)) % 12] for i in intervals]
 
-# --- API Endpoints ---
+# --- NEW: Endpoint to provide all data for the save/load page ---
+@app.get("/save-load/all-data", response_model=AllDataResponse)
+async def get_all_data_for_save_load():
+    return AllDataResponse(
+        scales=list(db_scales.values()),
+        chord_types=list(db_chord_types.values()),
+        tunings=list(db_tunings.values()),
+        voicings_library=db_voicings_library
+    )
+
+# --- Other API Endpoints ---
 @app.get("/tunings", response_model=List[Tuning])
 async def get_tunings():
     return list(db_tunings.values())
