@@ -21,6 +21,7 @@
     <InterpreterArguments>
     </InterpreterArguments>
     <TestFramework>Pytest</TestFramework>
+    <SuppressPackageInstallationPrompt>True</SuppressPackageInstallationPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

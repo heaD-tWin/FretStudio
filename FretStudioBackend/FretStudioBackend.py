@@ -300,8 +300,7 @@ async def get_chords_in_scale(root_note: str, scale_name: str, tuning_name: str 
                 chord_notes = set(get_notes_from_intervals(note_in_scale, chord_type.intervals))
                 if chord_notes.issubset(scale_notes_set):
                     full_chord_name = f"{note_in_scale} {chord_type.name}"
-                    if db_voicings_library.get(tuning_name, {}).get(chord_type.name, {}).get(note_in_scale):
-                        diatonic_chords.append(full_chord_name)
+                    diatonic_chords.append(full_chord_name)
             except (ValueError, IndexError):
                 continue
                 
@@ -388,19 +387,27 @@ async def get_voicings_for_chord(tuning_name: str, chord_type_name: str, root_no
     voicings_def = db_voicings_library.get(tuning_name, {}).get(chord_type_name, {}).get(root_note)
     return voicings_def.voicings if voicings_def else []
 
-@app.post("/voicings/{tuning_name}/{chord_type_name}/{root_note}", status_code=201)
-async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_note: str, voicing: Voicing):
+@app.post("/voicings/{tuning_name}/{chord_type_name}/{root_note}/{voicing_name:path}", status_code=201)
+async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_note: str, voicing_name: str, voicing: Voicing):
     if tuning_name not in db_voicings_library:
         raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
     if chord_type_name not in db_voicings_library[tuning_name] or root_note not in db_voicings_library[tuning_name][chord_type_name]:
         raise HTTPException(status_code=404, detail="Chord definition not found.")
     
+    # Ensure the name in the URL matches the name in the body
+    if voicing_name != voicing.name:
+        raise HTTPException(status_code=400, detail="Voicing name in URL does not match name in body.")
+
     voicings_list = db_voicings_library[tuning_name][chord_type_name][root_note].voicings
+    
+    # Find existing voicing by name to update it, otherwise append
+    found = False
     for i, v in enumerate(voicings_list):
         if v.name == voicing.name:
             voicings_list[i] = voicing
+            found = True
             break
-    else:
+    if not found:
         voicings_list.append(voicing)
         
     save_voicings_library()

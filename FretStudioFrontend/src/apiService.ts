@@ -220,7 +220,7 @@ export const getVoicingsForChord = async (tuningName: string, chordTypeName: str
 };
 
 export const addVoicingToChord = async (tuningName: string, chordTypeName: string, rootNote: string, voicing: Voicing): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`, {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicing.name)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(voicing),
