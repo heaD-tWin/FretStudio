@@ -255,7 +255,7 @@
   flex-direction: row-reverse;
 }
 
-.fretboard-container.left-handed .fretboard,
+/*.fretboard-container.left-handed .fretboard,*/
 .fretboard-container.left-handed .fret-numbers {
   flex-direction: row-reverse;
 }
