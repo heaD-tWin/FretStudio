@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { 
   getScales, addScale, deleteScale, reorderScale, type Scale,
-  getTunings, addTuning, deleteTuning, reorderTuning, type Tuning 
+  getTunings, addTuning, deleteTuning, reorderTuning, type Tuning,
+  getChordTypes, type ChordType
 } from '../apiService';
 import Selector from '../components/Selector';
 import { useAccidentalType } from '../contexts/AccidentalTypeContext';
@@ -21,6 +22,8 @@ const ScaleEditor = () => {
   const [selectedScaleName, setSelectedScaleName] = useState(NEW_SCALE_OPTION);
   const [editedScaleName, setEditedScaleName] = useState('');
   const [selectedIntervals, setSelectedIntervals] = useState<number[]>([]);
+  const [selectedChordTypes, setSelectedChordTypes] = useState<string[]>([]);
+  const [chordTypes, setChordTypes] = useState<ChordType[]>([]);
 
   const [tunings, setTunings] = useState<Tuning[]>([]);
   const [selectedTuningName, setSelectedTuningName] = useState(NEW_TUNING_OPTION);
@@ -33,6 +36,8 @@ const ScaleEditor = () => {
       setScales(scalesData);
       const tuningsData = await getTunings();
       setTunings(tuningsData);
+      const chordTypesData = await getChordTypes();
+      setChordTypes(chordTypesData);
     }
     fetchInitialData();
   }, []);
@@ -41,11 +46,13 @@ const ScaleEditor = () => {
     if (selectedScaleName === NEW_SCALE_OPTION) {
       setEditedScaleName('');
       setSelectedIntervals([]);
+      setSelectedChordTypes([]);
     } else {
       const scale = scales.find(s => s.name === selectedScaleName);
       if (scale) {
         setEditedScaleName(scale.name);
         setSelectedIntervals(scale.intervals);
+        setSelectedChordTypes(scale.allowed_chord_types || []);
       }
     }
   }, [selectedScaleName, scales]);
@@ -71,13 +78,25 @@ const ScaleEditor = () => {
     );
   };
 
+  const handleChordTypeChange = (chordTypeName: string) => {
+    setSelectedChordTypes(prev =>
+      prev.includes(chordTypeName)
+        ? prev.filter(name => name !== chordTypeName)
+        : [...prev, chordTypeName]
+    );
+  };
+
   const handleSaveScale = async () => {
     if (!editedScaleName || selectedIntervals.length === 0) {
       alert('Please provide a scale name and select at least one interval.');
       return;
     }
     const sortedIntervals = [...selectedIntervals].sort((a, b) => a - b);
-    const scaleToSave: Scale = { name: editedScaleName, intervals: sortedIntervals };
+    const scaleToSave: Scale = { 
+      name: editedScaleName, 
+      intervals: sortedIntervals,
+      allowed_chord_types: selectedChordTypes 
+    };
 
     if (await addScale(scaleToSave)) {
       alert('Scale saved!');
@@ -196,6 +215,22 @@ const ScaleEditor = () => {
                   onChange={() => handleIntervalChange(num)}
                 />
                 <label htmlFor={`interval-${num}`}>{num}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Allowed Chord Types</label>
+          <div className="chord-type-checkbox-grid">
+            {chordTypes.map(ct => (
+              <div key={ct.name} className="checkbox-container">
+                <input
+                  type="checkbox"
+                  id={`chord-type-${ct.name}`}
+                  checked={selectedChordTypes.includes(ct.name)}
+                  onChange={() => handleChordTypeChange(ct.name)}
+                />
+                <label htmlFor={`chord-type-${ct.name}`}>{ct.name}</label>
               </div>
             ))}
           </div>

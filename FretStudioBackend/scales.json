@@ -12,9 +12,9 @@
     ],
     "allowed_chord_types": [
       "Major",
+      "Test",
       "Minor",
-      "Diminished",
-      "Test"
+      "Diminished"
     ]
   },
   "Natural Minor": {
@@ -79,23 +79,5 @@
       "Major",
       "Minor"
     ]
-  },
-  "test": {
-    "name": "test",
-    "intervals": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12
-    ],
-    "allowed_chord_types": []
   }
 }

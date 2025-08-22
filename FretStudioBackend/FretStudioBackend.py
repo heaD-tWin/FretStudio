@@ -242,16 +242,24 @@ async def get_all_scales(): return list(db_scales.values())
 
 @app.post("/scales", status_code=201)
 async def add_or_update_scale(scale: Scale):
+    # When updating an existing scale, its `allowed_chord_types` are sent from the frontend.
+    # The incoming `scale` object now contains all the necessary, updated information.
+    # We can simply overwrite the old scale data with the new data.
     db_scales[scale.name] = scale
     write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
     return {"message": f"Scale '{scale.name}' saved."}
 
 @app.delete("/scales/{scale_name}", status_code=200)
 async def delete_scale(scale_name: str):
-    if scale_name not in db_scales: raise HTTPException(status_code=404, detail="Scale not found.")
+    if scale_name not in db_scales: 
+        raise HTTPException(status_code=404, detail="Scale not found.")
+    
     del db_scales[scale_name]
+    
+    # Persist the deletion to the JSON file
     write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
-    return {"message": f"Scale '{scale.name}' deleted."}
+    
+    return {"message": f"Scale '{scale_name}' deleted."}
 
 @app.post("/scales/reorder", status_code=200)
 async def reorder_scale(req: ReorderRequest):
