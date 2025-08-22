@@ -4,6 +4,7 @@ const API_BASE_URL = 'http://127.0.0.1:8000';
 export interface Scale {
   name: string;
   intervals: number[];
+  allowed_chord_types: string[];
 }
 
 export interface ChordType {
@@ -38,6 +39,23 @@ export interface VisualizedChordResponse {
   voicings: Voicing[];
 }
 
+// --- NEW: Type for the aggregated data from the backend ---
+export interface AllData {
+  scales: Scale[];
+  chord_types: ChordType[];
+  tunings: Tuning[];
+  voicings_library: {
+    [tuningName: string]: {
+      [chordTypeName: string]: {
+        [rootNote: string]: {
+          name: string;
+          voicings: Voicing[];
+        };
+      };
+    };
+  };
+}
+
 // --- Helper ---
 async function handleResponse<T>(response: Response): Promise<T | null> {
   if (!response.ok) {
@@ -53,6 +71,12 @@ async function handleResponse<T>(response: Response): Promise<T | null> {
     return null;
   }
 }
+
+// --- NEW: API call for the Save/Load page ---
+export const getAllDataForSaveLoad = async (): Promise<AllData | null> => {
+  const response = await fetch(`${API_BASE_URL}/save-load/all-data`);
+  return handleResponse<AllData>(response);
+};
 
 // --- Scales API ---
 export const getScales = async (): Promise<Scale[]> => {
