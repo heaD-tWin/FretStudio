@@ -125,7 +125,7 @@ export const addScale = async (scale: Scale): Promise<boolean> => {
   const response = await fetch(`${API_BASE_URL}/scales`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(scale),
+    body: JSON.stringify(scale as Scale),
   });
   return response.ok;
 };
