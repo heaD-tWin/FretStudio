@@ -39,7 +39,6 @@ export interface VisualizedChordResponse {
   voicings: Voicing[];
 }
 
-// --- NEW: Type for the aggregated data from the backend ---
 export interface AllData {
   scales: Scale[];
   chord_types: ChordType[];
@@ -54,6 +53,14 @@ export interface AllData {
       };
     };
   };
+}
+
+// --- NEW: Type for the save file payload ---
+export interface SaveSelectionsPayload {
+  scales: string[];
+  chordTypes: string[];
+  tunings: string[];
+  voicings: string[];
 }
 
 // --- Helper ---
@@ -72,11 +79,22 @@ async function handleResponse<T>(response: Response): Promise<T | null> {
   }
 }
 
-// --- NEW: API call for the Save/Load page ---
+// --- Save/Load API ---
 export const getAllDataForSaveLoad = async (): Promise<AllData | null> => {
   const response = await fetch(`${API_BASE_URL}/save-load/all-data`);
   return handleResponse<AllData>(response);
 };
+
+// --- NEW: API call to generate the save file ---
+export const generateSaveFile = async (selections: SaveSelectionsPayload): Promise<AllData | null> => {
+  const response = await fetch(`${API_BASE_URL}/save-load/generate-file`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(selections),
+  });
+  return handleResponse<AllData>(response);
+};
+
 
 // --- Scales API ---
 export const getScales = async (): Promise<Scale[]> => {

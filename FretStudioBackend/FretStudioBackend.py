@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 import json
 import os
 
@@ -27,7 +27,6 @@ class ReorderRequest(BaseModel):
     name: str
     direction: str
 
-# New model for reordering a specific voicing
 class ReorderVoicingRequest(BaseModel):
     tuning_name: str
     chord_type_name: str
@@ -35,12 +34,18 @@ class ReorderVoicingRequest(BaseModel):
     voicing_name: str
     direction: str
 
-# --- Model for aggregating all data for the save/load page ---
 class AllDataResponse(BaseModel):
     scales: List[Scale]
     chord_types: List[ChordType]
     tunings: List[Tuning]
     voicings_library: Dict[str, Dict[str, Dict[str, ChordVoicings]]]
+
+# --- NEW: Model for the save request payload ---
+class SaveRequest(BaseModel):
+    scales: List[str]
+    chordTypes: List[str]
+    tunings: List[str]
+    voicings: List[str] # Format: "tuningName::chordTypeName::voicingName"
 
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -82,7 +87,7 @@ def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
     return [NOTES[(start_index + (i - 1)) % 12] for i in intervals]
 
-# --- NEW: Endpoint to provide all data for the save/load page ---
+# --- Save/Load Endpoints ---
 @app.get("/save-load/all-data", response_model=AllDataResponse)
 async def get_all_data_for_save_load():
     return AllDataResponse(
@@ -90,6 +95,52 @@ async def get_all_data_for_save_load():
         chord_types=list(db_chord_types.values()),
         tunings=list(db_tunings.values()),
         voicings_library=db_voicings_library
+    )
+
+# --- NEW: Endpoint to generate the save file content ---
+@app.post("/save-load/generate-file", response_model=AllDataResponse)
+async def generate_save_file(req: SaveRequest):
+    # Filter scales
+    selected_scales = [s for name, s in db_scales.items() if name in req.scales]
+    
+    # Filter chord types
+    selected_chord_types = [ct for name, ct in db_chord_types.items() if name in req.chordTypes]
+    
+    # Filter tunings
+    selected_tunings = [t for name, t in db_tunings.items() if name in req.tunings]
+    
+    # Filter voicings library
+    selected_voicings_library = {}
+    voicings_set = set(req.voicings)
+    
+    for tuning_name, tuning_content in db_voicings_library.items():
+        if tuning_name not in req.tunings:
+            continue
+        
+        selected_voicings_library[tuning_name] = {}
+        for chord_type_name, chord_content in tuning_content.items():
+            if chord_type_name not in req.chordTypes:
+                continue
+
+            selected_voicings_library[tuning_name][chord_type_name] = {}
+            for root_note, root_content in chord_content.items():
+                
+                filtered_voicings = [
+                    v for v in root_content.voicings 
+                    if f"{tuning_name}::{chord_type_name}::{v.name}" in voicings_set
+                ]
+                
+                if filtered_voicings:
+                    selected_voicings_library[tuning_name][chord_type_name][root_note] = ChordVoicings(
+                        name=root_content.name,
+                        voicings=filtered_voicings
+                    )
+
+    return AllDataResponse(
+        scales=selected_scales,
+        chord_types=selected_chord_types,
+        tunings=selected_tunings,
+        voicings_library=selected_voicings_library
     )
 
 # --- Other API Endpoints ---
@@ -154,7 +205,6 @@ async def reorder_tuning(req: ReorderRequest):
     
     return {"message": f"Tuning '{req.name}' moved {req.direction}."}
 
-# --- Scale Endpoints ---
 @app.get("/scales", response_model=List[Scale])
 async def get_all_scales(): return list(db_scales.values())
 
@@ -225,7 +275,6 @@ async def get_chords_in_scale(root_note: str, scale_name: str, tuning_name: str 
                 
     return diatonic_chords
 
-# --- Chord Type Endpoints ---
 @app.get("/chord-types", response_model=List[ChordType])
 async def get_all_chord_types(): return list(db_chord_types.values())
 
@@ -296,7 +345,6 @@ async def reorder_chord_type(req: ReorderRequest):
 
     return {"message": f"Chord type '{req.name}' moved {req.direction}."}
 
-# --- Voicing and Fretboard Endpoints ---
 @app.get("/notes/{root_note}/{chord_type_name}", response_model=List[str])
 async def get_chord_notes_for_editor(root_note: str, chord_type_name: str):
     chord_type = db_chord_types.get(chord_type_name)
@@ -341,7 +389,6 @@ async def delete_voicing(tuning_name: str, chord_type_name: str, root_note: str,
     save_voicings_library()
     return {"message": "Voicing deleted."}
 
-# --- NEW ENDPOINT for reordering voicings ---
 @app.post("/voicings/reorder", status_code=200)
 async def reorder_voicing(req: ReorderVoicingRequest):
     global db_voicings_library

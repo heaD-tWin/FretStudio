@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getAllDataForSaveLoad, type AllData } from '../apiService';
+import { 
+  getAllDataForSaveLoad, 
+  generateSaveFile, 
+  type AllData, 
+  type SaveSelectionsPayload 
+} from '../apiService';
 import './SaveLoadPage.css';
 
 // Interface to hold the state of all user selections
@@ -193,6 +198,30 @@ const SaveLoadPage = () => {
     setSelections(prev => ({ ...prev, voicings: newVoicingSelections, tunings: newTuningSelections, chordTypes: newChordTypeSelections }));
   };
 
+  // --- NEW: Save Handler ---
+  const handleSave = async () => {
+    const payload: SaveSelectionsPayload = {
+      scales: Array.from(selections.scales),
+      chordTypes: Array.from(selections.chordTypes),
+      tunings: Array.from(selections.tunings),
+      voicings: Array.from(selections.voicings),
+    };
+
+    const fileContent = await generateSaveFile(payload);
+    if (fileContent) {
+      const blob = new Blob([JSON.stringify(fileContent, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fretstudio_backup.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      alert('Failed to generate save file.');
+    }
+  };
 
   if (isLoading) {
     return <div className="save-load-page"><h1>Loading...</h1></div>;
@@ -213,7 +242,7 @@ const SaveLoadPage = () => {
         <div className="main-actions">
           <button>Hard Load</button>
           <button>Soft Load</button>
-          <button>Save Selections</button>
+          <button onClick={handleSave}>Save Selections</button>
         </div>
       </div>
 
