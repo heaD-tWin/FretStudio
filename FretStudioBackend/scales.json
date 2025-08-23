@@ -47,9 +47,9 @@
     ],
     "allowed_chord_types": [
       "Minor",
-      "Augmented",
       "Major",
-      "Dim"
+      "Dim",
+      "Aug"
     ]
   },
   "Pentatonic Major": {
@@ -64,8 +64,8 @@
     "allowed_chord_types": [
       "Minor",
       "Major",
-      "Augmented",
-      "Dim"
+      "Dim",
+      "Aug"
     ]
   },
   "Pentatonic Minor": {
@@ -80,8 +80,8 @@
     "allowed_chord_types": [
       "Minor",
       "Major",
-      "Augmented",
-      "Dim"
+      "Dim",
+      "Aug"
     ]
   }
 }
