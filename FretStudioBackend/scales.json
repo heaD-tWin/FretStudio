@@ -11,10 +11,10 @@
       12
     ],
     "allowed_chord_types": [
-      "Major",
       "Test",
       "Minor",
-      "Diminished"
+      "Diminished",
+      "Major"
     ]
   },
   "Natural Minor": {
@@ -29,7 +29,6 @@
       11
     ],
     "allowed_chord_types": [
-      "Major",
       "Minor",
       "Diminished"
     ]
@@ -46,7 +45,6 @@
       12
     ],
     "allowed_chord_types": [
-      "Major",
       "Minor",
       "Diminished",
       "Augmented"
@@ -62,7 +60,6 @@
       10
     ],
     "allowed_chord_types": [
-      "Major",
       "Minor"
     ]
   },
@@ -76,7 +73,6 @@
       11
     ],
     "allowed_chord_types": [
-      "Major",
       "Minor"
     ]
   }

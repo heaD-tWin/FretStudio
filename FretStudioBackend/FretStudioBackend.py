@@ -401,21 +401,17 @@ async def get_chord_notes_for_editor(root_note: str, chord_type_name: str):
     if not chord_type: raise HTTPException(status_code=404, detail="Chord type not found")
     return get_notes_from_intervals(root_note, chord_type.intervals)
 
-@app.get("/voicings/{tuning_name}/{chord_type_name}/{root_note}", response_model=List[Voicing])
+@app.get("/voicings/{tuning_name}/{chord_type_name}/{root_note:path}", response_model=List[Voicing])
 async def get_voicings_for_chord(tuning_name: str, chord_type_name: str, root_note: str):
     voicings_def = db_voicings_library.get(tuning_name, {}).get(chord_type_name, {}).get(root_note)
     return voicings_def.voicings if voicings_def else []
 
-@app.post("/voicings/{tuning_name}/{chord_type_name}/{root_note}/{voicing_name:path}", status_code=201)
-async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_note: str, voicing_name: str, voicing: Voicing):
+@app.post("/voicings/{tuning_name}/{chord_type_name}/{root_note:path}", status_code=201)
+async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_note: str, voicing: Voicing):
     if tuning_name not in db_voicings_library:
         raise HTTPException(status_code=404, detail=f"Tuning '{tuning_name}' not found.")
     if chord_type_name not in db_voicings_library[tuning_name] or root_note not in db_voicings_library[tuning_name][chord_type_name]:
         raise HTTPException(status_code=404, detail="Chord definition not found.")
-    
-    # Ensure the name in the URL matches the name in the body
-    if voicing_name != voicing.name:
-        raise HTTPException(status_code=400, detail="Voicing name in URL does not match name in body.")
 
     voicings_list = db_voicings_library[tuning_name][chord_type_name][root_note].voicings
     
@@ -432,8 +428,8 @@ async def add_or_update_voicing(tuning_name: str, chord_type_name: str, root_not
     save_voicings_library()
     return {"message": f"Voicing for '{root_note} {chord_type_name}' in tuning '{tuning_name}' saved."}
 
-@app.delete("/voicings/{tuning_name}/{chord_type_name}/{root_note}/{voicing_name:path}", status_code=200)
-async def delete_voicing(tuning_name: str, chord_type_name: str, root_note: str, voicing_name: str):
+@app.delete("/voicings/{tuning_name}/{chord_type_name}/{voicing_name:path}", status_code=200)
+async def delete_voicing(tuning_name: str, chord_type_name: str, voicing_name: str, root_note: str):
     if tuning_name not in db_voicings_library or chord_type_name not in db_voicings_library[tuning_name] or root_note not in db_voicings_library[tuning_name][chord_type_name]:
         raise HTTPException(status_code=404, detail="Chord definition not found.")
         

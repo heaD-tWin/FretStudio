@@ -220,7 +220,7 @@ export const getVoicingsForChord = async (tuningName: string, chordTypeName: str
 };
 
 export const addVoicingToChord = async (tuningName: string, chordTypeName: string, rootNote: string, voicing: Voicing): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicing.name)}`, {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(voicing),
@@ -229,7 +229,7 @@ export const addVoicingToChord = async (tuningName: string, chordTypeName: strin
 };
 
 export const deleteVoicing = async (tuningName: string, chordTypeName: string, rootNote: string, voicingName: string): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(rootNote)}/${encodeURIComponent(voicingName)}`, {
+  const response = await fetch(`${API_BASE_URL}/voicings/${encodeURIComponent(tuningName)}/${encodeURIComponent(chordTypeName)}/${encodeURIComponent(voicingName)}?root_note=${encodeURIComponent(rootNote)}`, {
     method: 'DELETE',
   });
   return response.ok;
