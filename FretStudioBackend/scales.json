@@ -13,8 +13,8 @@
     "allowed_chord_types": [
       "Test",
       "Minor",
-      "Diminished",
-      "Major"
+      "Major",
+      "Dim"
     ]
   },
   "Natural Minor": {
@@ -30,7 +30,8 @@
     ],
     "allowed_chord_types": [
       "Minor",
-      "Diminished"
+      "Major",
+      "Dim"
     ]
   },
   "Harmonic Minor": {
@@ -46,8 +47,9 @@
     ],
     "allowed_chord_types": [
       "Minor",
-      "Diminished",
-      "Augmented"
+      "Augmented",
+      "Major",
+      "Dim"
     ]
   },
   "Pentatonic Major": {
@@ -60,7 +62,10 @@
       10
     ],
     "allowed_chord_types": [
-      "Minor"
+      "Minor",
+      "Major",
+      "Augmented",
+      "Dim"
     ]
   },
   "Pentatonic Minor": {
@@ -73,7 +78,10 @@
       11
     ],
     "allowed_chord_types": [
-      "Minor"
+      "Minor",
+      "Major",
+      "Augmented",
+      "Dim"
     ]
   }
 }
