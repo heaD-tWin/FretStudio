@@ -334,14 +334,25 @@ async def add_or_update_chord_type(chord_type: ChordType):
 @app.delete("/chord-types/{type_name}", status_code=200)
 async def delete_chord_type(type_name: str):
     if type_name not in db_chord_types: raise HTTPException(status_code=404, detail="Chord type not found.")
+    
+    # Delete the chord type itself
     del db_chord_types[type_name]
     
+    # Remove the deleted chord type from any scale that allows it
+    for scale in db_scales.values():
+        if type_name in scale.allowed_chord_types:
+            scale.allowed_chord_types.remove(type_name)
+            
+    # Remove the chord type from the voicings library
     for tuning_name in db_voicings_library:
         if type_name in db_voicings_library[tuning_name]:
             del db_voicings_library[tuning_name][type_name]
     
+    # Save all changes to the respective JSON files
     write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
     save_voicings_library()
+    
     return {"message": f"Chord type '{type_name}' deleted."}
 
 @app.post("/chord-types/reorder", status_code=200)
