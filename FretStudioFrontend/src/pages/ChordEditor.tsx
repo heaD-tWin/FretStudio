@@ -301,15 +301,14 @@ const ChordEditor = () => {
                 <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...voicings.map(v => v.name)]} onChange={handleSelectVoicing} />
             </div>
         </div>
-        <h1>Voicing Details</h1>
         <div className="controls-grid">
-            <div className="form-group">
-                <label>Voicing Name</label>
-                <input type="text" value={voicingName} onChange={e => setVoicingName(e.target.value)} />
-            </div>
             <div className="form-group">
             <label>Difficulty Level</label>
             <Selector label="Difficulty" value={voicingDifficulty} options={['Beginner', 'Intermediate', 'Advanced']} onChange={setVoicingDifficulty} />
+            </div>
+            <div className="form-group">
+                <label>Voicing Name</label>
+                <input type="text" value={voicingName} onChange={e => setVoicingName(e.target.value)} />
             </div>
         </div>
         <div className="editor-actions">

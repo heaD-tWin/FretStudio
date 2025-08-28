@@ -34,10 +34,9 @@ h2 {
     margin-bottom: 20px;
 }
 
-.editor-page .form-group label {
+.form-group label {
     color: #3d3d3d;
     font-weight: bold;
-    color: #ccc;
 }
 
 input[type="text"] {
@@ -71,7 +70,7 @@ input[type="text"] {
   height: 18px;
 }
 
-.checkbox-container label {
+.editor-page .checkbox-container label {
     color: #3d3d3d;
     font-weight: normal;
 }
@@ -116,18 +115,21 @@ button:disabled {
 }
 
 .tuning-selectors-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 15px;
 }
 
 .tuning-selector-row {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
 }
 
 .tuning-selector-row label {
   font-size: 0.9em;
-  color: #bbb;
+  color: #3d3d3d;
+  width: 80px;
+  flex-shrink: 0;
 }

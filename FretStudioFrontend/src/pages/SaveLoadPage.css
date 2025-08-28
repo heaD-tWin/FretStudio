@@ -11,15 +11,12 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #eee;
 }
 
 .page-header h1 {
     color: #3d3d3d;
     font-size: 1.5rem;
     text-align: center;
-    margin-bottom: 1rem;
 }
 
 .page-title-and-global-actions {
@@ -31,6 +28,7 @@
 .main-actions {
   display: flex;
   gap: 0.5rem;
+  padding-right:4rem;
 }
 
 .card, .sub-card {
@@ -69,12 +67,12 @@
 
 .card-header h2, .card-header h3 {
   margin: 0;
-  color: #3d3d3d; /* Added color to make text visible */
-  font-size: 1.5rem; /* Matched font size */
+  color: #3d3d3d;
+  font-size: 1.5rem;
 }
 
 .card-header h3 {
-    font-size: 1.2rem; /* Made sub-card headers slightly smaller */
+    font-size: 1.2rem;
 }
 
 .card-actions {
@@ -102,4 +100,18 @@
 
 .standalone-checkbox {
   margin-bottom: 1rem;
+}
+
+.save-load-page button {
+    background-color: #007bff; /* Change this to your desired color */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.save-load-page button:hover {
+    background-color: #0056b3; /* Change this for the hover effect */
 }

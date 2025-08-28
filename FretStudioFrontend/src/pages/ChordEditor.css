@@ -21,14 +21,12 @@
     padding-bottom: 0.5rem;
 }
 
-/* Added from visualizer pages for consistency */
 .chord-editor-page .fretboard-container {
     background-color: transparent;
     border-radius: 0;
     padding: 20px 0;
 }
 
-/* Added from visualizer pages for consistency */
 .chord-editor-page .fret,
 .chord-editor-page .fret-number {
     width: 48px;
@@ -49,10 +47,9 @@
     width: 100%;
     padding: 0.5rem;
     font-size: 1em;
-    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    box-sizing: border-box;
 }
 
-/* --- NEW: Styles for the checkbox row --- */
 .interval-checkbox-row {
   display: flex;
   flex-direction: row;
@@ -81,7 +78,6 @@
   height: 18px;
 }
 
-/* NEW: Style for the save button area */
 .editor-actions {
     margin-top: 1rem;
     display: flex;
@@ -114,7 +110,6 @@
     gap: 10px;
 }
 
-/* New styles for cards */
 .card {
     background: #fff;
     border-radius: 8px;
@@ -130,7 +125,6 @@
     font-size: 1.5rem;
 }
 
-/* New styles for the remove button */
 .editor-actions .remove-button {
     background-color: #dc3545;
 }
@@ -139,7 +133,6 @@
     background-color: #c82333;
 }
 
-/* Controls grid for form layout */
 .controls-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -155,8 +148,6 @@
 .note:hover {
     transform: scale(1.1);
 }
-
-/* Add these styles to the end of the file */
 
 .checkbox-grid {
   display: grid;

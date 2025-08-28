@@ -187,12 +187,15 @@ const ScaleEditor = () => {
       <div className="card">
         <h2>Scale Editor</h2>
         <div className="controls-grid">
-          <Selector
+          <div className="form-group">
+            <label>Select Scale to Edit</label>
+            <Selector
             label="Select Scale"
             value={selectedScaleName}
             options={[NEW_SCALE_OPTION, ...scales.map(s => s.name)]}
             onChange={setSelectedScaleName}
-          />
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="scale-name">Scale Name</label>
             <input
@@ -262,12 +265,15 @@ const ScaleEditor = () => {
       <div className="card">
         <h2>Tuning Editor</h2>
         <div className="controls-grid">
+          <div className="form-group">
+          <label>Select Tuning to Edit</label>
           <Selector
             label="Select Tuning"
             value={selectedTuningName}
             options={[NEW_TUNING_OPTION, ...tunings.map(t => t.name)]}
             onChange={setSelectedTuningName}
           />
+          </div>
           <div className="form-group">
             <label htmlFor="tuning-name">Tuning Name</label>
             <input

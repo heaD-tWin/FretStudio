@@ -285,16 +285,15 @@ const SaveLoadPage = () => {
         style={{ display: 'none' }} 
       />
       <div className="page-header">
-        <div className="page-title-and-global-actions">
-            <h1>Save/Load User Data</h1>
-            <button onClick={() => handleSelectAll(true)}>Select All</button>
-            <button onClick={() => handleSelectAll(false)}>Deselect All</button>
+        <div className="main-actions">
+            <button onClick={() => handleLoadClick('hard')}>Hard Load</button>
+            <button onClick={() => handleLoadClick('soft')}>Soft Load</button>
+            <button onClick={handleSave}>Save Selections</button>
+            <button onClick={handleFactoryReset}>Restore Factory Library</button>
         </div>
         <div className="main-actions">
-          <button onClick={() => handleLoadClick('hard')}>Hard Load</button>
-          <button onClick={() => handleLoadClick('soft')}>Soft Load</button>
-          <button onClick={handleSave}>Save Selections</button>
-          <button onClick={handleFactoryReset}>Restore Factory Library</button>
+            <button onClick={() => handleSelectAll(true)}>Select All</button>
+            <button onClick={() => handleSelectAll(false)}>Deselect All</button>
         </div>
       </div>
 
