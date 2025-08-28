@@ -140,6 +140,31 @@ async def hard_load_data(file: UploadFile = File(...)):
     
     return {"message": "Hard load successful. All data has been replaced."}
 
+@app.post("/save-load/factory-reset", status_code=200)
+async def factory_reset():
+    global db_scales, db_chord_types, db_tunings, db_voicings_library
+    
+    factory_data_raw = load_json_data("factory_library.json")
+    if not factory_data_raw:
+        raise HTTPException(status_code=500, detail="Factory library file not found or is empty.")
+
+    try:
+        factory_data = AllDataResponse(**factory_data_raw)
+    except ValidationError as e:
+        raise HTTPException(status_code=500, detail=f"Invalid factory library file: {e}")
+
+    db_scales = {s.name: s for s in factory_data.scales}
+    db_chord_types = {ct.name: ct for ct in factory_data.chord_types}
+    db_tunings = {t.name: t for t in factory_data.tunings}
+    db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in factory_data.voicings_library.items()}
+
+    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    save_voicings_library()
+    
+    return {"message": "Factory library restored successfully."}
+
 @app.post("/save-load/soft-load", status_code=200)
 async def soft_load_data(file: UploadFile = File(...)):
     global db_scales, db_chord_types, db_tunings, db_voicings_library

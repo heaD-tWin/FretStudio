@@ -114,6 +114,13 @@ export const softLoadFromFile = async (file: File): Promise<boolean> => {
   return response.ok;
 };
 
+export const factoryReset = async (): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/save-load/factory-reset`, {
+    method: 'POST',
+  });
+  return response.ok;
+};
+
 
 // --- Scales API ---
 export const getScales = async (): Promise<Scale[]> => {

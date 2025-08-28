@@ -4,6 +4,7 @@ import {
   generateSaveFile, 
   hardLoadFromFile,
   softLoadFromFile,
+  factoryReset,
   type AllData, 
   type SaveSelectionsPayload 
 } from '../apiService';
@@ -251,6 +252,21 @@ const SaveLoadPage = () => {
     setLoadMode(null);
   };
 
+  const handleFactoryReset = async () => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to restore the factory library?\n\nThis will overwrite all current scales, chords, tunings, and voicings. This action cannot be undone."
+    );
+    if (isConfirmed) {
+      const success = await factoryReset();
+      if (success) {
+        alert("Factory library restored successfully!");
+        fetchData(); // Refresh the data on the page
+      } else {
+        alert("Failed to restore factory library. Please check the server and file system.");
+      }
+    }
+  };
+
   if (isLoading) {
     return <div className="save-load-page"><h1>Loading...</h1></div>;
   }
@@ -278,6 +294,7 @@ const SaveLoadPage = () => {
           <button onClick={() => handleLoadClick('hard')}>Hard Load</button>
           <button onClick={() => handleLoadClick('soft')}>Soft Load</button>
           <button onClick={handleSave}>Save Selections</button>
+          <button onClick={handleFactoryReset}>Restore Factory Library</button>
         </div>
       </div>
 
