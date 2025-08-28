@@ -288,9 +288,18 @@ const ChordEditor = () => {
     <div className="card">
         <h1>Select Chord to Edit Voicings (for {selectedTuning})</h1>
         <div className="controls-grid">
-            <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
-            <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
-            <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...voicings.map(v => v.name)]} onChange={handleSelectVoicing} />
+            <div className="form-group">
+                <label>Chord Type</label>
+                <Selector label="Chord Type" value={selectedChordType} options={chordTypes.map(t => t.name)} onChange={setSelectedChordType} />
+            </div>
+            <div className="form-group">
+                <label>Root Note</label>
+                <Selector label="Root Note" value={selectedRoot} options={noteOptions} onChange={setSelectedRoot} />
+            </div>
+            <div className="form-group">
+                <label>Select Voicing to Edit</label>
+                <Selector label="Edit Voicing" value={selectedVoicingName} options={[NEW_VOICING_OPTION, ...voicings.map(v => v.name)]} onChange={handleSelectVoicing} />
+            </div>
         </div>
         <h1>Voicing Details</h1>
         <div className="controls-grid">
@@ -298,7 +307,10 @@ const ChordEditor = () => {
                 <label>Voicing Name</label>
                 <input type="text" value={voicingName} onChange={e => setVoicingName(e.target.value)} />
             </div>
+            <div className="form-group">
+            <label>Difficulty Level</label>
             <Selector label="Difficulty" value={voicingDifficulty} options={['Beginner', 'Intermediate', 'Advanced']} onChange={setVoicingDifficulty} />
+            </div>
         </div>
         <div className="editor-actions">
           <div className="reorder-buttons">
@@ -325,7 +337,10 @@ const ChordEditor = () => {
       <div className="card">
         <h1>Manage Chord Types</h1>
         <div className="controls-grid">
-          <Selector label="Edit Chord Type" value={selectedChordTypeName} options={[NEW_CHORD_TYPE_OPTION, ...chordTypes.map(ct => ct.name)]} onChange={handleSelectChordTypeForEdit} />
+          <div className="form-group">
+            <label>Select Chord Type to Edit</label>
+            <Selector label="Edit Chord Type" value={selectedChordTypeName} options={[NEW_CHORD_TYPE_OPTION, ...chordTypes.map(ct => ct.name)]} onChange={handleSelectChordTypeForEdit} />
+          </div>
           <div className="form-group">
             <label>Chord Type Name</label>
             <input type="text" value={chordTypeName} onChange={e => { setChordTypeName(e.target.value); setIsChordTypeModified(true); }} />
