@@ -73,8 +73,8 @@ const SaveLoadPage = () => {
     setSelections(prev => ({ ...prev, tunings: newSelections }));
   };
 
-  const handleVoicingChange = (tuningName: string, chordTypeName: string, voicingName: string) => {
-    const voicingId = `${tuningName}::${chordTypeName}::${voicingName}`;
+  const handleVoicingChange = (tuningName: string, chordTypeName: string, rootNote: string, voicingName: string) => {
+    const voicingId = `${tuningName}::${chordTypeName}::${rootNote}::${voicingName}`;
     const newVoicingSelections = new Set(selections.voicings);
     const newTuningSelections = new Set(selections.tunings);
     const newChordTypeSelections = new Set(selections.chordTypes);
@@ -114,8 +114,8 @@ const SaveLoadPage = () => {
       const allVoicingIds = new Set<string>();
       allData.tunings.forEach(tuning => {
         Object.entries(allData.voicings_library[tuning.name] || {}).forEach(([chordTypeName, rootNotes]) => {
-          Object.values(rootNotes).forEach(voicingsData => {
-            voicingsData.voicings.forEach(voicing => allVoicingIds.add(`${tuning.name}::${chordTypeName}::${voicing.name}`));
+          Object.entries(rootNotes).forEach(([rootNote, voicingsData]) => {
+            voicingsData.voicings.forEach(voicing => allVoicingIds.add(`${tuning.name}::${chordTypeName}::${rootNote}::${voicing.name}`));
           });
         });
       });
@@ -157,9 +157,9 @@ const SaveLoadPage = () => {
     const newChordTypeSelections = new Set(selections.chordTypes);
 
     const tuningVoicings = Object.entries(allData.voicings_library[tuningName] || {}).flatMap(
-      ([chordTypeName, rootNotes]) => Object.values(rootNotes).flatMap(
-        voicingsData => voicingsData.voicings.map(
-          voicing => ({ voicingId: `${tuningName}::${chordTypeName}::${voicing.name}`, chordTypeName })
+      ([chordTypeName, rootNotes]) => Object.entries(rootNotes).flatMap(
+        ([rootNote, voicingsData]) => voicingsData.voicings.map(
+          voicing => ({ voicingId: `${tuningName}::${chordTypeName}::${rootNote}::${voicing.name}`, chordTypeName })
         )
       )
     );
@@ -184,8 +184,8 @@ const SaveLoadPage = () => {
     const newTuningSelections = new Set(selections.tunings);
     const newChordTypeSelections = new Set(selections.chordTypes);
 
-    const subgroupVoicings = Object.values(allData.voicings_library[tuningName]?.[chordTypeName] || {}).flatMap(
-      voicingsData => voicingsData.voicings.map(voicing => `${tuningName}::${chordTypeName}::${voicing.name}`)
+    const subgroupVoicings = Object.entries(allData.voicings_library[tuningName]?.[chordTypeName] || {}).flatMap(
+      ([rootNote, voicingsData]) => voicingsData.voicings.map(voicing => `${tuningName}::${chordTypeName}::${rootNote}::${voicing.name}`)
     );
 
     if (select) {
@@ -359,10 +359,10 @@ const SaveLoadPage = () => {
               <div className="checkbox-grid">
                 {Object.entries(rootNotes).flatMap(([rootNote, voicingsData]) =>
                   voicingsData.voicings.map(voicing => {
-                    const voicingId = `${tuning.name}::${chordTypeName}::${voicing.name}`;
+                    const voicingId = `${tuning.name}::${chordTypeName}::${rootNote}::${voicing.name}`;
                     return (
                       <div key={voicingId} className="checkbox-item">
-                        <input type="checkbox" id={voicingId} checked={selections.voicings.has(voicingId)} onChange={() => handleVoicingChange(tuning.name, chordTypeName, voicing.name)} />
+                        <input type="checkbox" id={voicingId} checked={selections.voicings.has(voicingId)} onChange={() => handleVoicingChange(tuning.name, chordTypeName, rootNote, voicing.name)} />
                         <label htmlFor={voicingId}>{rootNote}: {voicing.name}</label>
                       </div>
                     )
