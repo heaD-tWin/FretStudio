@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="9" time="1.632" timestamp="2025-08-29T19:43:02.940203+10:00" hostname="Dans_Laptop_01"><testcase classname="tests.test_main" name="test_crud_and_reorder_scale" file="tests\test_main.py" line="108" time="0.127"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_factory_reset" file="tests\test_main.py" line="150" time="0.157"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_all_chord_types" file="tests\test_main.py" line="86" time="0.138"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_all_scales" file="tests\test_main.py" line="78" time="0.155"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_chord_notes_for_editor" file="tests\test_main.py" line="102" time="0.137"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">def test_get_chord_notes_for_editor():
+        """Tests fetching the notes for an A Minor chord."""
+        response = client.get("/notes/A/Minor")
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests\test_main.py:106: AssertionError</failure><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_chords_in_scale" file="tests\test_main.py" line="94" time="0.133"><failure message="AssertionError: assert 'C Major' in []">def test_get_chords_in_scale():
+        """Tests fetching the diatonic chords for a C Major scale."""
+        response = client.get("/scales/C/Major/chords")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+&gt;       assert "C Major" in data
+E       AssertionError: assert 'C Major' in []
+
+tests\test_main.py:101: AssertionError</failure><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_visualized_fretboard_for_scale" file="tests\test_main.py" line="132" time="0.129"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">def test_get_visualized_fretboard_for_scale():
+        """Tests the /fretboard/visualize-scale endpoint for a C Major scale."""
+        params = {"tuning_name": "Standard Guitar", "scale_name": "Major", "root_note": "C"}
+        response = client.get("/fretboard/visualize-scale", params=params)
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests\test_main.py:137: AssertionError</failure><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_get_visualized_fretboard_invalid_tuning" file="tests\test_main.py" line="144" time="0.146"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="tests.test_main" name="test_voicing_crud_and_reorder" file="tests\test_main.py" line="162" time="0.135"><failure message="assert 404 == 201&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">def test_voicing_crud_and_reorder():
+        """Tests creating, reading, reordering, and deleting a voicing."""
+        tuning, chord_type, root, voicing_name = "Standard Guitar", "Major", "C", "Test Voicing"
+    
+        # CREATE
+        new_voicing = {"name": voicing_name, "difficulty": "Easy", "fingering": [[0, 1], [1, 2]]}
+        response = client.post(f"/voicings/{tuning}/{chord_type}/{root}", json=new_voicing)
+&gt;       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests\test_main.py:170: AssertionError</failure><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase></testsuite></testsuites>

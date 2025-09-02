@@ -35,6 +35,7 @@
     <Compile Include="FretStudioBackend.py" />
     <Compile Include="tests\test_main.py" />
     <Compile Include="tests\__init__.py" />
+    <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="tests\" />
