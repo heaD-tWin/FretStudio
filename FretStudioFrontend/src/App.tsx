@@ -14,7 +14,7 @@ function App() {
   const { isIntervalVisible, toggleIntervalVisibility } = useIntervalVisibility();
 
   return (
-    <div className="App">
+    <div className="App" data-testid="app-container">
       <div className="navbar-container">
         <nav className="navbar">
           <NavLink to="/" end className={({ isActive }: { isActive: boolean }) => "nav-link" + (isActive ? " active" : "")}>Scale Visualizer</NavLink>
