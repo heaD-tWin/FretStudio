@@ -69,7 +69,7 @@ export const getNoteClass = (
   }
 
   if (isInScaleOrChord) {
-    classes.push('in-scale'); // Using 'in-scale' for general highlighting
+    classes.push('in-scale');
   }
 
   return classes.join(' ');

@@ -2,7 +2,6 @@ import { createContext, useState, useContext, useEffect, type ReactNode } from '
 
 export type AccidentalType = 'sharps' | 'flats';
 
-// CORRECTED: The type was missing the toggle function definition
 interface AccidentalTypeContextType {
   accidentalType: AccidentalType;
   toggleAccidentalType: () => void;

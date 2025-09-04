@@ -1,5 +1,5 @@
 import { useFingeringVisibility } from '../contexts/FingeringVisibilityContext';
-import { useIntervalVisibility } from '../contexts/IntervalVisibilityContext'; // 1. Import interval hook
+import { useIntervalVisibility } from '../contexts/IntervalVisibilityContext';
 import type { FretboardAPIResponse, Voicing } from '../apiService';
 import { formatNote } from '../utils/noteUtils';
 import type { AccidentalType } from '../contexts/AccidentalTypeContext';
@@ -9,15 +9,12 @@ interface FretboardProps {
   fretboardData: FretboardAPIResponse | null;
   isLeftHanded: boolean;
   accidentalType: AccidentalType;
-  
   selectedVoicing?: Voicing | null;
   validNotes?: string[];
   scaleRootNote?: string;
   chordRootNote?: string | null;
   disableHighlighting?: boolean;
-
-  // Add new prop to override the global toggle
-  forceIntervalsVisible?: boolean; // 2. Add new prop
+  forceIntervalsVisible?: boolean;
 
   editableFingering?: [number, number, number][];
   onFingeringChange?: (newFingering: [number, number, number][]) => void;
@@ -37,7 +34,7 @@ const Fretboard = ({
   scaleRootNote,
   chordRootNote,
   disableHighlighting = false,
-  forceIntervalsVisible = false, // 3. Set default for new prop
+  forceIntervalsVisible = false,
   editableFingering,
   onFingeringChange,
   activeFret,
@@ -46,7 +43,7 @@ const Fretboard = ({
   onStrumToggle,
 }: FretboardProps) => {
   const { isFingeringVisible } = useFingeringVisibility();
-  const { isIntervalVisible } = useIntervalVisibility(); // 4. Use interval hook
+  const { isIntervalVisible } = useIntervalVisibility();
 
   const handleLegacyFretClick = (string: number, fret: number) => {
     if (!onFingeringChange || !editableFingering) return;
@@ -144,8 +141,6 @@ const Fretboard = ({
                   const finger = fingeringInfo ? fingeringInfo[2] : 0;
                   const intervalDegree = noteInfo.interval_degree;
                   const isActive = activeFret && activeFret[0] === stringNum && activeFret[1] === fret;
-
-                  // 5. Check visibility for both indicators
                   const showFingerIndicator = finger > 0 && (!!editableFingering || isFingeringVisible);
                   const showIntervalIndicator = intervalDegree && (forceIntervalsVisible || isIntervalVisible);
 

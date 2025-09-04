@@ -7,7 +7,7 @@ import { HandednessProvider } from './contexts/HandednessContext.tsx';
 import { AccidentalTypeProvider } from './contexts/AccidentalTypeContext.tsx';
 import { TuningProvider } from './contexts/TuningContext.tsx';
 import { FingeringVisibilityProvider } from './contexts/FingeringVisibilityContext.tsx';
-import { IntervalVisibilityProvider } from './contexts/IntervalVisibilityContext.tsx'; // 1. Import the new provider
+import { IntervalVisibilityProvider } from './contexts/IntervalVisibilityContext.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <AccidentalTypeProvider>
           <HandednessProvider>
             <FingeringVisibilityProvider>
-              <IntervalVisibilityProvider> {/* 2. Wrap the App component */}
+              <IntervalVisibilityProvider>
                 <App />
               </IntervalVisibilityProvider>
             </FingeringVisibilityProvider>

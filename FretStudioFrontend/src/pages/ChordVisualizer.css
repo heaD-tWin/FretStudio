@@ -35,7 +35,7 @@
 .chord-visualizer-page .voicing-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Align to the left */
+  justify-content: flex-start;
   gap: 1rem;
   margin-top: 1rem;
 }

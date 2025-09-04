@@ -9,7 +9,7 @@ interface TuningContextType {
 const TuningContext = createContext<TuningContextType | undefined>(undefined);
 
 export const TuningProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedTuning, setSelectedTuning] = useState<string>('Standard Guitar'); // Default to standard
+  const [selectedTuning, setSelectedTuning] = useState<string>('Standard Guitar');
 
   return (
     <TuningContext.Provider value={{ selectedTuning, setSelectedTuning }}>

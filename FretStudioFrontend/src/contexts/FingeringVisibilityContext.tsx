@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import type { ReactNode } from 'react'; // Corrected: 'ReactNode' is now a type-only import.
+import type { ReactNode } from 'react';
 
 interface FingeringVisibilityContextType {
     isFingeringVisible: boolean;
@@ -9,7 +9,7 @@ interface FingeringVisibilityContextType {
 const FingeringVisibilityContext = createContext<FingeringVisibilityContextType | undefined>(undefined);
 
 export const FingeringVisibilityProvider = ({ children }: { children: ReactNode }) => {
-    const [isFingeringVisible, setIsFingeringVisible] = useState(true); // Default to visible
+    const [isFingeringVisible, setIsFingeringVisible] = useState(true);
 
     const toggleFingeringVisibility = () => {
         setIsFingeringVisible(prev => !prev);

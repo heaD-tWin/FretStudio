@@ -9,7 +9,7 @@ import {
   getVoicingsForChord,
   addVoicingToChord,
   deleteVoicing,
-  reorderVoicing, // Import the new function
+  reorderVoicing,
   getChordNotesForEditor,
   getVisualizedChord,
   type ChordType,

@@ -92,9 +92,8 @@
   gap: 0.5rem;
 }
 
-/* This rule sets the label color to match the headers */
 .checkbox-item label {
-  color: #333; /* A standard dark text color */
+  color: #333;
   font-weight: 500;
 }
 
@@ -103,7 +102,7 @@
 }
 
 .save-load-page button {
-    background-color: #007bff; /* Change this to your desired color */
+    background-color: #007bff;
     color: white;
     padding: 10px 15px;
     border: none;

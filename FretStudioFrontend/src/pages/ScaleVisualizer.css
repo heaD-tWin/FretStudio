@@ -35,33 +35,32 @@
 .scale-visualizer-page .voicing-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* This ensures left alignment */
+  justify-content: flex-start;
   gap: 1rem;
   margin-top: 1rem;
-  width: 100%; /* This ensures the container doesn't resize */
+  width: 100%;
 }
 
 .scale-visualizer-page .voicing-controls span {
-    margin-left: auto; /* This pushes the text label to the right */
+    margin-left: auto;
 }
 
-/* Remove the specific button styling to allow default browser handling */
 .voicing-controls button {
     padding: 8px 12px;
     border-radius: 4px;
-    border: none; /* Remove border for a cleaner look */
+    border: none;
     color: white;
-    background-color: #007bff; /* Blue background for enabled state */
+    background-color: #007bff;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .voicing-controls button:hover:not(:disabled) {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #0056b3;
 }
 
 .voicing-controls button:disabled {
-    background-color: #e9ecef; /* Light grey for disabled state */
-    color: #6c757d; /* Muted text color */
+    background-color: #e9ecef;
+    color: #6c757d;
     cursor: not-allowed;
 }

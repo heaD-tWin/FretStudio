@@ -241,7 +241,7 @@ const SaveLoadPage = () => {
 
     if (success) {
       alert(`Successfully performed ${loadMode} load! Data has been updated.`);
-      fetchData(); // Refresh the data on the page
+      fetchData();
     } else {
       alert(`Failed to perform ${loadMode} load. Please check if the file is a valid FretStudio backup.`);
     }
@@ -260,7 +260,7 @@ const SaveLoadPage = () => {
       const success = await factoryReset();
       if (success) {
         alert("Factory library restored successfully!");
-        fetchData(); // Refresh the data on the page
+        fetchData();
       } else {
         alert("Failed to restore factory library. Please check the server and file system.");
       }

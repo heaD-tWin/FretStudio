@@ -76,7 +76,7 @@ describe('App Component', () => {
     expectedLinks.forEach(linkText => {
       const link = screen.getByText(linkText);
       expect(link).toBeInTheDocument();
-      expect(link.tagName).toBe('A'); // Verify it's actually a link element
+      expect(link.tagName).toBe('A');
     });
   });
 
@@ -146,12 +146,10 @@ describe('App Component', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    // Get all navigation links
+    // Get navigation links (only the ones we'll actually test)
     const scaleVisualizerLink = screen.getByText('Scale Visualizer');
     const chordVisualizerLink = screen.getByText('Chord Visualizer');
     const chordEditorLink = screen.getByText('Chord Editor');
-    const scaleEditorLink = screen.getByText('Scale Editor');
-    const saveLoadLink = screen.getByText('Save/Load');
     const settingsLink = screen.getByText('Settings');
 
     // Initial state: Scale Visualizer should be active (route "/" with end prop)

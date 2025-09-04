@@ -94,12 +94,10 @@ const ScaleVisualizer = () => {
   }, [selectedRoot, selectedScale, selectedTuning, selectedChord]);
 
   const handleNextVoicing = () => {
-    // Corrected logic: Does not cycle back to "All Tones"
     setSelectedVoicingIndex(prev => (prev + 1) % voicings.length);
   };
 
   const handlePrevVoicing = () => {
-    // Corrected logic: Does not cycle back to "All Tones"
     setSelectedVoicingIndex(prev => (prev - 1 + voicings.length) % voicings.length);
   };
 

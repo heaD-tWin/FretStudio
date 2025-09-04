@@ -93,7 +93,7 @@ export const generateSaveFile = async (selections: SaveSelectionsPayload): Promi
   return handleResponse<AllData>(response);
 };
 
-// --- NEW: Functions for Hard and Soft Load ---
+// --- Functions for Hard and Soft Load ---
 export const hardLoadFromFile = async (file: File): Promise<boolean> => {
   const formData = new FormData();
   formData.append('file', file);

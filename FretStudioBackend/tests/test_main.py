@@ -8,14 +8,10 @@ import importlib
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import the module itself so we can reload it
 from FretStudioBackend import FretStudioBackend
-# Keep the existing import for convenience, but we'll get the app from the reloaded module
-from FretStudioBackend.FretStudioBackend import get_notes_from_intervals
 
 # --- Test Setup and Fixtures ---
 
-# The client will now be created within the fixture for each test
 client = None
 
 # Define the location of test data files
@@ -85,7 +81,7 @@ def backup_and_restore_data():
     importlib.reload(FretStudioBackend)
     client = TestClient(FretStudioBackend.app)
 
-    yield # This is where the tests will run
+    yield
     
     # Teardown: Restore all original files
     restore_file(backup_paths["scales"], SCALES_PATH)
