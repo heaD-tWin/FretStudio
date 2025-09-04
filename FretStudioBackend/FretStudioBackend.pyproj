@@ -38,13 +38,17 @@
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="data\" />
+    <Folder Include="data\core\" />
+    <Folder Include="data\factory\" />
+    <Folder Include="data\voicings\" />
     <Folder Include="tests\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="chord_types.json" />
-    <Content Include="scales.json" />
-    <Content Include="tunings.json" />
-    <Content Include="voicings_library.json" />
+    <Content Include="data\core\chord_types.json" />
+    <Content Include="data\core\scales.json" />
+    <Content Include="data\core\tunings.json" />
+    <Content Include="data\voicings\voicings_library.json" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="venv\">

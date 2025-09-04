@@ -14,14 +14,14 @@ from FretStudioBackend import FretStudioBackend
 
 client = None
 
-# Define the location of test data files
+# Define the location of test data files - UPDATED PATHS
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 BACKUP_DIR = os.path.join(__location__, "..", "test_backups")
-SCALES_PATH = os.path.join(__location__, "..", "scales.json")
-CHORD_TYPES_PATH = os.path.join(__location__, "..", "chord_types.json")
-TUNINGS_PATH = os.path.join(__location__, "..", "tunings.json")
-VOICINGS_PATH = os.path.join(__location__, "..", "voicings_library.json")
-FACTORY_LIB_PATH = os.path.join(__location__, "..", "factory_library.json")
+SCALES_PATH = os.path.join(__location__, "..", "data", "core", "scales.json")
+CHORD_TYPES_PATH = os.path.join(__location__, "..", "data", "core", "chord_types.json")
+TUNINGS_PATH = os.path.join(__location__, "..", "data", "core", "tunings.json")
+VOICINGS_PATH = os.path.join(__location__, "..", "data", "voicings", "voicings_library.json")
+FACTORY_LIB_PATH = os.path.join(__location__, "..", "data", "factory", "factory_library.json")
 
 
 def backup_file(path):
@@ -74,6 +74,8 @@ def backup_and_restore_data():
             "tunings": [{"name": "Factory Tuning", "notes": ["E", "A", "D", "G", "B", "E"]}],
             "voicings_library": {}
         }
+        # Ensure the factory directory exists
+        os.makedirs(os.path.dirname(FACTORY_LIB_PATH), exist_ok=True)
         with open(FACTORY_LIB_PATH, 'w') as f:
             json.dump(dummy_factory_data, f)
 

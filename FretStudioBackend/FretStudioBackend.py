@@ -49,22 +49,22 @@ class SaveRequest(BaseModel):
 # --- Data Loading ---
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 def load_json_data(file_path: str):
-    full_path = os.path.join(__location__, file_path)
+    full_path = os.path.join(__location__, "data", file_path)
     try:
         with open(full_path, "r") as f: return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 def write_json_data(file_path: str, data):
-    full_path = os.path.join(__location__, file_path)
+    full_path = os.path.join(__location__, "data", file_path)
     with open(full_path, "w") as f: json.dump(data, f, indent=2)
 
-db_chord_types = {v['name']: ChordType(**v) for v in load_json_data("chord_types.json").values()}
-db_scales = {v['name']: Scale(**v) for v in load_json_data("scales.json").values()}
-db_tunings = {name: Tuning(name=name, **data) for name, data in load_json_data("tunings.json").items()}
+db_chord_types = {v['name']: ChordType(**v) for v in load_json_data("core/chord_types.json").values()}
+db_scales = {v['name']: Scale(**v) for v in load_json_data("core/scales.json").values()}
+db_tunings = {name: Tuning(name=name, **data) for name, data in load_json_data("core/tunings.json").items()}
 NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 db_voicings_library: Dict[str, Dict[str, Dict[str, ChordVoicings]]] = {}
-raw_voicings_data = load_json_data("voicings_library.json")
+raw_voicings_data = load_json_data("voicings/voicings_library.json")
 for tuning_name, tuning_data in raw_voicings_data.items():
     db_voicings_library[tuning_name] = {}
     for type_name, notes_dict in tuning_data.items():
@@ -80,7 +80,7 @@ def save_voicings_library():
         }
         for t_name, c_dict in db_voicings_library.items()
     }
-    write_json_data("voicings_library.json", data_to_save)
+    write_json_data("voicings/voicings_library.json", data_to_save)
 
 def get_notes_from_intervals(root_note: str, intervals: List[int]):
     start_index = NOTES.index(root_note.upper())
@@ -133,9 +133,9 @@ async def hard_load_data(file: UploadFile = File(...)):
     db_tunings = {t.name: t for t in loaded_data.tunings}
     db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in loaded_data.voicings_library.items()}
 
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
     save_voicings_library()
     
     return {"message": "Hard load successful. All data has been replaced."}
@@ -144,7 +144,7 @@ async def hard_load_data(file: UploadFile = File(...)):
 async def factory_reset():
     global db_scales, db_chord_types, db_tunings, db_voicings_library
     
-    factory_data_raw = load_json_data("factory_library.json")
+    factory_data_raw = load_json_data("factory/factory_library.json")
     if not factory_data_raw:
         raise HTTPException(status_code=500, detail="Factory library file not found or is empty.")
 
@@ -158,9 +158,9 @@ async def factory_reset():
     db_tunings = {t.name: t for t in factory_data.tunings}
     db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in factory_data.voicings_library.items()}
 
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
     save_voicings_library()
     
     return {"message": "Factory library restored successfully."}
@@ -193,9 +193,9 @@ async def soft_load_data(file: UploadFile = File(...)):
                     if voicing.name not in existing_voicing_names:
                         db_voicings_library[t_name][c_name][r_name].voicings.append(voicing)
 
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
     save_voicings_library()
 
     return {"message": "Soft load successful. New data has been merged."}
@@ -208,7 +208,7 @@ async def get_tunings():
 @app.post("/tunings", status_code=201)
 async def add_or_update_tuning(tuning: Tuning):
     db_tunings[tuning.name] = tuning
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
 
     if tuning.name not in db_voicings_library:
         db_voicings_library[tuning.name] = {}
@@ -225,7 +225,7 @@ async def delete_tuning(tuning_name: str):
     if tuning_name not in db_tunings:
         raise HTTPException(status_code=404, detail="Tuning not found.")
     del db_tunings[tuning_name]
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
 
     if tuning_name in db_voicings_library:
         del db_voicings_library[tuning_name]
@@ -258,7 +258,7 @@ async def reorder_tuning(req: ReorderRequest):
 
     new_db_tunings = {name: Tuning(name=name, **data.dict(exclude={'name'})) for name, data in [(k, db_tunings[k]) for k,v in tunings_list]}
     db_tunings = new_db_tunings
-    write_json_data("tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
     
     return {"message": f"Tuning '{req.name}' moved {req.direction}."}
 
@@ -268,7 +268,7 @@ async def get_all_scales(): return list(db_scales.values())
 @app.post("/scales", status_code=201)
 async def add_or_update_scale(scale: Scale):
     db_scales[scale.name] = scale
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
     return {"message": f"Scale '{scale.name}' saved."}
 
 @app.delete("/scales/{scale_name}", status_code=200)
@@ -278,7 +278,7 @@ async def delete_scale(scale_name: str):
     
     del db_scales[scale_name]
     
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
     
     return {"message": f"Scale '{scale_name}' deleted."}
 
@@ -307,7 +307,7 @@ async def reorder_scale(req: ReorderRequest):
 
     new_db_scales = {name: data for name, data in scales_list}
     db_scales = new_db_scales
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
 
     return {"message": f"Scale '{req.name}' moved {req.direction}."}
 
@@ -342,7 +342,7 @@ async def get_all_chord_types(): return list(db_chord_types.values())
 async def add_or_update_chord_type(chord_type: ChordType):
     chord_type.name = chord_type.name.capitalize()
     db_chord_types[chord_type.name] = chord_type
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
     
     for tuning_name in db_voicings_library:
         if chord_type.name not in db_voicings_library[tuning_name]:
@@ -366,8 +366,8 @@ async def delete_chord_type(type_name: str):
         if type_name in db_voicings_library[tuning_name]:
             del db_voicings_library[tuning_name][type_name]
     
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("scales.json", {k: v.dict() for k, v in db_scales.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
     save_voicings_library()
     
     return {"message": f"Chord type '{type_name}' deleted."}
@@ -396,7 +396,7 @@ async def reorder_chord_type(req: ReorderRequest):
 
     new_db_chord_types = {name: data for name, data in types_list}
     db_chord_types = new_db_chord_types
-    write_json_data("chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
 
     new_ordered_type_names = list(new_db_chord_types.keys())
     new_voicings_library = {}
