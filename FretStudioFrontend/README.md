@@ -1,69 +1,268 @@
-# React + TypeScript + Vite
+# FretStudio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive web-based guitar learning and music theory application that provides interactive fretboard visualization, scale exploration, chord analysis, and custom voicing creation tools.
 
-Currently, two official plugins are available:
+## 🎸 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Interactive Fretboard Visualization
+- **Real-time fretboard rendering** with standard position markers
+- **Left/right-handed support** with mirrored layouts
+- **Note highlighting** for scales and chords with color-coded patterns
+- **Interval display** showing scale degrees and chord tones
+- **Interactive fingering editor** with clickable fret positions
 
-## Expanding the ESLint configuration
+### Music Theory Tools
+- **Scale Visualizer**: Explore musical scales across the fretboard
+- **Chord Visualizer**: Analyze chord patterns and voicings
+- **Scale Editor**: Create and modify custom musical scales
+- **Chord Editor**: Design custom chord voicings with difficulty ratings
+- **Diatonic Chord Analysis**: Discover chords that fit within scales
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Data Management
+- **Save/Load System**: Export and import custom configurations
+- **Factory Reset**: Restore to original content
+- **Soft/Hard Load**: Merge or replace existing data
+- **Persistent Storage**: Automatic saving of all modifications
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Customization Options
+- **Multiple Tunings**: Standard, Drop D, Open tunings, and custom configurations
+- **Accidental Preferences**: Choose between sharp (♯) and flat (♭) notation
+- **Handedness Settings**: Left or right-handed fretboard orientation
+- **Toggle Controls**: Show/hide fingering numbers and interval indicators
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## 🚀 Technology Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Frontend
+- **React 18.2.0** with TypeScript for type-safe component development
+- **Vite** for fast development and optimized builds
+- **React Router 7.8.2** for client-side routing
+- **React Context API** for global state management
+- **Vitest** with React Testing Library for comprehensive testing
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Backend
+- **FastAPI** for high-performance RESTful API
+- **Uvicorn** ASGI server with hot reload
+- **Pydantic** for data validation and serialization
+- **JSON file storage** for data persistence
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📋 Prerequisites
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Node.js** (version 16 or higher)
+- **npm** or **yarn** package manager
+- **Python** (version 3.8 or higher)
+- **pip** package manager
+
+## 🛠️ Installation & Setup
+
+### Backend Setup
+
+1. **Navigate to the backend directory:**
+~~~bash
+cd FretStudioBackend
+~~~
+2. **Create a virtual environment:**
+~~~bash
+python -m venv venv
+~~~
+On Windows:
+~~~bash
+venv\Scripts\activate
+~~~
+On macOS/Linux:
+~~~bash
+source venv/bin/activate
+~~~
+3. **Install the required packages:**
+~~~bash
+pip install -r requirements.txt
+~~~
+4. **Run the FastAPI server:**
+~~~bash
+python FretStudioBackend.py
+~~~
+
+The API will be available at `http://127.0.0.1:8000`
+
+### Frontend Setup
+
+1. **Navigate to the frontend directory:**
+~~~bash
+cd FretStudioFrontend
+~~~
+2. **Install the dependencies:**
+~~~bash
+npm install
+~~~
+3. **Start the development server:**
+~~~bash
+npm run dev
+~~~
+
+The application will be available at `http://localhost:62188`
+
+## 🔗 API Endpoints
+
+### Save/Load Data Management
+- `GET /save-load/all-data` - Export all application data
+- `POST /save-load/generate-file` - Generate filtered export file
+- `POST /save-load/hard-load` - Replace all data from file
+- `POST /save-load/soft-load` - Merge data from file
+- `POST /save-load/factory-reset` - Restore factory defaults
+
+### Tuning Management
+- `GET /tunings` - Get all guitar tunings
+- `POST /tunings` - Create/update tuning
+- `DELETE /tunings/{tuning_name}` - Delete tuning
+- `POST /tunings/reorder` - Reorder tunings
+
+### Scale Management
+- `GET /scales` - Get all musical scales
+- `POST /scales` - Create/update scale
+- `DELETE /scales/{scale_name}` - Delete scale
+- `POST /scales/reorder` - Reorder scales
+- `GET /scales/{root_note}/{scale_name}/chords` - Get diatonic chords
+
+### Chord Type Management
+- `GET /chord-types` - Get all chord types
+- `POST /chord-types` - Create/update chord type
+- `DELETE /chord-types/{type_name}` - Delete chord type
+- `POST /chord-types/reorder` - Reorder chord types
+- `GET /notes/{root_note}/{chord_type_name}` - Get chord notes
+
+### Voicing Management
+- `GET /voicings/{tuning}/{chord_type}/{root_note}` - Get chord voicings
+- `POST /voicings/{tuning}/{chord_type}/{root_note}` - Create/update voicing
+- `DELETE /voicings/{tuning}/{chord_type}/{voicing_name}` - Delete voicing
+- `POST /voicings/reorder` - Reorder voicings
+
+### Fretboard Visualization
+- `GET /fretboard/visualize-scale` - Generate scale fretboard layout
+- `GET /fretboard/visualize-chord` - Generate chord fretboard layout
+
+## 🧪 Testing
+
+### Frontend Testing
+~~~bash
+cd FretStudioFrontend npm run test
+~~~
+### Backend Testing
+~~~bash
+cd FretStudioBackend pytest
+~~~
+
+## 🏗️ Build for Production
+
+### Frontend Build
+~~~bash
+cd FretStudioFrontend npm run build
+~~~
+
+### Preview Production Build
+~~~bash
+cd FretStudioFrontend npm run preview
+~~~
+
+## 📁 Project Structure
+FretStudio/  
+├── FretStudioBackend/  
+│   ├── FretStudioBackend.py  
+│   ├── requirements.txt  
+│   ├── chord_types.json  
+│   ├── scales.json  
+│   ├── tunings.json  
+│   ├── voicings_library.json  
+│   ├── factory_library.json  
+│   ├── tests/  
+│   │   ├── test_main.py  
+│   │   └── __init__.py  
+│   └── venv/  
+├── FretStudioFrontend/  
+│   ├── src/  
+│   │   ├── components/  
+│   │   │   ├── Fretboard.tsx  
+│   │   │   ├── Fretboard.css  
+│   │   │   ├── Selector.tsx  
+│   │   │   └── Selector.css  
+│   │   ├── contexts/  
+│   │   │   ├── AccidentalTypeContext.tsx  
+│   │   │   ├── FingeringVisibilityContext.tsx  
+│   │   │   ├── HandednessContext.tsx  
+│   │   │   ├── IntervalVisibilityContext.tsx  
+│   │   │   └── TuningContext.tsx  
+│   │   ├── pages/  
+│   │   │   ├── ScaleVisualizer.tsx  
+│   │   │   ├── ScaleVisualizer.css  
+│   │   │   ├── ChordVisualizer.tsx  
+│   │   │   ├── ChordVisualizer.css  
+│   │   │   ├── ChordEditor.tsx  
+│   │   │   ├── ChordEditor.css  
+│   │   │   ├── ScaleEditor.tsx  
+│   │   │   ├── ScaleEditor.css  
+│   │   │   ├── SaveLoadPage.tsx  
+│   │   │   ├── SaveLoadPage.css  
+│   │   │   ├── Settings.tsx  
+│   │   │   └── Settings.css  
+│   │   ├── utils/  
+│   │   │   └── noteUtils.ts  
+│   │   ├── __tests__/  
+│   │   │   └── App.test.tsx  
+│   │   ├── apiService.ts  
+│   │   ├── test-utils.tsx  
+│   │   ├── setupTests.ts  
+│   │   ├── App.tsx  
+│   │   ├── App.css  
+│   │   ├── main.tsx  
+│   │   └── index.css  
+│   ├── dist/  
+│   ├── public/  
+│   ├── node_modules/  
+│   ├── package.json  
+│   ├── package-lock.json  
+│   ├── vite.config.ts  
+│   ├── tsconfig.json  
+│   ├── tsconfig.app.json  
+│   ├── tsconfig.node.json  
+│   ├── eslint.config.js  
+│   ├── index.html  
+│   ├── CHANGELOG.md  
+│   └── README.md  
+├── .git/  
+├── .gitignore  
+└── README.md  
+
+## 🎯 Usage Examples
+
+### Creating a Custom Scale
+1. Navigate to the **Scale Editor** page
+2. Enter a scale name and select intervals
+3. Choose compatible chord types
+4. Save the scale for use across the application
+
+### Adding Custom Chord Voicings
+1. Go to the **Chord Editor** page
+2. Select a chord type and root note
+3. Click frets on the interactive fretboard to create fingering patterns
+4. Set difficulty level and save the voicing
+
+### Exploring Scale-Chord Relationships
+1. Use the **Scale Visualizer** to select a scale
+2. View diatonic chords that fit within the scale
+3. Switch to **Chord Visualizer** to analyze individual chord patterns
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📜 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Built with modern web technologies for optimal performance
+- Designed for guitarists of all skill levels
+- Emphasizes music theory education through interactive visualization
