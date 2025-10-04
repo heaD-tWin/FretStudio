@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Set, Any
 import json
 import os
+import webview
+import tempfile
 
 # --- FastAPI App Setup ---
 app = FastAPI(title="FretStudio API", version="2.0.0")
@@ -123,22 +125,27 @@ async def process_uploaded_file(file: UploadFile):
     except (json.JSONDecodeError, ValidationError):
         raise HTTPException(status_code=400, detail="Invalid or corrupt file format.")
 
-@app.post("/save-load/hard-load", status_code=200)
-async def hard_load_data(file: UploadFile = File(...)):
+@app.post("/save-load/hard-load")
+async def hard_load_data(file_path: str):
     global db_scales, db_chord_types, db_tunings, db_voicings_library
-    loaded_data = await process_uploaded_file(file)
-    
-    db_scales = {s.name: s for s in loaded_data.scales}
-    db_chord_types = {ct.name: ct for ct in loaded_data.chord_types}
-    db_tunings = {t.name: t for t in loaded_data.tunings}
-    db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in loaded_data.voicings_library.items()}
+    try:
+        with open(file_path, "r") as f:
+            content = json.load(f)
+            loaded_data = AllDataResponse(**content)
+        
+        db_scales = {s.name: s for s in loaded_data.scales}
+        db_chord_types = {ct.name: ct for ct in loaded_data.chord_types}
+        db_tunings = {t.name: t for t in loaded_data.tunings}
+        db_voicings_library = {t_name: {c_name: {n: ChordVoicings(**vs.dict()) for n, vs in n_dict.items()} for c_name, n_dict in c_dict.items()} for t_name, c_dict in loaded_data.voicings_library.items()}
 
-    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
-    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
-    save_voicings_library()
-    
-    return {"message": "Hard load successful. All data has been replaced."}
+        write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
+        write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+        write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+        save_voicings_library()
+        
+        return {"message": "Hard load successful. All data has been replaced."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/save-load/factory-reset", status_code=200)
 async def factory_reset():
@@ -165,40 +172,45 @@ async def factory_reset():
     
     return {"message": "Factory library restored successfully."}
 
-@app.post("/save-load/soft-load", status_code=200)
-async def soft_load_data(file: UploadFile = File(...)):
+@app.post("/save-load/soft-load")
+async def soft_load_data(file_path: str):
     global db_scales, db_chord_types, db_tunings, db_voicings_library
-    loaded_data = await process_uploaded_file(file)
+    try:
+        with open(file_path, "r") as f:
+            content = json.load(f)
+            loaded_data = AllDataResponse(**content)
 
-    for scale in loaded_data.scales:
-        if scale.name not in db_scales: db_scales[scale.name] = scale
-    
-    for ct in loaded_data.chord_types:
-        if ct.name not in db_chord_types: db_chord_types[ct.name] = ct
+            for scale in loaded_data.scales:
+                if scale.name not in db_scales: db_scales[scale.name] = scale
+            
+            for ct in loaded_data.chord_types:
+                if ct.name not in db_chord_types: db_chord_types[ct.name] = ct
 
-    for tuning in loaded_data.tunings:
-        if tuning.name not in db_tunings: db_tunings[tuning.name] = tuning
+            for tuning in loaded_data.tunings:
+                if tuning.name not in db_tunings: db_tunings[tuning.name] = tuning
 
-    for t_name, t_data in loaded_data.voicings_library.items():
-        if t_name not in db_voicings_library: db_voicings_library[t_name] = {}
-        for c_name, c_data in t_data.items():
-            if c_name not in db_voicings_library[t_name]: db_voicings_library[t_name][c_name] = {}
-            for r_name, r_data in c_data.items():
-                voicings_list = r_data.voicings
-                if r_name not in db_voicings_library[t_name][c_name]:
-                    db_voicings_library[t_name][c_name][r_name] = ChordVoicings(name=r_data.name, voicings=[])
-                
-                existing_voicing_names = {v.name for v in db_voicings_library[t_name][c_name][r_name].voicings}
-                for voicing in voicings_list:
-                    if voicing.name not in existing_voicing_names:
-                        db_voicings_library[t_name][c_name][r_name].voicings.append(voicing)
+            for t_name, t_data in loaded_data.voicings_library.items():
+                if t_name not in db_voicings_library: db_voicings_library[t_name] = {}
+                for c_name, c_data in t_data.items():
+                    if c_name not in db_voicings_library[t_name]: db_voicings_library[t_name][c_name] = {}
+                    for r_name, r_data in c_data.items():
+                        voicings_list = r_data.voicings
+                        if r_name not in db_voicings_library[t_name][c_name]:
+                            db_voicings_library[t_name][c_name][r_name] = ChordVoicings(name=r_data.name, voicings=[])
+                        
+                        existing_voicing_names = {v.name for v in db_voicings_library[t_name][c_name][r_name].voicings}
+                        for voicing in voicings_list:
+                            if voicing.name not in existing_voicing_names:
+                                db_voicings_library[t_name][c_name][r_name].voicings.append(voicing)
 
-    write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
-    write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
-    write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
-    save_voicings_library()
+        write_json_data("core/scales.json", {k: v.dict() for k, v in db_scales.items()})
+        write_json_data("core/chord_types.json", {k: v.dict() for k, v in db_chord_types.items()})
+        write_json_data("core/tunings.json", {name: t.dict(exclude={'name'}) for name, t in db_tunings.items()})
+        save_voicings_library()
 
-    return {"message": "Soft load successful. New data has been merged."}
+        return {"message": "Soft load successful. New data has been merged."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- Other API Endpoints ---
 @app.get("/tunings", response_model=List[Tuning])
@@ -542,6 +554,49 @@ async def get_visualized_fretboard_for_chord(tuning_name: str, root_note: str, c
             ))
         fretboard[len(tuning.notes) - i] = string_notes
     return fretboard
+
+@app.get("/save-load/show-save-dialog")
+async def show_save_dialog():
+    try:
+        file_path = webview.windows[0].create_file_dialog(
+            webview.SAVE_DIALOG,
+            directory="~",
+            save_filename="fret_studio_save.json",
+            file_types=("JSON Files (*.json)",)
+        )
+        return {"filePath": file_path}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/save-load/show-open-dialog")
+async def show_open_dialog():
+    try:
+        file_path = webview.windows[0].create_file_dialog(
+            webview.FILE_DIALOG,
+            directory="~",
+            file_types=("JSON Files (*.json)",)
+        )
+        if file_path and len(file_path) > 0:
+            return {"filePath": file_path[0]}
+        return {"filePath": None}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/save-load/write-file")
+async def write_file(data: Dict[str, Any]):
+    try:
+        file_path = data.get("filePath")
+        content = data.get("content")
+        
+        if not file_path or content is None:
+            raise HTTPException(status_code=400, detail="Missing filePath or content")
+            
+        with open(file_path, "w") as f:
+            json.dump(content, f, indent=2)
+            
+        return {"message": "File saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

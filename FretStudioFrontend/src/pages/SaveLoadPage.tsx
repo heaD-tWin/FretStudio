@@ -198,30 +198,6 @@ const SaveLoadPage = () => {
     setSelections(prev => ({ ...prev, voicings: newVoicingSelections, tunings: newTuningSelections, chordTypes: newChordTypeSelections }));
   };
 
-  const handleSave = async () => {
-    const payload: SaveSelectionsPayload = {
-      scales: Array.from(selections.scales),
-      chordTypes: Array.from(selections.chordTypes),
-      tunings: Array.from(selections.tunings),
-      voicings: Array.from(selections.voicings),
-    };
-
-    const fileContent = await generateSaveFile(payload);
-    if (fileContent) {
-      const blob = new Blob([JSON.stringify(fileContent, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'fretstudio_backup.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else {
-      alert('Failed to generate save file.');
-    }
-  };
-
   // --- File Load Handlers ---
   const handleLoadClick = (mode: 'hard' | 'soft') => {
     setLoadMode(mode);
@@ -267,6 +243,72 @@ const SaveLoadPage = () => {
     }
   };
 
+  // Update the handleSave function
+  const handleSave = async () => {
+    try {
+      // Get selected items to save
+      const selectedItems: SaveSelectionsPayload = {
+        scales: Array.from(selections.scales),
+        chordTypes: Array.from(selections.chordTypes),
+        tunings: Array.from(selections.tunings),
+        voicings: Array.from(selections.voicings)
+      };
+
+      // Generate the save data
+      const saveData = await generateSaveFile(selectedItems);
+      if (!saveData) {
+        alert('Failed to generate save data');
+        return;
+      }
+
+      // Show native save dialog
+      const filePath = await showNativeSaveDialog();
+      if (!filePath) return; // User cancelled
+
+      // Save the file
+      const success = await saveToFile(saveData, filePath);
+      if (success) {
+        alert('Save successful!');
+      } else {
+        alert('Failed to save file');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('An error occurred while saving');
+    }
+  };
+
+  // Update the load functions
+  const handleLoad = async (isHardLoad: boolean) => {
+    try {
+      const filePath = await showNativeOpenDialog();
+      if (!filePath) return; // User cancelled
+
+      // Create FormData with file path
+      const formData = new FormData();
+      formData.append('file', filePath);
+
+      // Perform the load operation
+      const success = isHardLoad 
+        ? await hardLoadFromFile(filePath)
+        : await softLoadFromFile(filePath);
+
+      if (success) {
+        alert(`${isHardLoad ? 'Hard' : 'Soft'} load successful!`);
+        fetchData(); // Refresh the data
+      } else {
+        alert('Failed to load file');
+      }
+    } catch (error) {
+      console.error('Load error:', error);
+      alert('An error occurred while loading');
+    }
+  };
+
+  // Update the button handlers
+  const handleHardLoad = () => handleLoad(true);
+  const handleSoftLoad = () => handleLoad(false);
+
   if (isLoading) {
     return <div className="save-load-page"><h1>Loading...</h1></div>;
   }
@@ -286,8 +328,8 @@ const SaveLoadPage = () => {
       />
       <div className="page-header">
         <div className="main-actions">
-            <button onClick={() => handleLoadClick('hard')}>Hard Load</button>
-            <button onClick={() => handleLoadClick('soft')}>Soft Load</button>
+            <button onClick={handleHardLoad}>Hard Load</button>
+            <button onClick={handleSoftLoad}>Soft Load</button>
             <button onClick={handleSave}>Save Selections</button>
             <button onClick={handleFactoryReset}>Restore Factory Library</button>
         </div>

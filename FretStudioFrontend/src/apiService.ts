@@ -272,3 +272,31 @@ export const getChordNotesForEditor = async (rootNote: string, chordTypeName: st
   const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
   return await handleResponse<string[]>(response) || [];
 };
+
+// Add these new dialog methods near the top of the file
+export const showNativeSaveDialog = async (): Promise<string | null> => {
+  const response = await fetch(`${API_BASE_URL}/api/dialog/save`);
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.filePath;
+};
+
+export const showNativeOpenDialog = async (): Promise<string | null> => {
+  const response = await fetch(`${API_BASE_URL}/api/dialog/open`);
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.filePath;
+};
+
+// Add this helper function for saving files
+export const saveToFile = async (data: any, filePath: string): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/save-load/write-file`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filePath,
+      content: data
+    })
+  });
+  return response.ok;
+};

@@ -32,9 +32,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="build_desktop.py" />
+    <Compile Include="build_frontend.py" />
+    <Compile Include="desktop_app.py" />
+    <Compile Include="desktop_app_test.py" />
     <Compile Include="FretStudioBackend.py" />
+    <Compile Include="minimal_test.py" />
     <Compile Include="tests\test_main.py" />
     <Compile Include="tests\__init__.py" />
+    <Compile Include="test_logging.py" />
+    <Compile Include="window_test.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +49,8 @@
     <Folder Include="data\core\" />
     <Folder Include="data\factory\" />
     <Folder Include="data\voicings\" />
+    <Folder Include="static\" />
+    <Folder Include="static\assets\" />
     <Folder Include="tests\" />
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +58,11 @@
     <Content Include="data\core\scales.json" />
     <Content Include="data\core\tunings.json" />
     <Content Include="data\voicings\voicings_library.json" />
+    <Content Include="DESKTOP_BUILD.md" />
+    <Content Include="static\assets\index-BDPbV0n9.js" />
+    <Content Include="static\assets\index-CMe9wEs8.css" />
+    <Content Include="static\index.html" />
+    <Content Include="static\vite.svg" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="venv\">
