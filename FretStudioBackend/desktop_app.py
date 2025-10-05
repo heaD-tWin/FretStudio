@@ -86,7 +86,8 @@ def create_window():
         width=1200,
         height=800,
         min_size=(800, 600),
-        js_api=js_api
+        js_api=js_api,
+        maximized=True  # This will open the window maximized
     )
 
 def main():
@@ -102,8 +103,9 @@ def main():
         time.sleep(3)
 
         create_window()
+        
         logger.info("Starting application...")
-        webview.start(debug=True)
+        webview.start(debug=False)
         
         return True
 
