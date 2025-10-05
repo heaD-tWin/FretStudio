@@ -102,13 +102,13 @@ export const downloadFile = (data: any, filename: string) => {
 };
 
 // --- Native Dialog & File System Methods ---
-export const showNativeSaveDialog = async (): Promise<string | null> => {
-  // Call the Python API directly
+export const showNativeSaveDialog = async (): Promise<string | string[] | null> => {
+  // Call the Python API directly. It may return a string or a tuple (which becomes an array).
   return (window as any).pywebview.api.show_save_dialog();
 };
 
-export const showNativeOpenDialog = async (): Promise<string | null> => {
-  // Call the Python API directly
+export const showNativeOpenDialog = async (): Promise<string | string[] | null> => {
+  // Call the Python API directly.
   return (window as any).pywebview.api.show_open_dialog();
 };
 
@@ -136,8 +136,17 @@ export const fileSystem: FileSystemHandler = {
   
   saveFile: async (data: any, filename: string): Promise<boolean> => {
     if (fileSystem.isNative) {
-      const filePath = await showNativeSaveDialog();
-      if (!filePath) return false; // User cancelled dialog
+      const filePathResult = await showNativeSaveDialog();
+      if (!filePathResult) return false; // User cancelled dialog
+
+      // Ensure the file path is a string, as pywebview can return a tuple (array).
+      const filePath = Array.isArray(filePathResult) ? filePathResult[0] : filePathResult;
+
+      if (!filePath) {
+        console.error("File path is empty after processing.");
+        return false;
+      }
+
       return await saveToFile(data, filePath);
     } else {
       try {
@@ -152,8 +161,16 @@ export const fileSystem: FileSystemHandler = {
 
   loadFile: async (): Promise<File | null> => {
     if (fileSystem.isNative) {
-      const filePath = await showNativeOpenDialog();
-      if (!filePath) return null; // User cancelled dialog
+      const filePathResult = await showNativeOpenDialog();
+      if (!filePathResult) return null; // User cancelled dialog
+
+      // Ensure the file path is a string.
+      const filePath = Array.isArray(filePathResult) ? filePathResult[0] : filePathResult;
+      
+      if (!filePath) {
+        console.error("File path is empty after processing.");
+        return null;
+      }
       
       try {
         // For native, we get a path and need to fetch the content from the backend
@@ -167,8 +184,7 @@ export const fileSystem: FileSystemHandler = {
         return null;
       }
     } else {
-      // For web, the file input is handled directly by the component, so we return null.
-      // The component will then call hardLoadFromFile/softLoadFromFile with the File object.
+      // For web, the file input is handled directly by the component.
       return null;
     }
   }
