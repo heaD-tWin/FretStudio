@@ -280,6 +280,8 @@ const SaveLoadPage = () => {
 
   // Update handleSave to use fileSystem
   const handleSave = async () => {
+    // --- Debugging: Log file system state before saving ---
+    console.log('Save button clicked. Checking fileSystem.isNative:', fileSystem.isNative);
     try {
       const selectedItems: SaveSelectionsPayload = {
         scales: Array.from(selections.scales),

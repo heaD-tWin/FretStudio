@@ -8,7 +8,6 @@ import traceback
 import webview
 import uvicorn
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse
 from FretStudioBackend import app
 
 # Force unbuffered output
@@ -25,111 +24,86 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class Api:
+    """
+    API class exposed to JavaScript. Methods here are called directly
+    from the frontend and execute in the main GUI thread.
+    """
+    def show_save_dialog(self):
+        """
+        Shows a native save file dialog. This method gets the active
+        window dynamically, avoiding circular references.
+        """
+        window = webview.active_window()
+        if not window:
+            logger.error("Save dialog called but no active window found.")
+            return None
+        
+        return window.create_file_dialog(
+            webview.SAVE_DIALOG,
+            directory=os.path.expanduser('~'),
+            save_filename='fretstudio_save.json',
+            file_types=('JSON Files (*.json)', 'All files (*.*)')
+        )
+
+    def show_open_dialog(self):
+        """
+        Shows a native open file dialog.
+        """
+        window = webview.active_window()
+        if not window:
+            logger.error("Open dialog called but no active window found.")
+            return None
+
+        file_paths = window.create_file_dialog(
+            webview.OPEN_DIALOG,
+            allow_multiple=False,
+            file_types=('JSON Files (*.json)', 'All files (*.*)')
+        )
+        return file_paths[0] if file_paths else None
+
+# Global API instance for the webview
+js_api = Api()
+
 def init_app():
     """Initialize the application"""
     logger.info("Initializing application...")
-    
-    # Get absolute path to static directory
     static_dir = Path(__file__).parent / "static"
-    logger.info(f"Static directory: {static_dir}")
-    logger.info(f"Static directory exists: {static_dir.exists()}")
-
-    logger.info("=== Static Directory Contents ===")
-    if static_dir.exists():
-        for path in static_dir.rglob("*"):
-            if path.is_file():
-                logger.info(f"File: {path.relative_to(static_dir)}")
-            else:
-                logger.info(f"Dir:  {path.relative_to(static_dir)}")
-
-    # Mount static files
     app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
-
     return app, static_dir
 
-def run_server(app):
+def run_server(app_instance):
     """Run the FastAPI server"""
     logger.info("Starting FastAPI server...")
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run(app_instance, host="127.0.0.1", port=8000, log_level="info")
 
 def create_window():
     """Create the application window"""
     logger.info("Creating window...")
-    window = webview.create_window(
+    return webview.create_window(
         "FretStudio",
         "http://127.0.0.1:8000",
         width=1200,
         height=800,
-        min_size=(800, 600)
+        min_size=(800, 600),
+        js_api=js_api
     )
-    return window
 
 def main():
     try:
-        # Initialize application
-        app, static_dir = init_app()
+        app_instance, static_dir = init_app()
         
-        # Add window reference for native dialogs
-        window = None
-        
-        # Add native dialog endpoints
-        @app.get("/api/dialog/save")
-        async def show_save_dialog():
-            if window:
-                file_types = ('JSON Files (*.json)',)
-                path = window.create_file_dialog(
-                    webview.SAVE_DIALOG,
-                    directory='~',
-                    save_filename='fret_studio_save.json',
-                    file_types=file_types
-                )
-                return {"filePath": path}
-            return {"filePath": None}
-
-        @app.get("/api/dialog/open")
-        async def show_open_dialog():
-            if window:
-                file_types = ('JSON Files (*.json)',)
-                result = window.create_file_dialog(
-                    webview.OPEN_DIALOG,
-                    directory='~',
-                    file_types=file_types
-                )
-                return {"filePath": result[0] if result else None}
-            return {"filePath": None}
-
-        @app.get("/debug-static")
-        async def debug_static():
-            files = []
-            if static_dir.exists():
-                for path in static_dir.rglob("*"):
-                    if path.is_file():
-                        files.append(str(path.relative_to(static_dir)))
-            return {"files": files}
-
-        # Verify static directory
-        if not static_dir.exists():
-            logger.error(f"Static directory not found at: {static_dir}")
+        if not static_dir.exists() or not (static_dir / "index.html").exists():
+            logger.error(f"Static directory or index.html not found at: {static_dir}")
             return False
 
-        # Check for index.html
-        if not (static_dir / "index.html").exists():
-            logger.error("index.html not found in static directory")
-            return False
-
-        # Start the server in a separate thread
-        logger.info("Starting server thread...")
-        server_thread = threading.Thread(target=run_server, args=(app,), daemon=True)
+        server_thread = threading.Thread(target=run_server, args=(app_instance,), daemon=True)
         server_thread.start()
+        time.sleep(3)
 
-        # Give the server a moment to start
-        logger.info("Waiting for server to start...")
-        time.sleep(2)
-
-        # Create and start the window
-        window = create_window()
+        create_window()
         logger.info("Starting application...")
-        webview.start()
+        webview.start(debug=True)
         
         return True
 
@@ -142,10 +116,8 @@ if __name__ == "__main__":
     try:
         success = main()
         if not success:
-            logger.error("Application failed to start")
             sys.exit(1)
     except KeyboardInterrupt:
-        logger.info("Application terminated by user")
         sys.exit(0)
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")

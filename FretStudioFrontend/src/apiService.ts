@@ -76,14 +76,19 @@ async function handleResponse<T>(response: Response): Promise<T | null> {
     return null;
   }
   try {
-    return await response.json();
+    // Handle cases where the response might be empty
+    const text = await response.text();
+    if (!text) {
+      return null;
+    }
+    return JSON.parse(text) as T;
   } catch (error) {
     console.error("Failed to parse JSON response:", error);
     return null;
   }
 }
 
-// --- File Handling Functions ---
+// --- Web File Handling ---
 export const downloadFile = (data: any, filename: string) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = window.URL.createObjectURL(blob);
@@ -94,6 +99,83 @@ export const downloadFile = (data: any, filename: string) => {
   a.click();
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
+};
+
+// --- Native Dialog & File System Methods ---
+export const showNativeSaveDialog = async (): Promise<string | null> => {
+  // Call the Python API directly
+  return (window as any).pywebview.api.show_save_dialog();
+};
+
+export const showNativeOpenDialog = async (): Promise<string | null> => {
+  // Call the Python API directly
+  return (window as any).pywebview.api.show_open_dialog();
+};
+
+export const saveToFile = async (data: any, filePath: string): Promise<boolean> => {
+  const response = await fetch(`${API_BASE_URL}/save-load/write-file`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filePath,
+      content: data
+    })
+  });
+  return response.ok;
+};
+
+// --- File System Abstraction ---
+export interface FileSystemHandler {
+  isNative: boolean;
+  saveFile: (data: any, filename: string) => Promise<boolean>;
+  loadFile: () => Promise<File | null>;
+}
+
+export const fileSystem: FileSystemHandler = {
+  isNative: false, // This will be updated by initializeFileSystem
+  
+  saveFile: async (data: any, filename: string): Promise<boolean> => {
+    if (fileSystem.isNative) {
+      const filePath = await showNativeSaveDialog();
+      if (!filePath) return false; // User cancelled dialog
+      return await saveToFile(data, filePath);
+    } else {
+      try {
+        downloadFile(data, filename);
+        return true;
+      } catch (error) {
+        console.error('Web save error:', error);
+        return false;
+      }
+    }
+  },
+
+  loadFile: async (): Promise<File | null> => {
+    if (fileSystem.isNative) {
+      const filePath = await showNativeOpenDialog();
+      if (!filePath) return null; // User cancelled dialog
+      
+      try {
+        // For native, we get a path and need to fetch the content from the backend
+        const response = await fetch(`${API_BASE_URL}/api/file/read?path=${encodeURIComponent(filePath)}`);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        const fileName = filePath.split(/[/\\]/).pop() || 'loaded.json';
+        return new File([blob], fileName, { type: 'application/json' });
+      } catch (error) {
+        console.error('Native load error:', error);
+        return null;
+      }
+    } else {
+      // For web, the file input is handled directly by the component, so we return null.
+      // The component will then call hardLoadFromFile/softLoadFromFile with the File object.
+      return null;
+    }
+  }
+};
+
+export const initializeFileSystem = (isNative: boolean) => {
+  fileSystem.isNative = isNative;
 };
 
 // --- Save/Load API ---
@@ -112,6 +194,7 @@ export const generateSaveFile = async (selections: SaveSelectionsPayload): Promi
 };
 
 // --- Functions for Hard and Soft Load ---
+// These functions work for both web (file upload) and native (file from path)
 export const hardLoadFromFile = async (file: File): Promise<boolean> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -138,7 +221,6 @@ export const factoryReset = async (): Promise<boolean> => {
   });
   return response.ok;
 };
-
 
 // --- Scales API ---
 export const getScales = async (): Promise<Scale[]> => {
@@ -179,7 +261,7 @@ export const getChordsInScale = async (rootNote: string, scaleName: string, tuni
 // --- Chord Types API ---
 export const getChordTypes = async (): Promise<ChordType[]> => {
   const response = await fetch(`${API_BASE_URL}/chord-types`);
-  return await handleResponse<ChordType[]>(response) || [];  // Changed ChordType to ChordType[]
+  return await handleResponse<ChordType[]>(response) || [];
 };
 
 export const addChordType = async (chordType: ChordType): Promise<boolean> => {
@@ -289,88 +371,4 @@ export const getVisualizedChord = async (tuningName: string, rootNote: string, c
 export const getChordNotesForEditor = async (rootNote: string, chordTypeName: string): Promise<string[]> => {
   const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
   return await handleResponse<string[]>(response) || [];
-};
-
-
-// --- File System API ---
-export interface FileSystemHandler {
-  isNative: boolean;
-  saveFile: (data: any, filename: string) => Promise<boolean>;
-  loadFile: () => Promise<File | null>;
-}
-
-export const fileSystem: FileSystemHandler = {
-  isNative: false, // Will be set to true when running in PyWebview
-  
-  saveFile: async (data: any, filename: string): Promise<boolean> => {
-    if (fileSystem.isNative) {
-      // Use native dialogs
-      const filePath = await showNativeSaveDialog();
-      if (!filePath) return false;
-      return await saveToFile(data, filePath);
-    } else {
-      // Use web download
-      try {
-        downloadFile(data, filename);
-        return true;
-      } catch (error) {
-        console.error('Web save error:', error);
-        return false;
-      }
-    }
-  },
-
-  loadFile: async (): Promise<File | null> => {
-    if (fileSystem.isNative) {
-      // Use native dialog
-      const filePath = await showNativeOpenDialog();
-      if (!filePath) return null;
-      
-      // Convert the filepath to a File object
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/file/read?path=${encodeURIComponent(filePath)}`);
-        if (!response.ok) return null;
-        const blob = await response.blob();
-        return new File([blob], filePath.split('\\').pop() || 'imported.json', { type: 'application/json' });
-      } catch (error) {
-        console.error('Native load error:', error);
-        return null;
-      }
-    } else {
-      // Return null for web version - web uses input element directly
-      return null;
-    }
-  }
-};
-
-export const initializeFileSystem = (isNative: boolean) => {
-  fileSystem.isNative = isNative;
-};
-
-// Add these new dialog methods near the top of the file
-export const showNativeSaveDialog = async (): Promise<string | null> => {
-  const response = await fetch(`${API_BASE_URL}/api/dialog/save`);
-  if (!response.ok) return null;
-  const data = await response.json();
-  return data.filePath;
-};
-
-export const showNativeOpenDialog = async (): Promise<string | null> => {
-  const response = await fetch(`${API_BASE_URL}/api/dialog/open`);
-  if (!response.ok) return null;
-  const data = await response.json();
-  return data.filePath;
-};
-
-// Add this helper function for saving files
-export const saveToFile = async (data: any, filePath: string): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/save-load/write-file`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      filePath,
-      content: data
-    })
-  });
-  return response.ok;
 };
