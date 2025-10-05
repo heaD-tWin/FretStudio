@@ -5,6 +5,7 @@ import {
   hardLoadFromFile,
   softLoadFromFile,
   factoryReset,
+  downloadFile,  // Add this
   type AllData, 
   type SaveSelectionsPayload 
 } from '../apiService';
@@ -208,18 +209,23 @@ const SaveLoadPage = () => {
     const file = event.target.files?.[0];
     if (!file || !loadMode) return;
 
-    let success = false;
-    if (loadMode === 'hard') {
-      success = await hardLoadFromFile(file);
-    } else {
-      success = await softLoadFromFile(file);
-    }
+    try {
+      let success = false;
+      if (loadMode === 'hard') {
+        success = await hardLoadFromFile(file);
+      } else {
+        success = await softLoadFromFile(file);
+      }
 
-    if (success) {
-      alert(`Successfully performed ${loadMode} load! Data has been updated.`);
-      fetchData();
-    } else {
-      alert(`Failed to perform ${loadMode} load. Please check if the file is a valid FretStudio backup.`);
+      if (success) {
+        alert(`Successfully performed ${loadMode} load! Data has been updated.`);
+        fetchData();
+      } else {
+        alert(`Failed to perform ${loadMode} load. Please check if the file is a valid FretStudio backup.`);
+      }
+    } catch (error) {
+      console.error('Load error:', error);
+      alert('An error occurred while loading');
     }
 
     if(fileInputRef.current) {
@@ -243,7 +249,7 @@ const SaveLoadPage = () => {
     }
   };
 
-  // Update the handleSave function
+  // Update handleSave to use web download
   const handleSave = async () => {
     try {
       // Get selected items to save
@@ -261,53 +267,16 @@ const SaveLoadPage = () => {
         return;
       }
 
-      // Show native save dialog
-      const filePath = await showNativeSaveDialog();
-      if (!filePath) return; // User cancelled
-
-      // Save the file
-      const success = await saveToFile(saveData, filePath);
-      if (success) {
-        alert('Save successful!');
-      } else {
-        alert('Failed to save file');
-      }
+      // Download using browser API
+      downloadFile(saveData, 'fret_studio_save.json');
     } catch (error) {
       console.error('Save error:', error);
       alert('An error occurred while saving');
     }
   };
 
-  // Update the load functions
-  const handleLoad = async (isHardLoad: boolean) => {
-    try {
-      const filePath = await showNativeOpenDialog();
-      if (!filePath) return; // User cancelled
-
-      // Create FormData with file path
-      const formData = new FormData();
-      formData.append('file', filePath);
-
-      // Perform the load operation
-      const success = isHardLoad 
-        ? await hardLoadFromFile(filePath)
-        : await softLoadFromFile(filePath);
-
-      if (success) {
-        alert(`${isHardLoad ? 'Hard' : 'Soft'} load successful!`);
-        fetchData(); // Refresh the data
-      } else {
-        alert('Failed to load file');
-      }
-    } catch (error) {
-      console.error('Load error:', error);
-      alert('An error occurred while loading');
-    }
-  };
-
-  // Update the button handlers
-  const handleHardLoad = () => handleLoad(true);
-  const handleSoftLoad = () => handleLoad(false);
+  const handleHardLoad = () => handleLoadClick('hard');
+  const handleSoftLoad = () => handleLoadClick('soft');
 
   if (isLoading) {
     return <div className="save-load-page"><h1>Loading...</h1></div>;
@@ -417,6 +386,6 @@ const SaveLoadPage = () => {
       ))}
     </div>
   );
-};
+}
 
 export default SaveLoadPage;

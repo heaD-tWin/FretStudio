@@ -62,6 +62,11 @@ export interface SaveSelectionsPayload {
   voicings: string[];
 }
 
+// --- Dialog Types ---
+export interface DialogResponse {
+  filePath: string | null;
+}
+
 // --- Helper ---
 async function handleResponse<T>(response: Response): Promise<T | null> {
   if (!response.ok) {
@@ -77,6 +82,19 @@ async function handleResponse<T>(response: Response): Promise<T | null> {
     return null;
   }
 }
+
+// --- File Handling Functions ---
+export const downloadFile = (data: any, filename: string) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
 
 // --- Save/Load API ---
 export const getAllDataForSaveLoad = async (): Promise<AllData | null> => {
