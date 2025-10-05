@@ -179,7 +179,7 @@ export const getChordsInScale = async (rootNote: string, scaleName: string, tuni
 // --- Chord Types API ---
 export const getChordTypes = async (): Promise<ChordType[]> => {
   const response = await fetch(`${API_BASE_URL}/chord-types`);
-  return await handleResponse<ChordType[]>(response) || [];
+  return await handleResponse<ChordType[]>(response) || [];  // Changed ChordType to ChordType[]
 };
 
 export const addChordType = async (chordType: ChordType): Promise<boolean> => {
@@ -289,6 +289,62 @@ export const getVisualizedChord = async (tuningName: string, rootNote: string, c
 export const getChordNotesForEditor = async (rootNote: string, chordTypeName: string): Promise<string[]> => {
   const response = await fetch(`${API_BASE_URL}/notes/${encodeURIComponent(rootNote)}/${encodeURIComponent(chordTypeName)}`);
   return await handleResponse<string[]>(response) || [];
+};
+
+
+// --- File System API ---
+export interface FileSystemHandler {
+  isNative: boolean;
+  saveFile: (data: any, filename: string) => Promise<boolean>;
+  loadFile: () => Promise<File | null>;
+}
+
+export const fileSystem: FileSystemHandler = {
+  isNative: false, // Will be set to true when running in PyWebview
+  
+  saveFile: async (data: any, filename: string): Promise<boolean> => {
+    if (fileSystem.isNative) {
+      // Use native dialogs
+      const filePath = await showNativeSaveDialog();
+      if (!filePath) return false;
+      return await saveToFile(data, filePath);
+    } else {
+      // Use web download
+      try {
+        downloadFile(data, filename);
+        return true;
+      } catch (error) {
+        console.error('Web save error:', error);
+        return false;
+      }
+    }
+  },
+
+  loadFile: async (): Promise<File | null> => {
+    if (fileSystem.isNative) {
+      // Use native dialog
+      const filePath = await showNativeOpenDialog();
+      if (!filePath) return null;
+      
+      // Convert the filepath to a File object
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/file/read?path=${encodeURIComponent(filePath)}`);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return new File([blob], filePath.split('\\').pop() || 'imported.json', { type: 'application/json' });
+      } catch (error) {
+        console.error('Native load error:', error);
+        return null;
+      }
+    } else {
+      // Return null for web version - web uses input element directly
+      return null;
+    }
+  }
+};
+
+export const initializeFileSystem = (isNative: boolean) => {
+  fileSystem.isNative = isNative;
 };
 
 // Add these new dialog methods near the top of the file

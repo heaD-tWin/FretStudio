@@ -7,7 +7,12 @@ import SaveLoadPage from './pages/SaveLoadPage';
 import Settings from './pages/Settings';
 import { useFingeringVisibility } from './contexts/FingeringVisibilityContext';
 import { useIntervalVisibility } from './contexts/IntervalVisibilityContext';
+import { initializeFileSystem } from './apiService';
 import './App.css';
+
+// Initialize with native=true when running in PyWebview
+const isRunningInPyWebview = typeof window !== 'undefined' && 'pywebview' in window;
+initializeFileSystem(isRunningInPyWebview);
 
 function App() {
   const { isFingeringVisible, toggleFingeringVisibility } = useFingeringVisibility();
@@ -46,7 +51,6 @@ function App() {
           <Route path="/chord-visualizer" element={<ChordVisualizer />} />
           <Route path="/chord-editor" element={<ChordEditor />} />
           <Route path="/scale-editor" element={<ScaleEditor />} />
-          {/* 3. Add the new route */}
           <Route path="/save-load" element={<SaveLoadPage />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

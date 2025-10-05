@@ -8,6 +8,10 @@
     "module": "ESNext",
     "skipLibCheck": true,
     "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
 
     /* Bundler mode */
     "moduleResolution": "bundler",

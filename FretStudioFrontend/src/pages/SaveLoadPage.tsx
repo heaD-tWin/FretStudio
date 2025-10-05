@@ -5,7 +5,7 @@ import {
   hardLoadFromFile,
   softLoadFromFile,
   factoryReset,
-  downloadFile,  // Add this
+  fileSystem,
   type AllData, 
   type SaveSelectionsPayload 
 } from '../apiService';
@@ -200,9 +200,38 @@ const SaveLoadPage = () => {
   };
 
   // --- File Load Handlers ---
-  const handleLoadClick = (mode: 'hard' | 'soft') => {
-    setLoadMode(mode);
-    fileInputRef.current?.click();
+  const handleLoadClick = async (mode: 'hard' | 'soft') => {
+    try {
+      if (fileSystem.isNative) {
+        const file = await fileSystem.loadFile();
+        if (!file) return;
+        await handleFileLoad(file, mode);
+      } else {
+        setLoadMode(mode);
+        fileInputRef.current?.click();
+      }
+    } catch (error) {
+      console.error('Load error:', error);
+      alert('An error occurred while loading');
+    }
+  };
+
+  const handleFileLoad = async (file: File, mode: 'hard' | 'soft') => {
+    try {
+      const success = mode === 'hard' 
+        ? await hardLoadFromFile(file)
+        : await softLoadFromFile(file);
+
+      if (success) {
+        alert(`${mode} load successful!`);
+        fetchData();
+      } else {
+        alert('Failed to load file');
+      }
+    } catch (error) {
+      console.error('Load error:', error);
+      alert('An error occurred while loading');
+    }
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,10 +278,9 @@ const SaveLoadPage = () => {
     }
   };
 
-  // Update handleSave to use web download
+  // Update handleSave to use fileSystem
   const handleSave = async () => {
     try {
-      // Get selected items to save
       const selectedItems: SaveSelectionsPayload = {
         scales: Array.from(selections.scales),
         chordTypes: Array.from(selections.chordTypes),
@@ -260,15 +288,18 @@ const SaveLoadPage = () => {
         voicings: Array.from(selections.voicings)
       };
 
-      // Generate the save data
       const saveData = await generateSaveFile(selectedItems);
       if (!saveData) {
         alert('Failed to generate save data');
         return;
       }
 
-      // Download using browser API
-      downloadFile(saveData, 'fret_studio_save.json');
+      const success = await fileSystem.saveFile(saveData, 'fret_studio_save.json');
+      if (success) {
+        alert('Save successful!');
+      } else {
+        alert('Failed to save file');
+      }
     } catch (error) {
       console.error('Save error:', error);
       alert('An error occurred while saving');
