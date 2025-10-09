@@ -30,6 +30,12 @@ A comprehensive web-based guitar learning and music theory application that prov
 - **Handedness Settings**: Left or right-handed fretboard orientation
 - **Toggle Controls**: Show/hide fingering numbers and interval indicators
 
+## 📸 Screenshots
+
+![Screenshot-1](screenshots/FretStudioScreen-01.png)
+
+![Screenshot-2](screenshots/FretStudioScreen-02.png)
+
 ## 🚀 Technology Stack
 
 ### Frontend
