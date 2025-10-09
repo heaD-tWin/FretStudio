@@ -124,7 +124,8 @@ cd ../FretStudioBackend
 venv\Scripts\activate
 ~~~
 
-5. Build the frontend:**
+5. **Build the frontend:**
+
 ~~~bash
 python build_frontend.py
 ~~~
