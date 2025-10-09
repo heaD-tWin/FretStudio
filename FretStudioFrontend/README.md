@@ -100,6 +100,45 @@ npm run dev
 
 The application will be available at `http://localhost:62188`
 
+## To Run Native App
+
+1. **Navigate to the frontend directory:**
+~~~bash
+cd FretStudioFrontend
+~~~
+
+2. **Run npm build:**
+
+~~~bash
+npm run build
+~~~
+
+3. **Navigate to the backend directory:**
+
+~~~bash
+cd ../FretStudioBackend
+~~~
+
+4. **Enable virtual environment:**
+~~~bash
+venv\Scripts\activate
+~~~
+
+5. Build the frontend:**
+~~~bash
+python build_frontend.py
+~~~
+
+6. **Build the backend:**
+~~~bash
+python build_desktop.py
+~~~
+
+7. **Run the native app:**
+~~~bash
+python desktop_app.py
+~~~
+
 ## 🔗 API Endpoints
 
 ### Save/Load Data Management
