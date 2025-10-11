@@ -36,6 +36,12 @@ A comprehensive web-based guitar learning and music theory application that prov
 
 ![Screenshot-2](screenshots/FretStudioScreen-02.png)
 
+![Screenshot-2](screenshots/FretStudioScreen-03.png)
+
+![Screenshot-2](screenshots/FretStudioScreen-04.png)
+
+![Screenshot-2](screenshots/FretStudioScreen-05.png)
+
 ## 🚀 Technology Stack
 
 ### Frontend
